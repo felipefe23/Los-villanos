@@ -47,3 +47,7 @@
 - Backend: Joaquín Contreras  
 - Frontend: Diego Rojas  
 - QA & Documentación: Luis Guzman  
+
+## Canales de difusion y contacto:
+- Discord: https://discord.gg/34UVhDAq 
+- Whatsapp: https://chat.whatsapp.com/CO0HBRYCE1BJkUCyJmihSH?mode=ems_wa_t 
