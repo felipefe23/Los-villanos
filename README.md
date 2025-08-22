@@ -7,7 +7,7 @@ Este proyecto tiene como objetivo crear una plataforma web donde los usuarios pu
 - Luis Felipe Guzman. GitHub: felipefe23  Trello: @lguzman241
 - Diego Ignacio Rojas. GitHub: DiCloudd  Trello: @diegoignaciorojasacevedo1
 - Francisco Javier Reyes. GitHub: frryesss  Trello: @fcooreyes44
-- Joaquin Emilio Contreras. GitHub: Jo4King09  Trello: @
+- Joaquin Emilio Contreras. GitHub: Jo4King09  Trello: @jocontreras24
 
 ## Características clave:
 - *Búsqueda de propiedades:* Los usuarios pueden buscar casas según su ubicación, precio, y características.
