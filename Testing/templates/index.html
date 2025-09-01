@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing de Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        .form-container {
+            margin: 10px 0;
+        }
+        input, button {
+            padding: 5px;
+            margin: 5px;
+        }
+        .error {
+            color: rgb(255, 0, 0);
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <input type="text" id="direccion" placeholder="Coordenadas (Ej: -34.96241,-71.22117)">
+        <input type="number" id="precio" placeholder="Precio">
+        <button onclick="agregarPropiedad()">Agregar Propiedad</button>
+        <div id="error" class="error"></div>
+    </div>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script>
+        var map = L.map('map').setView([-34.92984, -71.31837], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.youtube.com">Youtube</a> Nuestro canal de Youtube'
+        }).addTo(map);
+
+        var marker = L.marker([-34.92597, -71.31125]).addTo(map)
+            .bindPopup("<b>El Mejor Pueblo ?</b><br>Rauco obiamente po.").openPopup();
+        var marker2 = L.marker([-34.92984, -71.31837]).addTo(map)
+            .bindPopup("Que pajooooooooooo").openPopup();
+        var markerCurico = L.marker([-34.97707, -71.23939]).addTo(map)
+            .bindPopup('<a href="https://www.google.com/maps/dir/Rauco/-34.97707,-71.23939/@-34.9509135,-71.3602498,29601m/data=!3m2!1e3!4b1!4m9!4m8!1m5!1m1!1s0x966445ab8d490dbd:0xccb872f1834eeb76!2m2!1d-71.3163092!2d-34.9247953!1m0!3e0?entry=ttu&g_ep=EgoyMDI1MDgyNS4wIKXMDSoASAFQAw%3D%3D">Ir a la Ubicación</a>').openPopup();
+
+
+        var propiedadesLayer = L.layerGroup().addTo(map);
+        cargarPropiedades();
+
+        async function cargarPropiedades() {
+            propiedadesLayer.clearLayers();
+            const response = await fetch('/api/propiedades');
+            const propiedades = await response.json();
+            propiedades.forEach(p => {
+                const [lat, lng] = p.direccion.split(',').map(Number);
+                L.marker([lat, lng])
+                    .addTo(propiedadesLayer)
+                    .bindPopup(`ID: ${p.id}<br>Dirección: ${p.direccion}<br>Precio: $${p.precio}`);
+            });
+        }
+
+        async function agregarPropiedad() {
+            const direccion = document.getElementById('direccion').value.trim();
+            const precio = document.getElementById('precio').value.trim();
+            const errorDiv = document.getElementById('error');
+
+            if (!direccion || !precio) {
+                errorDiv.textContent = 'Complete todos los campos.';
+                return;
+            }
+
+            const response = await fetch('/api/propiedades', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ direccion, precio })
+            });
+
+            const result = await response.json();
+            errorDiv.textContent = response.ok ? result.message : result.error;
+            if (response.ok) {
+                document.getElementById('direccion').value = '';
+                document.getElementById('precio').value = '';
+                cargarPropiedades();
+            }
+        }
+    </script>
+</body>
+</html>
