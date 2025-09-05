@@ -11,7 +11,7 @@ Dandonos asi una vista más especifica de los datos relacionados a las casas que
  
 ## Corrección de ERRORES de versiones pasadas
 - **Error: No se encuentra el doc. `propiedades.json`** El error se debia a que la ruta del archivo en algunos ordenadores la encontraba sin importar la especificación de la ruta del mismo, en esta corrección "Forzamos" al programa a buscarlo dentro de la ruta específica.
-Detección del error: Implementamos una linea de codigo que si no encontraba el doc. lo creara, al momento de que el programa creo el doc. nos dimos cuenta de que lo estaba creando fuera de la ruta establecida para los `DATOS` asi nos dimos cuenta de que claro, no la encontraba por que en la ruta en la que lo estaba buscando, nunca existió.
+Detección del error: Implementamos una linea de codigo que si no encontraba el doc. lo creara, al momento de que el programa creó el doc. nos dimos cuenta de que lo estaba creando fuera de la ruta establecida para los `DATOS` asi nos dimos cuenta de que claro, no la encontraba por que en la ruta en la que lo estaba buscando, nunca existió.
 
 ## Validaciones hasta el momento.
 - **Todos los campos rellenados** Valida que todos los campos requeridos para la creación de la propiedad estes completos al momento de realizar la solicitud.
