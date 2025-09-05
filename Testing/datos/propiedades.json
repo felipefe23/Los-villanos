@@ -1,7 +1,54 @@
 [
   {
     "id": 1,
-    "direccion": "-34.97707, -71.23932",
-    "precio": 100000
+    "nombre": "Apartamento ",
+    "precio": 200000,
+    "localizacion": "Santa Fé, Curicó",
+    "dormitorios": 3,
+    "baños": 2,
+    "area": "220 m²",
+    "tipo": "Apartamento",
+    "estado": "En Venta",
+    "img": "https://cdn.discordapp.com/attachments/1407787014366957712/1413381377889538090/7c78f4bcf54204a49361257923a86bf0.png?ex=68bbb97b&is=68ba67fb&hm=9209b502006baf7ef7e23b1b310af24b1cedc4edf2760d0487705cc46722fddf&",
+    "coordenadas": "-34.97707, -71.23932"
+  },
+  {
+    "id": 2,
+    "nombre": "Casa de alquiler",
+    "precio": 2323223,
+    "localizacion": "Curico centro",
+    "dormitorios": "2",
+    "baños": "3",
+    "area": "180",
+    "tipo": "Alquiler",
+    "estado": "Activo",
+    "img": "https://cdn.discordapp.com/attachments/1407787014366957712/1413380854939517000/R.png?ex=68bbb8ff&is=68ba677f&hm=4ae1f06788ff7e3308ca72f8f0cc7bcfb6477952b03c39a9072962b074120f03&",
+    "coordenadas": "-34.97858,-71.22849"
+  },
+  {
+    "id": 3,
+    "nombre": "Casa Familiar",
+    "precio": 50.0,
+    "localizacion": "Curico centro",
+    "dormitorios": "10",
+    "baños": "1",
+    "area": "50",
+    "tipo": "Alquiler",
+    "estado": "Activo",
+    "img": "https://cdn.discordapp.com/attachments/1407787014366957712/1408266286479179786/533011956_10162323274216107_5740461259079209886_n.png?ex=68bae9ef&is=68b9986f&hm=e985d09c81e8807390a361e0bbe86d3e5d5ab1a95bee75884e89c6f80a550d7b&",
+    "coordenadas": "-34.98529,-71.23937"
+  },
+  {
+    "id": 4,
+    "nombre": "Casa Relax",
+    "precio": 90000000,
+    "localizacion": "Curicó Centro",
+    "dormitorios": "4",
+    "baños": "2",
+    "area": "145",
+    "tipo": "Venta",
+    "estado": "Activo",
+    "img": "https://media.discordapp.net/attachments/1407787014366957714/1408263582805655552/Property-6bf4cfcb0f0ec7de86673f54bd343b4d-71562365.png?ex=68bae76a&is=68b995ea&hm=240a8fd6c4fe4f9a3ef1b045f60c6a3c456757085eabf0fb745e7e276ff8415f&=&format=webp&quality=lossless",
+    "coordenadas": "-34.98317,-71.23054"
   }
 ]

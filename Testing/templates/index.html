@@ -27,8 +27,16 @@
 </head>
 <body>
     <div class="form-container">
-        <input type="text" id="direccion" placeholder="Coordenadas (Ej: -34.96241,-71.22117)">
+        <input type="text" id="nombre" placeholder="Nombre de la Propiedad">
         <input type="number" id="precio" placeholder="Precio">
+        <input type="text" id="localizacion" placeholder="Localización">
+        <input type="number" id="dormitorios" placeholder="Dormitorios">
+        <input type="number" id="baños" placeholder="Baños">
+        <input type="number" id="area" placeholder="Área (m²)">
+        <input type="text" id="tipo" placeholder="Tipo (Venta/Alquiler)">
+        <input type="text" id="estado" placeholder="Estado (Activo/Vendido)">
+        <input type="text" id="img" placeholder="URL de la Imagen">
+        <input type="text" id="coordenadas" placeholder="Coordenadas (lat,lng)">
         <button onclick="agregarPropiedad()">Agregar Propiedad</button>
         <div id="error" class="error"></div>
     </div>
@@ -54,19 +62,27 @@
             const response = await fetch('/api/propiedades');
             const propiedades = await response.json();
             propiedades.forEach(p => {
-                const [lat, lng] = p.direccion.split(',').map(Number);
+                const [lat, lng] = p.coordenadas.split(',').map(Number);
                 L.marker([lat, lng])
                     .addTo(propiedadesLayer)
-                    .bindPopup(`ID: ${p.id}<br>Dirección: ${p.direccion}<br>Precio: $${p.precio}`);
+                    .bindPopup(`ID: ${p.id}<br>Nombre: ${p.nombre}<br>Precio: $${p.precio}<br>Localización: ${p.localizacion}<br>Dormitorios: ${p.dormitorios}<br>Baños: ${p.baños}<br>Área: ${p.area} m²<br>Tipo: ${p.tipo}<br>Estado: ${p.estado}<br><img src="${p.img}" alt="Imagen" width="100">`);
             });
         }
 
         async function agregarPropiedad() {
-            const direccion = document.getElementById('direccion').value.trim();
+            const nombre = document.getElementById('nombre').value.trim();
             const precio = document.getElementById('precio').value.trim();
+            const localizacion = document.getElementById('localizacion').value.trim();
+            const dormitorios = document.getElementById('dormitorios').value.trim();
+            const baños = document.getElementById('baños').value.trim();
+            const area = document.getElementById('area').value.trim();
+            const tipo = document.getElementById('tipo').value.trim();
+            const estado = document.getElementById('estado').value.trim();
+            const img = document.getElementById('img').value.trim();
+            const coordenadas = document.getElementById('coordenadas').value.trim();
             const errorDiv = document.getElementById('error');
 
-            if (!direccion || !precio) {
+            if (!precio || !nombre || !localizacion || !dormitorios || !baños || !area || !tipo || !estado || !img || !coordenadas) {
                 errorDiv.textContent = 'Complete todos los campos.';
                 return;
             }
@@ -74,14 +90,22 @@
             const response = await fetch('/api/propiedades', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ direccion, precio })
+                body: JSON.stringify({ nombre, precio, localizacion, dormitorios, baños, area, tipo, estado, img, coordenadas })
             });
 
             const result = await response.json();
             errorDiv.textContent = response.ok ? result.message : result.error;
             if (response.ok) {
-                document.getElementById('direccion').value = '';
+                document.getElementById('nombre').value = '';
                 document.getElementById('precio').value = '';
+                document.getElementById('localizacion').value = '';
+                document.getElementById('dormitorios').value = '';
+                document.getElementById('baños').value = '';
+                document.getElementById('area').value = '';
+                document.getElementById('tipo').value = '';
+                document.getElementById('estado').value = '';
+                document.getElementById('img').value = '';
+                document.getElementById('coordenadas').value = '';
                 cargarPropiedades();
             }
         }

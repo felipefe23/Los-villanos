@@ -15,8 +15,17 @@ def get_propiedades():
 @app.route('/api/propiedades', methods=['POST'])
 def add_propiedad():
     data = request.json
-    direccion = data.get('direccion')
+    nombre = data.get('nombre')
     precio = data.get('precio')
+    localizacion = data.get('localizacion')
+    dormitorios = data.get('dormitorios')
+    baños = data.get('baños')
+    area = data.get('area')
+    tipo = data.get('tipo')
+    estado = data.get('estado')
+    img = data.get('img')
+    coordenadas = data.get('coordenadas')
+
 
     try:
         precio = int(precio)
@@ -26,8 +35,16 @@ def add_propiedad():
     propiedades = leer_propiedades()
     nueva = {
         "id": len(propiedades) + 1,
-        "direccion": direccion,
-        "precio": precio
+        "nombre": nombre,
+        "precio": precio,
+        "localizacion": localizacion,
+        "dormitorios": dormitorios,
+        "baños": baños,
+        "area": area,
+        "tipo": tipo,
+        "estado": estado,
+        "img": img,
+        "coordenadas": coordenadas
     }
     propiedades.append(nueva)
     guardar_propiedades(propiedades)
