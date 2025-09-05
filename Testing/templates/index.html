@@ -37,20 +37,14 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
     <script>
-        var map = L.map('map').setView([-34.92984, -71.31837], 15);
+        var map = L.map('map').setView([-34.97928,-71.22913], 15);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.youtube.com">Youtube</a> Nuestro canal de Youtube'
         }).addTo(map);
 
-        var marker = L.marker([-34.92597, -71.31125]).addTo(map)
-            .bindPopup("<b>El Mejor Pueblo ?</b><br>Rauco obiamente po.").openPopup();
-        var marker2 = L.marker([-34.92984, -71.31837]).addTo(map)
-            .bindPopup("Que pajooooooooooo").openPopup();
-        var markerCurico = L.marker([-34.97707, -71.23939]).addTo(map)
-            .bindPopup('<a href="https://www.google.com/maps/dir/Rauco/-34.97707,-71.23939/@-34.9509135,-71.3602498,29601m/data=!3m2!1e3!4b1!4m9!4m8!1m5!1m1!1s0x966445ab8d490dbd:0xccb872f1834eeb76!2m2!1d-71.3163092!2d-34.9247953!1m0!3e0?entry=ttu&g_ep=EgoyMDI1MDgyNS4wIKXMDSoASAFQAw%3D%3D">Ir a la Ubicación</a>').openPopup();
-
+    
 
         var propiedadesLayer = L.layerGroup().addTo(map);
         cargarPropiedades();

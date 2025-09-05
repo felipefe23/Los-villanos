@@ -3,7 +3,7 @@
 import json
 import os
 
-RUTA_ARCHIVO = os.path.join('datos', 'propiedades.json')
+RUTA_ARCHIVO = os.path.join('Testing', 'datos', 'propiedades.json')
 
 def leer_propiedades():
     """
@@ -31,6 +31,7 @@ def guardar_propiedades(lista_propiedades):
     try:
         with open(RUTA_ARCHIVO, 'w', encoding='utf-8') as archivo:
             json.dump(lista_propiedades, archivo, indent=2, ensure_ascii=False)
+            print("[Archivo JSON guardado con éxito]")
     except IOError as error:
         print(f"[Error al guardar JSON] {error}")
 

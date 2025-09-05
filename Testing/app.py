@@ -21,7 +21,7 @@ def add_propiedad():
     try:
         precio = int(precio)
     except (ValueError, TypeError):
-        return jsonify({"error": "El precio debe ser un nmero."}), 400
+        return jsonify({"error": "El precio debe ser un número."}), 400
 
     propiedades = leer_propiedades()
     nueva = {
@@ -31,7 +31,7 @@ def add_propiedad():
     }
     propiedades.append(nueva)
     guardar_propiedades(propiedades)
-    return jsonify({"message": "Todo salio bien wn xd", "propiedades": propiedades})
+    return jsonify({"message": "Propiedad ingresada con éxito.", "propiedades": propiedades})
 
 if __name__ == '__main__':
     app.run(debug=True)
