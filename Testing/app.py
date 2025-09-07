@@ -32,6 +32,11 @@ def add_propiedad():
     except (ValueError, TypeError):
         return jsonify({"error": "El precio debe ser un número."}), 400
 
+    try:
+        precio!=0
+    except (ValueError, TypeError):
+        return jsonify({"error": "El precio debe ser un número superior a 0."}), 400
+    
     propiedades = leer_propiedades()
     nueva = {
         "id": len(propiedades) + 1,
@@ -51,4 +56,5 @@ def add_propiedad():
     return jsonify({"message": "Propiedad ingresada con éxito.", "propiedades": propiedades})
 
 if __name__ == '__main__':
+
     app.run(debug=True)
