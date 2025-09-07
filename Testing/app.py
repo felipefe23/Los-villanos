@@ -26,16 +26,11 @@ def add_propiedad():
     img = data.get('img')
     coordenadas = data.get('coordenadas')
 
-
+#LAS VALIDACIONES SE REALIZARAN EN FORNATO DE IF.
     try:
         precio = int(precio)
     except (ValueError, TypeError):
         return jsonify({"error": "El precio debe ser un número."}), 400
-
-    try:
-        precio!=0
-    except (ValueError, TypeError):
-        return jsonify({"error": "El precio debe ser un número superior a 0."}), 400
     
     propiedades = leer_propiedades()
     nueva = {
@@ -58,3 +53,4 @@ def add_propiedad():
 if __name__ == '__main__':
 
     app.run(debug=True)
+
