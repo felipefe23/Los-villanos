@@ -28,13 +28,14 @@
 <body>
     <div class="form-container">
         <input type="text" id="nombre" placeholder="Nombre de la Propiedad">
+        <input type="text" id="descripcion" placeholder="Descripción (Opcional)">
         <input type="number" id="precio" placeholder="Precio">
         <input type="text" id="localizacion" placeholder="Localización">
         <input type="number" id="dormitorios" placeholder="Dormitorios">
         <input type="number" id="baños" placeholder="Baños">
         <input type="number" id="area" placeholder="Área (m²)">
-        <input type="text" id="tipo" placeholder="Tipo (Venta/Alquiler)">
-        <input type="text" id="estado" placeholder="Estado (Activo/Vendido)">
+        <input type="text" id="tipo" placeholder="Tipo de Vivienda (Casa/Departamento/Estudio)">
+        <input type="text" id="estado" placeholder="Estado (Venta/Alquiler)">
         <input type="text" id="img" placeholder="URL de la Imagen">
         <input type="text" id="coordenadas" placeholder="Coordenadas (lat,lng)">
         <button onclick="agregarPropiedad()">Agregar Propiedad</button>
@@ -71,6 +72,7 @@
 
         async function agregarPropiedad() {
             const nombre = document.getElementById('nombre').value.trim();
+            const descripcion = document.getElementById('descripcion').value.trim();
             const precio = document.getElementById('precio').value.trim();
             const localizacion = document.getElementById('localizacion').value.trim();
             const dormitorios = document.getElementById('dormitorios').value.trim();
@@ -87,16 +89,18 @@
                 return;
             }
 
+
             const response = await fetch('/api/propiedades', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre, precio, localizacion, dormitorios, baños, area, tipo, estado, img, coordenadas })
+                body: JSON.stringify({ nombre, descripcion, precio, localizacion, dormitorios, baños, area, tipo, estado, img, coordenadas })
             });
 
             const result = await response.json();
             errorDiv.textContent = response.ok ? result.message : result.error;
             if (response.ok) {
                 document.getElementById('nombre').value = '';
+                document.getElementById('descripcion').value = '';
                 document.getElementById('precio').value = '';
                 document.getElementById('localizacion').value = '';
                 document.getElementById('dormitorios').value = '';

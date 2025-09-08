@@ -38,3 +38,25 @@ def guardar_propiedades(lista_propiedades):
 if __name__ == '__main__':
     propiedades = leer_propiedades()
     print(propiedades)
+
+def coordenadas_repetidas(lista_propiedades, nuevas_coordenadas):
+    """
+    Verifica si las nuevas coordenadas ya existen en la lista de propiedades.
+    Retorna True si existen, False en caso contrario.
+    """
+    for propiedad in lista_propiedades:
+        if propiedad.get('coordenadas') == nuevas_coordenadas:
+            return True
+    return False
+
+
+def siguiente_id(lista_propiedades):
+    """
+    Genera el siguiente ID basado en la lista de propiedades.
+    Si la lista esta vacia, retorna 1.
+    """
+    if not lista_propiedades:
+        return 1
+    else:
+        max_id = max(propiedad.get('id', 0) for propiedad in lista_propiedades)
+        return max_id + 1
