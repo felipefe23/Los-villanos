@@ -15,6 +15,6 @@ Detección del error: Implementamos una linea de codigo que si no encontraba el 
 
 ## Validaciones hasta el momento.
 - **Todos los campos rellenados** Valida que todos los campos requeridos para la creación de la propiedad estes completos al momento de realizar la solicitud.
-- **PENDIENTES** VALIDACIÓN DE PRECIO = 0, VALIDACIÓN DE COORDENADAS IGUALES A OTRAS, VALIDACIÓN DE IMAGEN CORRUPTA, VALIDACIÓN DE TIPO DENTRO DE PARAMETROS (CASA/DEPARTAMENTO/CASA DE VERANO/CASA DE ESTUDIANTES/HABITACIÓN DE ESTUDIANTES/RECREACIONAL, ETC), VALIDACIÓN DE ESTADO DENTRO DE LOS PARAMETROS (ACTIVA, PENDIENTE, OCUPADA, EN MANTENCIÓN, ETC.).
-
+- **Realizados en semana 4** VALIDACIÓN DE PRECIO <= 0, VALIDACIÓN DE COORDENADAS IGUALES A OTRAS, VALIDACIÓN DE TIPO DENTRO DE PARAMETROS (CASA/DEPARTAMENTO/CASA DE VERANO/CASA DE ESTUDIANTES/HABITACIÓN DE ESTUDIANTES/RECREACIONAL, ETC), VALIDACIÓN DE ESTADO DENTRO DE LOS PARAMETROS (ACTIVA = True / False) Solo para la vista de los usuarios Admins.
+ 
 **DiCloud**

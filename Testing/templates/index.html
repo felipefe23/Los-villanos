@@ -41,6 +41,88 @@
         <button onclick="agregarPropiedad()">Agregar Propiedad</button>
         <div id="error" class="error"></div>
     </div>
+
+        <!-- ...existing code... -->
+    <div class="form-container">
+        <h2>Registro</h2>
+        <input type="text" id="reg_email" placeholder="Correo electrónico">
+        <input type="password" id="reg_password" placeholder="Contraseña">
+        <button onclick="registrarUsuario()">Registrar</button>
+        <div id="reg_error" class="error"></div>
+    </div>
+    <div class="form-container">
+        <h2>Login</h2>
+        <input type="text" id="login_email" placeholder="Correo electrónico">
+        <input type="password" id="login_password" placeholder="Contraseña">
+        <button onclick="loginUsuario()">Login</button>
+        <div id="login_error" class="error"></div>
+    </div>
+
+ <!-- NUEVO LOGIN Y REGISTER CON EL TESTING DEL HASHIN-->
+
+    <script>
+    function validarEmail(email) {
+        // Minimo 2 caracteres antes del @ y formato basico de correo
+        return /^[^@]{2,}@[^@]+\.[^@]+$/.test(email);
+    }
+    function validarPassword(password) {
+        // Al menos 8 caracteres y 1 numero (Sujeto a cambios del equipo)
+        return /^(?=.*\d).{8,}$/.test(password);
+    }
+    async function registrarUsuario() {
+        const email = document.getElementById('reg_email').value.trim();
+        const password = document.getElementById('reg_password').value.trim();
+        const errorDiv = document.getElementById('reg_error');
+        errorDiv.textContent = '';
+        if (!validarEmail(email)) {
+            errorDiv.textContent = 'Correo inválido (mínimo 2 caracteres antes del @).';
+            return;
+        }
+        if (!validarPassword(password)) {
+            errorDiv.textContent = 'Contraseña debe tener al menos 8 caracteres y 1 número.';
+            return;
+        }
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        errorDiv.textContent = response.ok ? result.message : result.error;
+        if (response.ok) {
+            document.getElementById('reg_email').value = '';
+            document.getElementById('reg_password').value = '';
+        }
+    }
+    async function loginUsuario() {
+        const email = document.getElementById('login_email').value.trim();
+        const password = document.getElementById('login_password').value.trim();
+        const errorDiv = document.getElementById('login_error');
+        errorDiv.textContent = '';
+        if (!validarEmail(email)) {
+            errorDiv.textContent = 'Correo inválido.';
+            return;
+        }
+        if (!validarPassword(password)) {
+            errorDiv.textContent = 'Contraseña inválida.';
+            return;
+        }
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        errorDiv.textContent = response.ok ? result.message : result.error;
+        if (response.ok) {
+            document.getElementById('login_email').value = '';
+            document.getElementById('login_password').value = '';
+        }
+    }
+    </script>
+
+ <!-- NUEVO LOGIN Y REGISTER CON EL TESTING DEL HASHIN-->
+
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -66,7 +148,7 @@
                 const [lat, lng] = p.coordenadas.split(',').map(Number);
                 L.marker([lat, lng])
                     .addTo(propiedadesLayer)
-                    .bindPopup(`ID: ${p.id}<br>Nombre: ${p.nombre}<br>Precio: $${p.precio}<br>Localización: ${p.localizacion}<br>Dormitorios: ${p.dormitorios}<br>Baños: ${p.baños}<br>Área: ${p.area} m²<br>Tipo: ${p.tipo}<br>Estado: ${p.estado}<br><img src="${p.img}" alt="Imagen" width="100">`);
+                    .bindPopup(`Nombre: ${p.nombre}<br>Precio: $${p.precio}<br>Localización: ${p.localizacion}<br>Dormitorios: ${p.dormitorios}<br>Baños: ${p.baños}<br>Área: ${p.area} m²<br>Tipo: ${p.tipo}<br>Estado: ${p.estado}<br><img src="${p.img}" alt="Imagen" width="100">`);
             });
         }
 
@@ -114,5 +196,6 @@
             }
         }
     </script>
+
 </body>
 </html>

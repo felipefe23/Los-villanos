@@ -1,7 +1,80 @@
 from flask import Flask, render_template, request, jsonify
 from persistencia.manejoArchivo import leer_propiedades, guardar_propiedades, coordenadas_repetidas, siguiente_id
+import os
+import re
+import json
+from argon2 import PasswordHasher
+
+
 
 app = Flask(__name__)
+
+# HASHEADO EN ARGON2 TESTING
+
+USERS_FILE = os.path.join('Testing', 'datos', 'users.json')
+ph = PasswordHasher()
+
+def validar_email(email):
+    # Mínimo 2 caracteres antes del @ y formato básico
+    return re.match(r'^[^@]{2,}@[^@]+\.[^@]+$', email)
+
+def validar_password(password):
+    # Al menos 8 caracteres y 1 número
+    return re.match(r'^(?=.*\d).{8,}$', password)
+
+def leer_usuarios():
+    if not os.path.exists(USERS_FILE):
+        return []
+    try:
+        with open(USERS_FILE, 'r', encoding='utf-8') as f:
+            contenido = f.read().strip()
+            if not contenido:
+                return []
+            return json.loads(contenido)
+    except Exception:
+        return []
+
+def guardar_usuarios(lista_usuarios):
+    with open(USERS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(lista_usuarios, f, indent=2, ensure_ascii=False)
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.json
+    email = data.get('email', '').strip()
+    password = data.get('password', '').strip()
+    if not validar_email(email):
+        return jsonify({"error": "Correo inválido (mínimo 2 caracteres antes del @)."}), 400
+    if not validar_password(password):
+        return jsonify({"error": "Contraseña debe tener al menos 8 caracteres y 1 número."}), 400
+    usuarios = leer_usuarios()
+    if any(u['email'] == email for u in usuarios):
+        return jsonify({"error": "El correo ya está registrado."}), 400
+    hash_pw = ph.hash(password)
+    usuarios = leer_usuarios()
+    id_user = siguiente_id(usuarios)
+    usuarios.append({'id': id_user,'email': email, 'password': hash_pw})
+    guardar_usuarios(usuarios)
+    return jsonify({"message": "Usuario registrado con éxito."})
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email', '').strip()
+    password = data.get('password', '').strip()
+    usuarios = leer_usuarios()
+    user = next((u for u in usuarios if u['email'] == email), None)
+    if not user:
+        return jsonify({"error": "Correo no encontrado."}), 400
+    try:
+        ph.verify(user['password'], password)
+        return jsonify({"message": "Login exitoso."})
+    except Exception:
+        return jsonify({"error": "Contraseña incorrecta."}), 400
+
+# HASHEADO EN ARGON2 TESTING
+
+
 
 @app.route('/')
 def index():

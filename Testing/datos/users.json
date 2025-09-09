@@ -1,0 +1,27 @@
+[
+  {
+    "id": 2,
+    "email": "dsdsd@dskda.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$Fy4b3wgMaCotcLi5VxOfPw$HxB1+1NjeUQXrTBCGd4DdYSshbOa73PHP376znHBzf0"
+  },
+  {
+    "id": 3,
+    "email": "dsdassadsad@djsklda.comd",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$fOP6glWB0F5625SRYjZu1g$DnSaaZAWYsnr+1G1Gqzmgp0U9w0HLMO2b1fEVJRvDE4"
+  },
+  {
+    "id": 4,
+    "email": "dsahjkdaskhd@djsakld.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$j4Eyq/nzSDr1Y4TMGmMNSA$rjMtKP/aKjppIHK0+t4dKaOio/jyi4fGjqL+C/P+C6g"
+  },
+  {
+    "id": 5,
+    "email": "dsfdfgdgdfgdt@ghjgjh.cl",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$e5Fpw/EctXeA/YfOxY9dyg$tFhJ/L0bMRD7MKidJzIQ2r4Dgi4CzZ+2WE9R4hnDMqI"
+  },
+  {
+    "id": 6,
+    "email": "dsadadasdasdadasdsadadad@hotmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$hU2VS2fGwl1cxQ0jVpOYcA$NU5GeRkJKPCuOZoqmDYLcRgFtZbqZynWDabMA0uJh0A"
+  }
+]
