@@ -14,4 +14,3 @@
 - Tambien crea Hashes en mi parecer largos y Únicos, que es uno de sus puntos Fuertes. 
 
 **DiCloud**
--- `COORDENADAS`.
