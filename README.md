@@ -1,6 +1,6 @@
 # Página Web de Venta de Casas
 
-Este proyecto tiene como objetivo crear una plataforma web donde los usuarios puedan explorar y comprar casas. La aplicación incluirá una interfaz fácil de usar, con un catálogo de propiedades disponibles. Además, se integrará la API de Google Maps para mostrar la ubicación de cada propiedad en un mapa interactivo, además, contara con diversas herramientas para facilitar la entrega de detalles sobre la propiedad.
+Este proyecto tiene como objetivo crear una plataforma web donde los usuarios puedan explorar y comprar casas. La aplicación incluirá una interfaz fácil de usar, con un catálogo de propiedades disponibles. Además, se integrará la API de leaflet para mostrar la ubicación de cada propiedad en un mapa interactivo, además, contara con diversas herramientas para facilitar la entrega de detalles sobre la propiedad.
 
 ## Integrantes de proyecto
 
