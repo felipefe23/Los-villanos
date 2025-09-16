@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from flask import redirect, url_for
 from persistencia.manejoArchivo import leer_propiedades, guardar_propiedades, coordenadas_repetidas, siguiente_id
 import os
 import re
@@ -74,11 +75,26 @@ def login():
 
 # HASHEADO EN ARGON2 TESTING
 
-
-
 @app.route('/')
-def index():
-    return render_template('index.html')
+def landing():
+    return render_template('landing.html')
+
+@app.get("/admin/login")
+def admin_login_view():
+    return render_template("admin_login.html")
+
+@app.get("/vendedor/login")
+def vendedor_login_view():
+    return render_template("vendedor_login.html")
+
+@app.get("/comprador/login")
+def comprador_login_view():
+    return render_template("comprador_login.html")
+
+@app.get("/vendedor")
+def vendedor_view():
+    return render_template("vendedor.html")
+
 
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():

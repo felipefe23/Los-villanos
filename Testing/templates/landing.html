@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViviendaDigital - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            🏠
+        </div>
+        <h1>Bienvenido a ViviendaDigital</h1>
+        <p>Selecciona tu tipo de cuenta para continuar</p>
+
+        <div class="cards">
+            <a href="{{ url_for('admin_login_view') }}" class="card admin">
+                <h2>Administrador</h2>
+                <p>Gestiona toda la plataforma</p>
+                <ul>
+                    <li>Gestionar usuarios</li>
+                    <li>Ver estadísticas</li>
+                    <li>Configurar sistema</li>
+                </ul>
+            </a>
+
+           
+            <a href="{{ url_for('vendedor_login_view') }}" class="card seller">
+                <h2>Vendedor</h2>
+                <p>Publica y gestiona propiedades</p>
+                <ul>
+                    <li>Publicar propiedades</li>
+                    <li>Gestionar anuncios</li>
+                    <li>Ver consultas</li>
+                </ul>
+            </a>
+
+            <a href="{{ url_for('comprador_login_view') }}" class="card buyer">
+                <h2>Comprador</h2>
+                <p>Busca y consulta propiedades</p>
+                <ul>
+                    <li>Buscar propiedades</li>
+                    <li>Guardar favoritos</li>
+                    <li>Contactar vendedores</li>
+                </ul>
+            </a>
+        </div>
+
+
+        <p class="note">¿No estás seguro? Puedes cambiar tu tipo de cuenta más tarde</p>
+    </div>
+</body>
+</html>

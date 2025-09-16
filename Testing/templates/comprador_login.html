@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login Comprador</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/comprador_login.css') }}?v=1">
+</head>
+<body>
+  <main class="login-page">
+    <section class="login-card" aria-label="Iniciar Sesión Comprador">
+      <header class="login-head">
+        <a class="back" href="{{ url_for('landing') }}">← Volver</a>
+        <div class="role-badge" aria-hidden="true">👤</div>
+      </header>
+
+      <h1 class="title">Iniciar Sesión</h1>
+      <span class="role-pill">Comprador</span>
+
+      <form id="loginForm" class="login-form" novalidate>
+        <label class="field">
+          <span>Nombre Completo</span>
+          <input type="text" name="nombre" placeholder="Tu nombre">
+        </label>
+
+        <label class="field">
+          <span>Correo Electrónico</span>
+          <input type="email" name="email" placeholder="tu@email.com" required>
+        </label>
+
+        <label class="field">
+          <span>Contraseña</span>
+          <div class="password-wrap">
+            <input type="password" name="password" id="password" placeholder="********" required>
+            <button type="button" id="togglePass" aria-label="Mostrar u ocultar contraseña">👁️</button>
+          </div>
+        </label>
+
+        <button type="submit" class="btn-primary">Iniciar Sesión</button>
+        <p class="form-msg" id="formMsg" role="alert" aria-live="polite"></p>
+      </form>
+
+      <p class="hint">¿No tienes cuenta? <a href="#" id="crearDemo">Crear cuenta aqui</a></p>
+    </section>
+  </main>
+
+
+</body>
+</html>
