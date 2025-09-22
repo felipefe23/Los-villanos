@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Vendedor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor_login.css') }}">
+</head>
+<body>
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-head">
+            <a href="/vendedor/login" class="back">← Volver</a>
+            <div class="role-badge">🏢</div>
+        </div>
+
+        <h2 class="title">Registro Vendedor</h2>
+        <div class="role-pill">Vendedor</div>
+
+        <form class="login-form" onsubmit="event.preventDefault(); registrarUsuario();">
+            <div class="field">
+                <span>Correo Electrónico</span>
+                <input type="text" id="reg_email" placeholder="tu@email.com">
+            </div>
+
+            <div class="field">
+                <span>Contraseña</span>
+                <input type="password" id="reg_password" placeholder="********">
+            </div>
+
+            <button type="submit" class="btn-primary">Registrarse</button>
+            <div id="reg_error" class="form-msg"></div>
+        </form>
+
+        <div class="hint">
+            ¿Ya tienes cuenta? <a href="/vendedor/login">Inicia sesión aquí</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function validarEmail(email) {
+    return /^[^@]{2,}@[^@]+\.[^@]+$/.test(email);
+}
+function validarPassword(password) {
+    return /^(?=.*\d).{8,}$/.test(password);
+}
+async function registrarUsuario() {
+    const email = document.getElementById('reg_email').value.trim();
+    const password = document.getElementById('reg_password').value.trim();
+    const errorDiv = document.getElementById('reg_error');
+    errorDiv.textContent = '';
+    if (!validarEmail(email)) {
+        errorDiv.textContent = 'Correo inválido (mínimo 2 caracteres antes del @).';
+        return;
+    }
+    if (!validarPassword(password)) {
+        errorDiv.textContent = 'Contraseña debe tener al menos 8 caracteres y 1 número.';
+        return;
+    }
+    const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+    });
+    const result = await response.json();
+    errorDiv.textContent = response.ok ? result.message : result.error;
+    if (response.ok) {
+        document.getElementById('reg_email').value = '';
+        document.getElementById('reg_password').value = '';
+    }
+}
+</script>
+
+</body>
+</html>

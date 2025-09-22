@@ -11,18 +11,14 @@
     <section class="login-card" aria-label="Iniciar Sesión Comprador">
       <header class="login-head">
         <a class="back" href="{{ url_for('landing') }}">← Volver</a>
-        <div class="role-badge" aria-hidden="true">👤</div>
+        <div class="role-badge" aria-hidden="true">🔍</div>
       </header>
 
       <h1 class="title">Iniciar Sesión</h1>
       <span class="role-pill">Comprador</span>
 
       <form id="loginForm" class="login-form" novalidate>
-        <label class="field">
-          <span>Nombre Completo</span>
-          <input type="text" name="nombre" placeholder="Tu nombre">
-        </label>
-
+    
         <label class="field">
           <span>Correo Electrónico</span>
           <input type="email" name="email" placeholder="tu@email.com" required>

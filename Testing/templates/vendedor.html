@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Testing de Leaflet</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
@@ -24,141 +23,108 @@
             color: rgb(255, 0, 0);
             margin: 5px;
         }
-
-        /* ===== Añadido: panel flotante y botón ===== */
-        .hidden{ display:none; }
-        .panel{
-            position: fixed;
-            right: 20px;
-            bottom: 90px;
-            width: min(420px, 90vw);
-            max-height: 80vh;
-            overflow: auto;
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            box-shadow: 0 10px 24px rgba(0,0,0,.15);
-            padding: 12px;
-            z-index: 1001;
-        }
-        .fab{
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            width: 56px; height: 56px;
-            display: grid; place-items: center;
-            border: none; border-radius: 50%;
-            background: #0b0e13; color: #fff;
-            font-size: 22px; cursor: pointer;
-            box-shadow: 0 8px 22px rgba(0,0,0,.25);
-            z-index: 1002;
-        }
     </style>
 </head>
 <body>
-
-    <!-- Panel con tus formularios (oculto por defecto) -->
-    <div id="panel" class="panel hidden">
-        <div class="form-container">
-            <input type="text" id="nombre" placeholder="Nombre de la Propiedad">
-            <input type="text" id="descripcion" placeholder="Descripción (Opcional)">
-            <input type="number" id="precio" placeholder="Precio">
-            <input type="text" id="localizacion" placeholder="Localización">
-            <input type="number" id="dormitorios" placeholder="Dormitorios">
-            <input type="number" id="baños" placeholder="Baños">
-            <input type="number" id="area" placeholder="Área (m²)">
-            <input type="text" id="tipo" placeholder="Tipo de Vivienda (Casa/Departamento/Estudio)">
-            <input type="text" id="estado" placeholder="Estado (Venta/Alquiler)">
-            <input type="text" id="img" placeholder="URL de la Imagen">
-            <input type="text" id="coordenadas" placeholder="Coordenadas (lat,lng)">
-            <button onclick="agregarPropiedad()">Agregar Propiedad</button>
-            <div id="error" class="error"></div>
-        </div>
-
-        <div class="form-container">
-            <h2>Registro</h2>
-            <input type="text" id="reg_email" placeholder="Correo electrónico">
-            <input type="password" id="reg_password" placeholder="Contraseña">
-            <button onclick="registrarUsuario()">Registrar</button>
-            <div id="reg_error" class="error"></div>
-        </div>
-
-        <div class="form-container">
-            <h2>Login</h2>
-            <input type="text" id="login_email" placeholder="Correo electrónico">
-            <input type="password" id="login_password" placeholder="Contraseña">
-            <button onclick="loginUsuario()">Login</button>
-            <div id="login_error" class="error"></div>
-        </div>
+    <div class="form-container">
+        <input type="text" id="nombre" placeholder="Nombre de la Propiedad">
+        <input type="text" id="descripcion" placeholder="Descripción (Opcional)">
+        <input type="number" id="precio" placeholder="Precio">
+        <input type="text" id="localizacion" placeholder="Localización">
+        <input type="number" id="dormitorios" placeholder="Dormitorios">
+        <input type="number" id="baños" placeholder="Baños">
+        <input type="number" id="area" placeholder="Área (m²)">
+        <input type="text" id="tipo" placeholder="Tipo de Vivienda (Casa/Departamento/Estudio)">
+        <input type="text" id="estado" placeholder="Estado (Venta/Alquiler)">
+        <input type="text" id="img" placeholder="URL de la Imagen">
+        <input type="text" id="coordenadas" placeholder="Coordenadas (lat,lng)">
+        <button onclick="agregarPropiedad()">Agregar Propiedad</button>
+        <div id="error" class="error"></div>
     </div>
 
-    <!-- Botón flotante para mostrar/ocultar el panel -->
-    <button id="togglePanel" class="fab" title="Abrir panel de datos">📝</button>
+    <div class="form-container">
+        <h2>Registro</h2>
+        <input type="text" id="reg_email" placeholder="Correo electrónico">
+        <input type="password" id="reg_password" placeholder="Contraseña">
+        <button onclick="registrarUsuario()">Registrar</button>
+        <div id="reg_error" class="error"></div>
+    </div>
+    <div class="form-container">
+        <h2>Login</h2>
+        <input type="text" id="login_email" placeholder="Correo electrónico">
+        <input type="password" id="login_password" placeholder="Contraseña">
+        <button onclick="loginUsuario()">Login</button>
+        <div id="login_error" class="error"></div>
+    </div>
 
+ <!-- NUEVO LOGIN Y REGISTER CON EL TESTING DEL HASHIN-->
+
+    <script>
+    function validarEmail(email) {
+        // Minimo 2 caracteres antes del @ y formato basico de correo
+        return /^[^@]{2,}@[^@]+\.[^@]+$/.test(email);
+    }
+    function validarPassword(password) {
+        // Al menos 8 caracteres y 1 numero (Sujeto a cambios del equipo)
+        return /^(?=.*\d).{8,}$/.test(password);
+    }
+    async function registrarUsuario() {
+        const email = document.getElementById('reg_email').value.trim();
+        const password = document.getElementById('reg_password').value.trim();
+        const errorDiv = document.getElementById('reg_error');
+        errorDiv.textContent = '';
+        if (!validarEmail(email)) {
+            errorDiv.textContent = 'Correo inválido (mínimo 2 caracteres antes del @).';
+            return;
+        }
+        if (!validarPassword(password)) {
+            errorDiv.textContent = 'Contraseña debe tener al menos 8 caracteres y 1 número.';
+            return;
+        }
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        errorDiv.textContent = response.ok ? result.message : result.error;
+        if (response.ok) {
+            document.getElementById('reg_email').value = '';
+            document.getElementById('reg_password').value = '';
+        }
+    }
+    async function loginUsuario() {
+        const email = document.getElementById('login_email').value.trim();
+        const password = document.getElementById('login_password').value.trim();
+        const errorDiv = document.getElementById('login_error');
+        errorDiv.textContent = '';
+        if (!validarEmail(email)) {
+            errorDiv.textContent = 'Correo inválido.';
+            return;
+        }
+        if (!validarPassword(password)) {
+            errorDiv.textContent = 'Contraseña inválida.';
+            return;
+        }
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        errorDiv.textContent = response.ok ? result.message : result.error;
+        if (response.ok) {
+            document.getElementById('login_email').value = '';
+            document.getElementById('login_password').value = '';
+        }
+    }
+    </script>
+
+ 
     <div id="map"></div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
-    <script>
-        function validarEmail(email) {
-            return /^[^@]{2,}@[^@]+\.[^@]+$/.test(email);
-        }
-        function validarPassword(password) {
-            return /^(?=.*\d).{8,}$/.test(password);
-        }
-        async function registrarUsuario() {
-            const email = document.getElementById('reg_email').value.trim();
-            const password = document.getElementById('reg_password').value.trim();
-            const errorDiv = document.getElementById('reg_error');
-            errorDiv.textContent = '';
-            if (!validarEmail(email)) {
-                errorDiv.textContent = 'Correo inválido (mínimo 2 caracteres antes del @).';
-                return;
-            }
-            if (!validarPassword(password)) {
-                errorDiv.textContent = 'Contraseña debe tener al menos 8 caracteres y 1 número.';
-                return;
-            }
-            const response = await fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const result = await response.json();
-            errorDiv.textContent = response.ok ? result.message : result.error;
-            if (response.ok) {
-                document.getElementById('reg_email').value = '';
-                document.getElementById('reg_password').value = '';
-            }
-        }
-        async function loginUsuario() {
-            const email = document.getElementById('login_email').value.trim();
-            const password = document.getElementById('login_password').value.trim();
-            const errorDiv = document.getElementById('login_error');
-            errorDiv.textContent = '';
-            if (!validarEmail(email)) {
-                errorDiv.textContent = 'Correo inválido.';
-                return;
-            }
-            if (!validarPassword(password)) {
-                errorDiv.textContent = 'Contraseña inválida.';
-                return;
-            }
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const result = await response.json();
-            errorDiv.textContent = response.ok ? result.message : result.error;
-            if (response.ok) {
-                document.getElementById('login_email').value = '';
-                document.getElementById('login_password').value = '';
-            }
-        }
-    </script>
-
     <script>
         var map = L.map('map').setView([-34.97928,-71.22913], 14);
 
@@ -166,6 +132,8 @@
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+    
 
         var propiedadesLayer = L.layerGroup().addTo(map);
         cargarPropiedades();
@@ -201,6 +169,7 @@
                 return;
             }
 
+
             const response = await fetch('/api/propiedades', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -226,11 +195,5 @@
         }
     </script>
 
-    <!-- JS mínimo para abrir/cerrar el panel -->
-    <script>
-        const btn = document.getElementById('togglePanel');
-        const panel = document.getElementById('panel');
-        btn?.addEventListener('click', () => panel.classList.toggle('hidden'));
-    </script>
 </body>
 </html>

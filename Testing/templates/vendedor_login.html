@@ -4,45 +4,104 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login Vendedor</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/comprador_login.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor_login.css') }}">
 </head>
 <body>
-  <main class="login-page">
-    <section class="login-card" aria-label="Iniciar Sesión Vendedor">
-      <header class="login-head">
-        <a class="back" href="{{ url_for('landing') }}">← Volver</a>
-        <div class="role-badge role--blue" aria-hidden="true">🏢</div>
-      </header>
+  <div class="login-page">
+    <div class="login-card">
 
-      <h1 class="title">Iniciar Sesión</h1>
+      <div class="login-head">
+        <a href="{{ url_for('landing') }}" class="back">← Volver</a>
+        <div class="role-badge vendedor">
+          🏢
+        </div>
+      </div>
+
+      <h2 class="title">Iniciar Sesión</h2>
       <span class="role-pill">Vendedor</span>
 
-      <form id="loginForm" class="login-form" novalidate>
-        <label class="field">
-          <span>Nombre Completo</span>
-          <input type="text" name="nombre" placeholder="Tu nombre">
-        </label>
-
-        <label class="field">
+      <!-- Formulario de login -->
+      <form id="loginForm" class="login-form">
+        <div class="field">
           <span>Correo Electrónico</span>
-          <input type="email" name="email" placeholder="tu@email.com" required>
-        </label>
+          <input type="email" id="login_email" placeholder="tu@email.com" required>
+        </div>
 
-        <label class="field">
+        <div class="field">
           <span>Contraseña</span>
-          <div class="password-wrap">
-            <input type="password" name="password" id="password" placeholder="********" required>
-            <button type="button" id="togglePass" aria-label="Mostrar u ocultar contraseña">👁️</button>
-          </div>
-        </label>
+          <input type="password" id="login_password" placeholder="********" required>
+        </div>
 
         <button type="submit" class="btn-primary">Iniciar Sesión</button>
-        <p class="form-msg" id="formMsg" role="alert" aria-live="polite"></p>
       </form>
 
-      <p class="hint">¿No tienes cuenta? <a href="#" id="crearDemo">Crear cuenta aqui</a></p>
-    </section>
-  </main>
+      <div id="login_error" class="form-msg"></div>
 
+      <div class="hint">
+        ¿No tienes cuenta? <a href="{{ url_for('vendedor_register_view') }}">Regístrate aquí</a>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    function validarEmail(email) {
+      return /^[^@]{2,}@[^@]+\.[^@]+$/.test(email);
+    }
+    function validarPassword(password) {
+      return /^(?=.*\d).{8,}$/.test(password);
+    }
+
+    async function loginUsuario(email, password) {
+      const errorDiv = document.getElementById('login_error');
+      errorDiv.textContent = '';
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+          errorDiv.textContent = "❌ " + (result.error || "Error al iniciar sesión");
+          return;
+        }
+
+        errorDiv.style.color = "#16a34a";
+        errorDiv.textContent = "✅ " + result.message;
+
+        document.getElementById('login_email').value = '';
+        document.getElementById('login_password').value = '';
+
+        setTimeout(() => {
+          window.location.href = "/vendedor";
+        }, 800);
+
+      } catch (err) {
+        errorDiv.textContent = "❌ Error de conexión con el servidor";
+      }
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('login_email').value.trim();
+      const password = document.getElementById('login_password').value.trim();
+      const errorDiv = document.getElementById('login_error');
+
+      if (!validarEmail(email)) {
+        errorDiv.textContent = "Correo inválido.";
+        return;
+      }
+      if (!validarPassword(password)) {
+        errorDiv.textContent = "Contraseña inválida (mínimo 8 caracteres y un número).";
+        return;
+      }
+
+      loginUsuario(email, password);
+    });
+  </script>
 </body>
 </html>

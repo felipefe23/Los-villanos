@@ -95,6 +95,11 @@ def comprador_login_view():
 def vendedor_view():
     return render_template("vendedor.html")
 
+@app.get("/vendedor/register")
+def vendedor_register_view():
+    return render_template("vendedor_register.html")
+
+
 
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():

@@ -39,7 +39,7 @@ body{
 .role-badge{
     width:40px; height:40px; border-radius:10px;
     display:grid; place-items:center;
-    background:#3b82f6; color:#fff; font-size:18px;
+    background:#22c55e; color:#fff; font-size:18px;
     box-shadow: 0 6px 16px rgba(34,197,94,.25);
 }
 
