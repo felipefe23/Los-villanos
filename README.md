@@ -46,7 +46,7 @@ Esta semana trabajamos en nuestros nuevos roles con el cambio de Sprint, el cual
 Principalmente definimos un metodo de trabajo en donde el backend y el frontend trabajan juntos para implementar lo solicitado, y el lider y la documentacion a su vez se encargan de revisar y detallar los avances correspondientes.
 
 En este avance implementamos un html con un puerto local y un login con un manejo de errores sencillo pero funcional, vinculando el login de "vendedor" que una vez inicia sesion se redirige a el mapa interactivo de la API presentado en la semana 4, adjunto imagenes:
-
+#Ventana inicial de Inicio de Sesion:
 <img width="1914" height="940" alt="image" src="https://github.com/user-attachments/assets/96491d4d-1c49-4f54-99bf-b1e3d3bad801" />
 
 #Login de Comprador:
