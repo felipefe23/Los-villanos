@@ -14,9 +14,9 @@ Este proyecto tiene como objetivo crear una plataforma web donde los usuarios pu
 - *Mapa interactivo:* La API de leaflet se utilizará para mostrar la ubicación exacta de cada propiedad.
 - *Interfaz fácil de usar:* La página contará con un diseño limpio y sencillo, permitiendo una navegación fluida.
 
-## BITACIORA DE AVANCES:
+### BITACIORA DE AVANCES:
 
-#Detalles de avance - Semana 1:
+# Detalles de avance - Semana 1:
 Como grupo decidimos conocernos y ver que intereses en común teníamos para llegar a una idea en concreto para el proyecto, sumado a una definición del
 tablero Kanban en el trello, asignación de roles, acta de equipo y la creación de este archivo readme que funcionara como "bitácora" de los avances en las semanas.
 
