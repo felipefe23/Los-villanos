@@ -2,26 +2,157 @@
   {
     "id": 2,
     "email": "dsdsd@dskda.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$Fy4b3wgMaCotcLi5VxOfPw$HxB1+1NjeUQXrTBCGd4DdYSshbOa73PHP376znHBzf0"
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$Fy4b3wgMaCotcLi5VxOfPw$HxB1+1NjeUQXrTBCGd4DdYSshbOa73PHP376znHBzf0",
+    "nombre": "María",
+    "apellido": "Gutiérrez",
+    "telefono": "+56 9 5123 6789",
+    "rut": "17893456-3",
+    "direccion": "Av. Providencia 1456",
+    "ciudad": "Santiago",
+    "tipo_usuario": "vendedor",
+    "fecha_registro": "2024-01-15T10:30:00Z"
   },
   {
     "id": 3,
     "email": "dsdassadsad@djsklda.comd",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$fOP6glWB0F5625SRYjZu1g$DnSaaZAWYsnr+1G1Gqzmgp0U9w0HLMO2b1fEVJRvDE4"
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$fOP6glWB0F5625SRYjZu1g$DnSaaZAWYsnr+1G1Gqzmgp0U9w0HLMO2b1fEVJRvDE4",
+    "nombre": "Javier",
+    "apellido": "Silva",
+    "telefono": "+56 9 7765 4321",
+    "rut": "15432876-5",
+    "direccion": "Calle Esmeralda 210",
+    "ciudad": "Valparaíso",
+    "tipo_usuario": "comprador",
+    "fecha_registro": "2024-01-20T10:30:00Z"
   },
   {
     "id": 4,
     "email": "dsahjkdaskhd@djsakld.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$j4Eyq/nzSDr1Y4TMGmMNSA$rjMtKP/aKjppIHK0+t4dKaOio/jyi4fGjqL+C/P+C6g"
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$j4Eyq/nzSDr1Y4TMGmMNSA$rjMtKP/aKjppIHK0+t4dKaOio/jyi4fGjqL+C/P+C6g",
+    "nombre": "Camila",
+    "apellido": "Pizarro",
+    "telefono": "+56 9 8345 2211",
+    "rut": "20987654-2",
+    "direccion": "Pasaje Los Pinos 334",
+    "ciudad": "Concepción",
+    "tipo_usuario": "vendedor",
+    "fecha_registro": "2024-01-25T10:30:00Z"
   },
   {
     "id": 5,
     "email": "dsfdfgdgdfgdt@ghjgjh.cl",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$e5Fpw/EctXeA/YfOxY9dyg$tFhJ/L0bMRD7MKidJzIQ2r4Dgi4CzZ+2WE9R4hnDMqI"
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$e5Fpw/EctXeA/YfOxY9dyg$tFhJ/L0bMRD7MKidJzIQ2r4Dgi4CzZ+2WE9R4hnDMqI",
+    "nombre": "Rodrigo",
+    "apellido": "Muñoz",
+    "telefono": "+56 9 9234 5567",
+    "rut": "16234567-8",
+    "direccion": "Av. Del Mar 1201",
+    "ciudad": "La Serena",
+    "tipo_usuario": "comprador",
+    "fecha_registro": "2024-01-30T10:30:00Z"
   },
   {
     "id": 6,
     "email": "dsadadasdasdadasdsadadad@hotmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$hU2VS2fGwl1cxQ0jVpOYcA$NU5GeRkJKPCuOZoqmDYLcRgFtZbqZynWDabMA0uJh0A"
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$hU2VS2fGwl1cxQ0jVpOYcA$NU5GeRkJKPCuOZoqmDYLcRgFtZbqZynWDabMA0uJh0A",
+    "nombre": "Valentina",
+    "apellido": "Rojas",
+    "telefono": "+56 9 6012 3344",
+    "rut": "19234567-1",
+    "direccion": "Baquedano 845",
+    "ciudad": "Antofagasta",
+    "tipo_usuario": "vendedor",
+    "fecha_registro": "2024-02-04T10:30:00Z"
+  },
+  {
+    "id": 7,
+    "email": "dfsa@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$x8iaO1QIlQaad20cUNhngA$dtPfk4n2eluSzOAiH2y5jF9P3b1VcFQzQDtSCPtrNkE",
+    "nombre": "Diego",
+    "apellido": "Alarcón",
+    "telefono": "+56 9 7420 8899",
+    "rut": "20345678-4",
+    "direccion": "Av. Alemania 455",
+    "ciudad": "Temuco",
+    "tipo_usuario": "comprador",
+    "fecha_registro": "2024-02-09T10:30:00Z"
+  },
+  {
+    "id": 8,
+    "email": "1234@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$YRl4wYvim7F358+uT9kHOQ$/93V3/Qa1PfcbErf92kFoU35vmXiH7ybSuv/6BtDoEY",
+    "nombre": "Antonia",
+    "apellido": "Cáceres",
+    "telefono": "+56 9 5551 2300",
+    "rut": "17543210-9",
+    "direccion": "4 Norte 980",
+    "ciudad": "Viña del Mar",
+    "tipo_usuario": "vendedor",
+    "fecha_registro": "2024-02-14T10:30:00Z"
+  },
+  {
+    "id": 9,
+    "email": "123451234@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$l/W/oGyd7RAb6r/NpkG7Fw$YWqjphOpDpwPTi7MPsAcKwAgDB6wssLWYDDlfTet1ho",
+    "nombre": "Felipe",
+    "apellido": "Maldonado",
+    "telefono": "+56 9 6888 9900",
+    "rut": "18567890-7",
+    "direccion": "Av. San Martín 1500",
+    "ciudad": "Rancagua",
+    "tipo_usuario": "comprador",
+    "fecha_registro": "2024-02-19T10:30:00Z"
+  },
+  {
+    "id": 10,
+    "email": "afdasfsa@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$nvZTHJ7keb3EqfX1J8BtFw$n+eNV/Op5smgWvVPdHxlwNRZ9XIEgCURTadHY5y+XGk",
+    "nombre": "Constanza",
+    "apellido": "Figueroa",
+    "telefono": "+56 9 4321 7788",
+    "rut": "16654321-5",
+    "direccion": "Av. Gramado 312",
+    "ciudad": "Puerto Varas",
+    "tipo_usuario": "vendedor",
+    "fecha_registro": "2024-02-24T10:30:00Z"
+  },
+  {
+    "id": 11,
+    "email": "diegorojas@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$M8j5LyXpL4dMvPB3wnyhJw$EU9ZHWYPzoyXCxhRNJyBmSkpe8RbzTIMmwE8ikVO83o",
+    "nombre": "Ignacio",
+    "apellido": "Bustamante",
+    "telefono": "+56 9 7458 1122",
+    "rut": "21456789-3",
+    "direccion": "1 Sur 768",
+    "ciudad": "Talca",
+    "tipo_usuario": "comprador",
+    "fecha_registro": "2024-02-29T10:30:00Z"
+  },
+  {
+    "id": 12,
+    "email": "prueba@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$QMX25lYZ6WGNJ9hrHrFfRA$2go0DmDCSqFhPJBetOKkJIbCq1EU8NuWEwine1oSsk4",
+    "nombre": "Fernanda",
+    "apellido": "Sanhueza",
+    "telefono": "+56 9 9098 6655",
+    "rut": "22345678-6",
+    "direccion": "Av. Arturo Prat 125",
+    "ciudad": "Iquique",
+    "tipo_usuario": "vendedor",
+    "fecha_registro": "2024-03-05T10:30:00Z"
+  },
+  {
+    "id": 13,
+    "email": "guzmancortes2005@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$Zt6lxpdQ7TKoyGZjepAL+g$7ZDbFC5LElpSZDaUW3lZsVZx7S1SmmfvArwM24NJujc",
+    "nombre": "Luis",
+    "apellido": "Guzman",
+    "telefono": "+56976533105",
+    "rut": "21767477-8",
+    "direccion": "santa emilia",
+    "ciudad": "curico",
+    "tipo_usuario": "comprador",
+    "fecha_registro": "2025-09-24T01:05:51.659563Z"
   }
 ]

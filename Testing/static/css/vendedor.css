@@ -1,0 +1,49 @@
+*{ box-sizing: border-box; }
+html, body{ height:100%; }
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+
+#map{
+  height: 1000px;
+  width: 100%;
+}
+
+
+.form-container{ margin:10px 0; }
+input, button{ padding:5px; margin:5px; }
+.error{ color: rgb(255,0,0); margin:5px; }
+
+.hidden{ display:none !important; }
+
+.panel{
+  position: fixed;
+  right: 20px;
+  bottom: 90px;
+  width: min(420px, 90vw);
+  max-height: 80vh;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.15);
+  padding: 12px;
+  z-index: 1001; 
+}
+
+.fab{
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  border: none; border-radius: 50%;
+  background: #0b0e13; color: #fff;
+  font-size: 22px; cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0,0,0,.25);
+  z-index: 1002;
+}
+.fab:hover{ opacity:.92; transform: translateY(-1px); }
+
