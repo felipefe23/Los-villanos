@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Vendedor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor_login.css') }}">
+</head>
+<body>
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-head">
+            <a href="/vendedor/login" class="back">← Volver</a>
+            <div class="role-badge">🏢</div>
+        </div>
+
+        <h2 class="title">Registro Vendedor</h2>
+        <div class="role-pill">Vendedor</div>
+
+        <form class="login-form" onsubmit="event.preventDefault(); registrarUsuario();">
+            <div class="field">
+                <span>Nombre</span>
+                <input type="text" id="reg_nombre" placeholder="Tu nombre">
+            </div>
+
+            <div class="field">
+                <span>Apellido</span>
+                <input type="text" id="reg_apellido" placeholder="Tu apellido">
+            </div>
+
+            <div class="field">
+                <span>Correo Electrónico</span>
+                <input type="email" id="reg_email" placeholder="tu@email.com">
+            </div>
+
+            <div class="field">
+                <span>Teléfono</span>
+                <input type="text" id="reg_telefono" placeholder="+56 9 1234 5678">
+            </div>
+
+            <div class="field">
+                <span>RUT</span>
+                <input type="text" id="reg_rut" placeholder="12345678-9">
+            </div>
+
+            <div class="field">
+                <span>Dirección</span>
+                <input type="text" id="reg_direccion" placeholder="Calle y número">
+            </div>
+
+            <div class="field">
+                <span>Ciudad</span>
+                <input type="text" id="reg_ciudad" placeholder="Ciudad">
+            </div>
+
+            <div class="field">
+                <span>Contraseña</span>
+                <input type="password" id="reg_password" placeholder="********">
+            </div>
+
+            <input type="hidden" id="reg_tipo_usuario" value="vendedor">
+
+            <button type="submit" class="btn-primary">Registrarse</button>
+            <div id="reg_error" class="form-msg"></div>
+        </form>
+
+        <div class="hint">
+            ¿Ya tienes cuenta? <a href="/vendedor/login">Inicia sesión aquí</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function validarEmail(email) {
+    return /^[^@]{2,}@[^@]+\.[^@]+$/.test(email);
+}
+function validarPassword(password) {
+    return /^(?=.*\d).{8,}$/.test(password);
+}
+function limpiarFormulario() {
+    const campos = ['reg_nombre','reg_apellido','reg_email','reg_telefono','reg_rut','reg_direccion','reg_ciudad','reg_password'];
+    campos.forEach(id => {
+        const campo = document.getElementById(id);
+        if (campo) campo.value = '';
+    });
+}
+async function registrarUsuario() {
+    const errorDiv = document.getElementById('reg_error');
+    const datos = {
+        nombre: document.getElementById('reg_nombre').value.trim(),
+        apellido: document.getElementById('reg_apellido').value.trim(),
+        email: document.getElementById('reg_email').value.trim(),
+        telefono: document.getElementById('reg_telefono').value.trim(),
+        rut: document.getElementById('reg_rut').value.trim(),
+        direccion: document.getElementById('reg_direccion').value.trim(),
+        ciudad: document.getElementById('reg_ciudad').value.trim(),
+        password: document.getElementById('reg_password').value.trim(),
+        tipo_usuario: document.getElementById('reg_tipo_usuario').value.trim()
+    };
+
+    errorDiv.style.color = '#ef4444';
+    errorDiv.textContent = '';
+
+    if (datos.nombre.length < 2) {
+        errorDiv.textContent = 'Agrega un nombre válido (mínimo 2 caracteres).';
+        return;
+    }
+    if (datos.apellido.length < 2) {
+        errorDiv.textContent = 'Agrega un apellido válido (mínimo 2 caracteres).';
+        return;
+    }
+    if (!validarEmail(datos.email)) {
+        errorDiv.textContent = 'Correo inválido (mínimo 2 caracteres antes del @).';
+        return;
+    }
+    if (!datos.telefono) {
+        errorDiv.textContent = 'Indica un teléfono de contacto.';
+        return;
+    }
+    if (!datos.rut) {
+        errorDiv.textContent = 'Ingresa un RUT en formato 12345678-9.';
+        return;
+    }
+    if (datos.direccion.length < 5) {
+        errorDiv.textContent = 'La dirección debe contener al menos 5 caracteres.';
+        return;
+    }
+    if (datos.ciudad.length < 2) {
+        errorDiv.textContent = 'Indica la ciudad donde resides u operas.';
+        return;
+    }
+    if (!validarPassword(datos.password)) {
+        errorDiv.textContent = 'Contraseña debe tener al menos 8 caracteres y 1 número.';
+        return;
+    }
+
+    errorDiv.style.color = '#6b7280';
+    errorDiv.textContent = 'Registrando usuario...';
+
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+            errorDiv.style.color = '#ef4444';
+            errorDiv.textContent = `❌ ${result.error || 'No fue posible completar el registro.'}`;
+            return;
+        }
+
+        errorDiv.style.color = '#16a34a';
+        errorDiv.textContent = `✅ ${result.message}`;
+        limpiarFormulario();
+
+        setTimeout(() => {
+            window.location.href = '/vendedor/login';
+        }, 1200);
+    } catch (error) {
+        errorDiv.style.color = '#ef4444';
+        errorDiv.textContent = '❌ Error de conexión con el servidor.';
+    }
+}
+</script>
+
+</body>
+</html>

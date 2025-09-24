@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing de Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <style>
+        #map {
+            height: 1000px;
+            width: 100%;
+        }
+        .form-container {
+            margin: 10px 0;
+        }
+        input, button {
+            padding: 5px;
+            margin: 5px;
+        }
+        .error {
+            color: rgb(255, 0, 0);
+            margin: 5px;
+        }
+        .user-widget[hidden] {
+            display: none !important;
+        }
+        .user-widget {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 1200;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+        .user-widget__trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(15,23,42,0.12);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 12px 28px rgba(37,99,235,0.24);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .user-widget__trigger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(37,99,235,0.32);
+        }
+        .user-widget__initials {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            font-weight: 700;
+            letter-spacing: 0.6px;
+        }
+        .user-widget__name {
+            font-size: 14px;
+        }
+        .user-widget__panel {
+            position: absolute;
+            top: 110%;
+            right: 0;
+            width: min(360px, 85vw);
+            padding: 20px;
+            margin-top: 10px;
+            background: #ffffff;
+            color: #111827;
+            border-radius: 16px;
+            border: 1px solid rgba(15,23,42,0.1);
+            box-shadow: 0 20px 40px rgba(15,23,42,0.22);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(8px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .user-widget__panel h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .user-widget__panel ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .user-widget__panel span {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .user-widget--abierta .user-widget__panel {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="user-widget" id="userWidget" hidden>
+        <button class="user-widget__trigger" id="userTrigger" aria-label="Mostrar datos del usuario" aria-expanded="false">
+            <span class="user-widget__initials" id="userInitials">US</span>
+            <span class="user-widget__name" id="userShortName"></span>
+        </button>
+        <div class="user-widget__panel" id="userPanel" role="dialog" aria-modal="false">
+            <h2>Datos del usuario</h2>
+            <ul>
+                <li><span>Nombre completo:</span> <strong id="userNombre"></strong></li>
+                <li><span>Correo:</span> <strong id="userEmail"></strong></li>
+                <li><span>Teléfono:</span> <strong id="userTelefono"></strong></li>
+                <li><span>RUT:</span> <strong id="userRut"></strong></li>
+                <li><span>Dirección:</span> <strong id="userDireccion"></strong></li>
+                <li><span>Ciudad:</span> <strong id="userCiudad"></strong></li>
+                <li><span>Tipo de usuario:</span> <strong id="userTipo"></strong></li>
+                <li><span>Registrado el:</span> <strong id="userFecha"></strong></li>
+            </ul>
+        </div>
+    </div>
+    <div class="form-container">
+        <input type="text" id="nombre" placeholder="Nombre de la Propiedad">
+        <input type="text" id="descripcion" placeholder="Descripción (Opcional)">
+        <input type="number" id="precio" placeholder="Precio">
+        <input type="text" id="localizacion" placeholder="Localización">
+        <input type="number" id="dormitorios" placeholder="Dormitorios">
+        <input type="number" id="baños" placeholder="Baños">
+        <input type="number" id="area" placeholder="Área (m²)">
+        <input type="text" id="tipo" placeholder="Tipo de Vivienda (Casa/Departamento/Estudio)">
+        <input type="text" id="estado" placeholder="Estado (Venta/Alquiler)">
+        <input type="text" id="img" placeholder="URL de la Imagen">
+        <input type="text" id="coordenadas" placeholder="Coordenadas (lat,lng)">
+        <button onclick="agregarPropiedad()">Agregar Propiedad</button>
+        <div id="error" class="error"></div>
+    </div>
+
+    <div class="form-container">
+        <h2>Registro</h2>
+        <input type="text" id="reg_email" placeholder="Correo electrónico">
+        <input type="password" id="reg_password" placeholder="Contraseña">
+        <button onclick="registrarUsuario()">Registrar</button>
+        <div id="reg_error" class="error"></div>
+    </div>
+    <div class="form-container">
+        <h2>Login</h2>
+        <input type="text" id="login_email" placeholder="Correo electrónico">
+        <input type="password" id="login_password" placeholder="Contraseña">
+        <button onclick="loginUsuario()">Login</button>
+        <div id="login_error" class="error"></div>
+    </div>
+
+ <!-- NUEVO LOGIN Y REGISTER CON EL TESTING DEL HASHIN-->
+
+    <script>
+    const userWidget = document.getElementById('userWidget');
+    const userTrigger = document.getElementById('userTrigger');
+    const userPanel = document.getElementById('userPanel');
+    const userFields = {
+        nombre: document.getElementById('userNombre'),
+        email: document.getElementById('userEmail'),
+        telefono: document.getElementById('userTelefono'),
+        rut: document.getElementById('userRut'),
+        direccion: document.getElementById('userDireccion'),
+        ciudad: document.getElementById('userCiudad'),
+        tipo: document.getElementById('userTipo'),
+        fecha: document.getElementById('userFecha'),
+        initials: document.getElementById('userInitials'),
+        shortName: document.getElementById('userShortName')
+    };
+
+    function obtenerUsuarioLocal() {
+        try {
+            const guardado = localStorage.getItem('usuarioActual');
+            return guardado ? JSON.parse(guardado) : null;
+        } catch (error) {
+            console.warn('No fue posible leer los datos del usuario.', error);
+            return null;
+        }
+    }
+
+    function iniciales(nombre, apellido, email) {
+        const letras = [];
+        if (nombre) letras.push(nombre.trim()[0]);
+        if (apellido) letras.push(apellido.trim()[0]);
+        if (!letras.length && email) letras.push(email.trim()[0]);
+        return letras.join('').toUpperCase().slice(0, 2) || 'US';
+    }
+
+    function nombreCorto(nombre, email) {
+        if (nombre) {
+            return nombre.split(' ')[0];
+        }
+        if (email) {
+            return email.split('@')[0];
+        }
+        return 'Usuario';
+    }
+
+    function tipoLegible(tipo) {
+        if (!tipo) return 'Sin especificar';
+        const mapa = { vendedor: 'Vendedor', comprador: 'Comprador' };
+        return mapa[tipo.toLowerCase()] || tipo;
+    }
+
+    function fechaLegible(fechaIso) {
+        if (!fechaIso) return 'Sin dato';
+        const fecha = new Date(fechaIso);
+        if (Number.isNaN(fecha.getTime())) return 'Sin dato';
+        return new Intl.DateTimeFormat('es-CL', { dateStyle: 'long' }).format(fecha);
+    }
+
+    function popularWidget(usuario) {
+        if (!userWidget || !usuario) return;
+        userWidget.hidden = false;
+        userFields.nombre.textContent = `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || 'Sin nombre';
+        userFields.email.textContent = usuario.email || 'Sin correo';
+        userFields.telefono.textContent = usuario.telefono || 'Sin teléfono';
+        userFields.rut.textContent = usuario.rut || 'Sin RUT';
+        userFields.direccion.textContent = usuario.direccion || 'Sin dirección';
+        userFields.ciudad.textContent = usuario.ciudad || 'Sin ciudad';
+        userFields.tipo.textContent = tipoLegible(usuario.tipo_usuario);
+        userFields.fecha.textContent = fechaLegible(usuario.fecha_registro);
+        userFields.initials.textContent = iniciales(usuario.nombre, usuario.apellido, usuario.email);
+        userFields.shortName.textContent = nombreCorto(usuario.nombre, usuario.email);
+    }
+
+    function cerrarWidget() {
+        if (!userWidget) return;
+        userWidget.classList.remove('user-widget--abierta');
+        if (userTrigger) userTrigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function inicializarWidget() {
+        const usuario = obtenerUsuarioLocal();
+        if (!usuario || !userWidget || !userTrigger || !userPanel) {
+            if (userWidget) userWidget.hidden = true;
+            return;
+        }
+
+        popularWidget(usuario);
+
+        userTrigger.addEventListener('click', () => {
+            const abierta = userWidget.classList.toggle('user-widget--abierta');
+            userTrigger.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', (evento) => {
+            if (!userWidget.contains(evento.target)) {
+                cerrarWidget();
+            }
+        });
+
+        document.addEventListener('keydown', (evento) => {
+            if (evento.key === 'Escape') {
+                cerrarWidget();
+            }
+        });
+    }
+
+    inicializarWidget();
+
+    function validarEmail(email) {
+        // Minimo 2 caracteres antes del @ y formato basico de correo
+        return /^[^@]{2,}@[^@]+\.[^@]+$/.test(email);
+    }
+    function validarPassword(password) {
+        // Al menos 8 caracteres y 1 numero (Sujeto a cambios del equipo)
+        return /^(?=.*\d).{8,}$/.test(password);
+    }
+    async function registrarUsuario() {
+        const email = document.getElementById('reg_email').value.trim();
+        const password = document.getElementById('reg_password').value.trim();
+        const errorDiv = document.getElementById('reg_error');
+        errorDiv.textContent = '';
+        if (!validarEmail(email)) {
+            errorDiv.textContent = 'Correo inválido (mínimo 2 caracteres antes del @).';
+            return;
+        }
+        if (!validarPassword(password)) {
+            errorDiv.textContent = 'Contraseña debe tener al menos 8 caracteres y 1 número.';
+            return;
+        }
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        errorDiv.textContent = response.ok ? result.message : result.error;
+        if (response.ok) {
+            document.getElementById('reg_email').value = '';
+            document.getElementById('reg_password').value = '';
+        }
+    }
+    async function loginUsuario() {
+        const email = document.getElementById('login_email').value.trim();
+        const password = document.getElementById('login_password').value.trim();
+        const errorDiv = document.getElementById('login_error');
+        errorDiv.textContent = '';
+        if (!validarEmail(email)) {
+            errorDiv.textContent = 'Correo inválido.';
+            return;
+        }
+        if (!validarPassword(password)) {
+            errorDiv.textContent = 'Contraseña inválida.';
+            return;
+        }
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        errorDiv.textContent = response.ok ? result.message : result.error;
+        if (response.ok) {
+            document.getElementById('login_email').value = '';
+            document.getElementById('login_password').value = '';
+        }
+    }
+    </script>
+
+ 
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script>
+        var map = L.map('map').setView([-34.97928,-71.22913], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+    
+
+        var propiedadesLayer = L.layerGroup().addTo(map);
+        cargarPropiedades();
+
+        async function cargarPropiedades() {
+            propiedadesLayer.clearLayers();
+            const response = await fetch('/api/propiedades');
+            const propiedades = await response.json();
+            propiedades.forEach(p => {
+                const [lat, lng] = p.coordenadas.split(',').map(Number);
+                L.marker([lat, lng])
+                    .addTo(propiedadesLayer)
+                    .bindPopup(`Nombre: ${p.nombre}<br>Precio: $${p.precio}<br>Localización: ${p.localizacion}<br>Dormitorios: ${p.dormitorios}<br>Baños: ${p.baños}<br>Área: ${p.area} m²<br>Tipo: ${p.tipo}<br>Estado: ${p.estado}<br><img src="${p.img}" alt="Imagen" width="100">`);
+            });
+        }
+
+        async function agregarPropiedad() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const precio = document.getElementById('precio').value.trim();
+            const localizacion = document.getElementById('localizacion').value.trim();
+            const dormitorios = document.getElementById('dormitorios').value.trim();
+            const baños = document.getElementById('baños').value.trim();
+            const area = document.getElementById('area').value.trim();
+            const tipo = document.getElementById('tipo').value.trim();
+            const estado = document.getElementById('estado').value.trim();
+            const img = document.getElementById('img').value.trim();
+            const coordenadas = document.getElementById('coordenadas').value.trim();
+            const errorDiv = document.getElementById('error');
+
+            if (!precio || !nombre || !localizacion || !dormitorios || !baños || !area || !tipo || !estado || !img || !coordenadas) {
+                errorDiv.textContent = 'Complete todos los campos.';
+                return;
+            }
+
+
+            const response = await fetch('/api/propiedades', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, descripcion, precio, localizacion, dormitorios, baños, area, tipo, estado, img, coordenadas })
+            });
+
+            const result = await response.json();
+            errorDiv.textContent = response.ok ? result.message : result.error;
+            if (response.ok) {
+                document.getElementById('nombre').value = '';
+                document.getElementById('descripcion').value = '';
+                document.getElementById('precio').value = '';
+                document.getElementById('localizacion').value = '';
+                document.getElementById('dormitorios').value = '';
+                document.getElementById('baños').value = '';
+                document.getElementById('area').value = '';
+                document.getElementById('tipo').value = '';
+                document.getElementById('estado').value = '';
+                document.getElementById('img').value = '';
+                document.getElementById('coordenadas').value = '';
+                cargarPropiedades();
+            }
+        }
+    </script>
+
+</body>
+</html>
