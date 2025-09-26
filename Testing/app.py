@@ -53,7 +53,7 @@ def _prefers_json():
         return False
     return request.accept_mimetypes[best] >= request.accept_mimetypes['text/html']
 
-
+#Funcion para hardcodear la cache
 @app.after_request
 def harden_cache_headers(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -61,7 +61,7 @@ def harden_cache_headers(response):
     response.headers['Expires'] = '0'
     return response
 
-
+#Funcion para validar el login
 def login_required(*roles):
     roles_normalizados = {r.lower() for r in roles if isinstance(r, str)} if roles else set()
 
