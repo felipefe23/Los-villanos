@@ -135,17 +135,21 @@ def login():
 def landing():
     return render_template('landing.html')
 
+@app.get('/login')
+def login_view():
+    return render_template('landing.html')
+
 @app.get("/admin/login")
 def admin_login_view():
-    return render_template("admin_login.html")
+    return redirect(url_for('landing'))
 
 @app.get("/vendedor/login")
 def vendedor_login_view():
-    return render_template("vendedor_login.html")
+    return redirect(url_for('landing'))
 
 @app.get("/comprador/login")
 def comprador_login_view():
-    return render_template("comprador_login.html")
+    return redirect(url_for('landing'))
 
 @app.get("/comprador/register")
 def comprador_register_view():
@@ -156,6 +160,10 @@ def comprador_dashboard_view():
     propiedades = leer_propiedades()
     propiedades_venta = [p for p in propiedades if p.get("estado", "").lower() == "venta"]
     return render_template("comprador_dashboard.html", propiedades=propiedades_venta)
+
+@app.get("/admin")
+def admin_dashboard_view():
+    return render_template("admin_dashboard.html")
 
 @app.get("/vendedor")
 def vendedor_view():

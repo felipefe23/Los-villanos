@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🛠️</span>
+      <div>
+        <h1>Panel de Administración</h1>
+        <p>Gestiona usuarios, propiedades y estadísticas de ViviendaDigital.</p>
+      </div>
+    </div>
+    <nav class="top-actions">
+      <a href="{{ url_for('landing') }}" class="btn ghost">Cerrar sesión</a>
+    </nav>
+  </header>
+
+  <main class="dashboard">
+    <section class="card highlight">
+      <h2>Resumen rápido</h2>
+      <p class="lead">
+        Bienvenido al panel administrador. Desde aquí podrás incorporar nuevas funcionalidades
+        como monitorear usuarios, revisar propiedades y configurar la plataforma.
+      </p>
+      <ul class="next-steps">
+        <li>📁 Revisa los registros de usuarios en <code>Testing/datos/users.json</code>.</li>
+        <li>🏠 Controla propiedades desde el panel de vendedor o directamente en el archivo JSON.</li>
+        <li>💡 Agrega gráficas o reportes conectando nuevas vistas Flask.</li>
+      </ul>
+    </section>
+
+    <section class="card placeholder">
+      <h3>Próximas acciones</h3>
+      <p>Este módulo está listo para que añadas las secciones administrativas que necesites.</p>
+      <div class="actions">
+        <a href="{{ url_for('vendedor_view') }}" class="btn">Ir al panel vendedor</a>
+        <a href="{{ url_for('comprador_dashboard_view') }}" class="btn ghost">Ver propiedades</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
