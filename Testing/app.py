@@ -194,13 +194,15 @@ def logout():
 
 @app.route('/')
 def landing():
+    mensaje_error = session.pop('error_message', '')
     session.clear()
-    return render_template('landing.html')
+    return render_template('landing.html', error_message=mensaje_error)
 
 @app.get('/login')
 def login_view():
+    mensaje_error = session.pop('error_message', '')
     session.clear()
-    return render_template('landing.html')
+    return render_template('landing.html', error_message=mensaje_error)
 
 @app.get("/admin/login")
 def admin_login_view():
@@ -346,7 +348,10 @@ def add_propiedad():
 
 @app.errorhandler(404)
 def not_found_error(error):
-    return render_template("error.html", message="La página que buscas no existe (Error 404)."), 404
+    if _prefers_json():
+        return jsonify({"error": "La página que buscas no existe."}), 404
+    session['error_message'] = "La página que buscas no existe (Error 404)."
+    return redirect(url_for('login_view'))
 
 if __name__ == '__main__':
 

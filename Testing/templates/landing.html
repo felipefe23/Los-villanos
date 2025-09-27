@@ -52,6 +52,12 @@
     const submitBtn = form.querySelector('button[type="submit"]');
     const togglePassBtn = form.querySelector('.toggle-pass');
     const passwordInput = form.querySelector('input[type="password"]');
+    const serverErrorMessage = {{ (error_message or '')|tojson }};
+
+    if (serverErrorMessage) {
+      messageEl.textContent = serverErrorMessage;
+      messageEl.classList.add('error');
+    }
 
     // mapa de rutas segun rol para dirigir al panel correcto
     const redirectByRole = {
