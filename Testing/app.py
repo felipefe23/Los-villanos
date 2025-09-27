@@ -343,6 +343,11 @@ def add_propiedad():
     guardar_propiedades(propiedades)
     return jsonify({"message": "Propiedad ingresada con éxito.", "propiedades": propiedades})
 
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template("error.html", message="La página que buscas no existe (Error 404)."), 404
+
 if __name__ == '__main__':
 
     app.run(debug=True)
