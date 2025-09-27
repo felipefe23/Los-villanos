@@ -154,5 +154,18 @@
     "ciudad": "curico",
     "tipo_usuario": "comprador",
     "fecha_registro": "2025-09-24T01:05:51.659563Z"
+  },
+  {
+    "id": 14,
+    "email": "guz@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$8ifsDdPgFg3IsEJFri6mDw$0UjNsmpOnqssd8ra3oJiQKcLJWFth/rKReqc/KyrgK4",
+    "nombre": "felipe",
+    "apellido": "guzman",
+    "telefono": "+56976533105",
+    "rut": "21777455-5",
+    "direccion": "santa emilia",
+    "ciudad": "curico",
+    "tipo_usuario": "vendedor",
+    "fecha_registro": "2025-09-26T22:37:25.892669Z"
   }
 ]
