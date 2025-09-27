@@ -167,5 +167,31 @@
     "ciudad": "curico",
     "tipo_usuario": "vendedor",
     "fecha_registro": "2025-09-26T22:37:25.892669Z"
+  },
+  {
+    "id": 15,
+    "email": "prueba2314124@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$B/MH1z1WAnsR3FvXNMAwhA$QehFS4xg0uauIjgKpnw125IGN+k6Vj7kxh5w8VqvfkM",
+    "nombre": "Joaquin",
+    "apellido": "Contreras",
+    "telefono": "+56 9 8645 4095",
+    "rut": "21998961-K",
+    "direccion": "Hualquillo 91",
+    "ciudad": "Curico",
+    "tipo_usuario": "vendedor",
+    "fecha_registro": "2025-09-27T02:46:01.521162Z"
+  },
+  {
+    "id": 16,
+    "email": "1234567@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$ip9xcR3u896qlw4UY2Czjg$0bxyaurf/6flJFKgTAzkxv4iJSVZvoA7M8nPzyNIADM",
+    "nombre": "Joaquin",
+    "apellido": "Contreras",
+    "telefono": "+56 9 8645 4095",
+    "rut": "21998961-K",
+    "direccion": "Hualquillo 91",
+    "ciudad": "Curico",
+    "tipo_usuario": "comprador",
+    "fecha_registro": "2025-09-27T03:17:14.337724Z"
   }
 ]

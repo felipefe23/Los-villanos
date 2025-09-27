@@ -26,8 +26,6 @@
       e.preventDefault();
       backBtn.classList.add("is-loading");
       backBtn.setAttribute("disabled", true);
-
-      // redirige después de un pequeño delay (igual que login)
       setTimeout(() => {
         window.location.href = backBtn.getAttribute("href");
       }, 600);

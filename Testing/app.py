@@ -7,6 +7,7 @@ import re
 import json
 from argon2 import PasswordHasher
 from datetime import datetime
+import base64
 
 
 
@@ -261,6 +262,8 @@ def add_propiedad():
     data = request.json
     nombre = data.get('nombre')
     descripcion = data.get('descripcion')
+    if not descripcion:
+        descripcion = "Sin descripción"
     precio = data.get('precio')
     propietario = data.get('propietario')
     localizacion = data.get('localizacion')
@@ -348,10 +351,13 @@ def add_propiedad():
 
 @app.errorhandler(404)
 def not_found_error(error):
-    if _prefers_json():
-        return jsonify({"error": "La página que buscas no existe."}), 404
-    session['error_message'] = "La página que buscas no existe (Error 404)."
-    return redirect(url_for('login_view'))
+    return render_template("error.html", message="La página que buscas no existe (Error 404)."), 404
+
+def convertir_a_base64(ruta_imagen):
+    with open(ruta_imagen, "rb") as img:
+        return base64.b64encode(img.read()).decode("utf-8")
+
+
 
 if __name__ == '__main__':
 

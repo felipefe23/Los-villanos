@@ -51,7 +51,7 @@
                         <article class="tarjeta">
                             <div class="imagen" aria-hidden="true">
                                 {% if propiedad.get('img') %}
-                                    <img src="{{ propiedad.get('img') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
+                                    <img src="data:image/jpeg;base64,{{ propiedad.get('img') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
                                 {% else %}
                                     <div class="imagen-placeholder">Sin imagen</div>
                                 {% endif %}
@@ -254,7 +254,10 @@
                     marker.bindPopup(`
                         <strong>${propiedad.nombre || 'Propiedad sin nombre'}</strong><br>
                         Precio: $${precio.toLocaleString('es-CL')}<br>
-                        Ubicación: ${propiedad.localizacion || 'No indicada'}
+                        Ubicación: ${propiedad.localizacion || 'No indicada'}<br>
+                        ${propiedad.img ? `<img src="data:image/jpeg;base64,${propiedad.img}" 
+                            alt="Imagen de propiedad" 
+                            style="max-width:150px;max-height:100px;object-fit:cover;margin-top:4px;border:1px solid #ccc;">` : ''}
                     `);
                     bounds.push(partes);
                 }

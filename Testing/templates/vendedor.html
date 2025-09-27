@@ -6,188 +6,12 @@
   <title>Panel del Vendedor</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f3f4f6;
-      color: #222;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      background: #1f2937;
-      color: #fff;
-      padding: 12px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    main {
-      flex: 1;
-      display: grid;
-      grid-template-columns: minmax(280px, 320px) 1fr;
-      gap: 18px;
-      padding: 18px;
-      align-items: stretch;
-    }
-
-    .side-panel {
-      display: grid;
-      gap: 16px;
-      align-content: start;
-    }
-
-    form,
-    section.panel {
-      background: #fff;
-      border: 1px solid #d4d4d4;
-      border-radius: 6px;
-      padding: 14px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    }
-
-    h1, h2 {
-      margin: 0 0 12px;
-      font-weight: 600;
-    }
-
-    form label {
-      display: block;
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-
-    form input,
-    form textarea,
-    form select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-
-    form button {
-      margin-top: 12px;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 4px;
-      background: #2563eb;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    form button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    #propMessage {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-
-    #propMessage.error {
-      color: #c2410c;
-    }
-
-    #propMessage.success {
-      color: #15803d;
-    }
-
-    .map-wrapper {
-      position: relative;
-      background: #fff;
-      border: 1px solid #d4d4d4;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .map-wrapper h2 {
-      padding: 14px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    #map {
-      flex: 1;
-      min-height: 520px;
-      width: 100%;
-    }
-
-    ul#propList {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      gap: 10px;
-    }
-
-    ul#propList li {
-      border: 1px solid #d4d4d4;
-      border-radius: 4px;
-      padding: 10px;
-      background: #fafafa;
-      font-size: 14px;
-    }
-
-    ul#propList li strong {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 15px;
-    }
-
-    .user-box {
-      font-size: 14px;
-    }
-
-    .helper {
-      font-size: 13px;
-      color: #555;
-      margin-top: 8px;
-    }
-
-    .map-legend {
-      position: absolute;
-      bottom: 16px;
-      left: 16px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid #d4d4d4;
-      border-radius: 6px;
-      padding: 10px 12px;
-      font-size: 13px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-    }
-
-    @media (max-width: 900px) {
-      main {
-        grid-template-columns: 1fr;
-      }
-
-      .map-wrapper {
-        min-height: 360px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor.css') }}">
 </head>
 <body>
   <header>
     <div>
-      <h1 style="margin:0; font-size: 20px;">Panel del Vendedor</h1>
+      <h1>Panel del Vendedor</h1>
       <div class="user-box" id="userBox">Usuario sin identificar</div>
     </div>
     <a href="{{ url_for('landing') }}">Cerrar sesión</a>
@@ -242,10 +66,13 @@
         Descripción
         <textarea name="descripcion" id="descripcion" rows="3" placeholder="Detalle breve"></textarea>
       </label>
+      <!-- CAMBIO AQUI -->
       <label>
-        URL imagen
-        <input type="url" name="img" id="img" placeholder="https://">
+        Imagen
+        <input type="file" name="imagenFile" id="imagenFile" accept="image/jpeg,image/jpg" required>
+        <small>Puedes arrastrar o seleccionar un archivo .jpg</small>
       </label>
+      <!-- FIN DEL CAMBIO -->
       <label>
         Coordenadas (lat,lng)
         <input type="text" name="coordenadas" id="coordenadas" placeholder="-33.4489,-70.6693" required>
@@ -378,12 +205,35 @@
       }
     }
 
+    // FUNCION PARA CONVERTIR ARCHIVO A BASE64
+    function convertirArchivoABase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64 = reader.result.split(",")[1]; // quitamos "data:image/jpeg;base64,"
+          resolve(base64);
+        };
+        reader.onerror = (error) => reject(error);
+      });
+    }
+
     propForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       propMessage.textContent = '';
       propMessage.classList.remove('error', 'success');
 
       const datos = new FormData(propForm);
+      const archivoImagen = document.getElementById('imagenFile').files[0];
+      
+      if (!archivoImagen) {
+        propMessage.textContent = 'Debes seleccionar una imagen en formato JPG.';
+        propMessage.classList.add('error');
+        return;
+      }
+
+      const imagenBase64 = await convertirArchivoABase64(archivoImagen);
+
       const payload = {
         nombre: datos.get('nombre')?.trim(),
         precio: Number(datos.get('precio')),
@@ -394,7 +244,7 @@
         baños: Number(datos.get('baños')),
         area: Number(datos.get('area')),
         descripcion: datos.get('descripcion')?.trim(),
-        img: datos.get('img')?.trim(),
+        img: imagenBase64, 
         coordenadas: datos.get('coordenadas')?.trim(),
         propietario: '',
         activo: datos.get('activo') !== 'false'
