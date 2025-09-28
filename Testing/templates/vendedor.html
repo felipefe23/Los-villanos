@@ -16,10 +16,24 @@
   </div>
   
   <div class="header-right">
-    <div class="user-chip">
-      <span class="avatar">JC</span>
-      <span class="username">Joaquín Contreras</span>
-    </div>
+    <div class="user-widget" id="userWidget" hidden>
+      <button class="user-widget__trigger" id="userTrigger" aria-label="Mostrar datos del usuario" aria-expanded="false">
+          <span class="user-widget__initials" id="userInitials">US</span>
+          <span class="user-widget__name" id="userShortName"></span>
+      </button>
+      <div class="user-widget__panel" id="userPanel" role="dialog" aria-modal="false">
+          <h2>Datos del usuario</h2>
+          <ul>
+              <li><span>Nombre completo:</span> <strong id="userNombre"></strong></li>
+              <li><span>Correo:</span> <strong id="userEmail"></strong></li>
+              <li><span>Teléfono:</span> <strong id="userTelefono"></strong></li>
+              <li><span>RUT:</span> <strong id="userRut"></strong></li>
+              <li><span>Dirección:</span> <strong id="userDireccion"></strong></li>
+              <li><span>Ciudad:</span> <strong id="userCiudad"></strong></li>
+              <li><span>Registrado el:</span> <strong id="userFecha"></strong></li>
+          </ul>
+      </div>
+  </div>
     <a href="{{ url_for('landing') }}" class="logout-btn">Cerrar sesión</a>
   </div>
 </header>
@@ -72,6 +86,7 @@
           <option value="Departamento">Departamento</option>
           <option value="Terreno">Terreno</option>
           <option value="Comercial">Comercial</option>
+          <option value="Recidencia_Estudiantes">Residencia de Estudiantes</option>
         </select>
       </label>
       <label>
@@ -122,35 +137,143 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
-    const userBox = document.getElementById('userBox');
-    const propForm = document.getElementById('propForm');
+  const propForm = document.getElementById('propForm');
     const propMessage = document.getElementById('propMessage');
     const propSubmit = document.getElementById('propSubmit');
     const propList = document.getElementById('propList');
     const reloadBtn = document.getElementById('reloadBtn');
     const coordsInput = document.getElementById('coordenadas');
+  const widget = document.getElementById('userWidget');
+  const trigger = document.getElementById('userTrigger');
+  const panel = document.getElementById('userPanel');
+  const camposUsuario = {
+    nombre: document.getElementById('userNombre'),
+    email: document.getElementById('userEmail'),
+    telefono: document.getElementById('userTelefono'),
+    rut: document.getElementById('userRut'),
+    direccion: document.getElementById('userDireccion'),
+    ciudad: document.getElementById('userCiudad'),
+    fecha: document.getElementById('userFecha'),
+    initials: document.getElementById('userInitials'),
+    shortName: document.getElementById('userShortName')
+  };
 
-    function mostrarUsuario() {
-      try {
-        const guardado = localStorage.getItem('usuarioActual');
-        if (!guardado) return;
-        const usuario = JSON.parse(guardado);
-        const nombre = [usuario.nombre, usuario.apellido].filter(Boolean).join(' ');
-        userBox.textContent = nombre || usuario.email || 'Usuario conectado';
-      } catch (error) {
-        console.warn('No se pudo leer el usuario almacenado', error);
+  async function obtenerUsuarioActual() {
+    try {
+      const res = await fetch('/api/me', { credentials: 'include' });
+      if (res.ok) {
+        const usuario = await res.json();
+        try { localStorage.setItem('usuarioActual', JSON.stringify(usuario)); } catch (e) { /* ignore */ }
+        return usuario;
       }
+    } catch (e) {
     }
+
+    try {
+      const guardado = localStorage.getItem('usuarioActual');
+      if (!guardado) return null;
+      return JSON.parse(guardado);
+    } catch (error) {
+      console.warn('No fue posible leer los datos de usuario almacenados', error);
+      return null;
+    }
+  }
+
+  function formatearIniciales(nombre, apellido, email) {
+    const letras = [];
+    if (nombre) letras.push(nombre.trim()[0]);
+    if (apellido) letras.push(apellido.trim()[0]);
+    if (letras.length === 0 && email) letras.push(email.trim()[0]);
+    return letras.join('').toUpperCase().slice(0, 2) || 'US';
+  }
+
+  function formatearNombreCorto(nombre, email) {
+    if (nombre) return nombre.split(' ')[0];
+    if (email) return email.split('@')[0];
+    return 'Usuario';
+  }
+
+  function formatearTipo(tipo) {
+    if (!tipo) return 'Sin especificar';
+    const mapa = { vendedor: 'Vendedor', comprador: 'Comprador' };
+    return mapa[tipo.toLowerCase()] || tipo;
+  }
+
+  function formatearFecha(fechaIso) {
+    if (!fechaIso) return 'Sin dato';
+    const fecha = new Date(fechaIso);
+    if (Number.isNaN(fecha.getTime())) return 'Sin dato';
+    return new Intl.DateTimeFormat('es-CL', { dateStyle: 'long' }).format(fecha);
+  }
+
+  function poblarWidget(usuario) {
+    if (!widget || !usuario) return;
+    widget.hidden = false;
+    camposUsuario.nombre.textContent = `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || 'Sin nombre';
+    camposUsuario.email.textContent = usuario.email || 'Sin correo';
+    camposUsuario.telefono.textContent = usuario.telefono || 'Sin teléfono';
+    camposUsuario.rut.textContent = usuario.rut || 'Sin RUT';
+    camposUsuario.direccion.textContent = usuario.direccion || 'Sin dirección';
+    camposUsuario.ciudad.textContent = usuario.ciudad || 'Sin ciudad';
+    camposUsuario.fecha.textContent = formatearFecha(usuario.fecha_registro);
+    camposUsuario.initials.textContent = formatearIniciales(usuario.nombre, usuario.apellido, usuario.email);
+    camposUsuario.shortName.textContent = formatearNombreCorto(usuario.nombre, usuario.email);
+  }
+
+  function cerrarPanelUsuario() {
+    if (!widget) return;
+    widget.classList.remove('user-widget--abierta');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function inicializarWidgetUsuario() {
+    if (!widget || !trigger || !panel) {
+      if (widget) widget.hidden = true;
+      return;
+    }
+
+    obtenerUsuarioActual().then(usuario => {
+      if (!usuario) {
+        if (widget) widget.hidden = true;
+        return;
+      }
+
+      poblarWidget(usuario);
+
+      trigger.addEventListener('click', () => {
+        const abierta = widget.classList.toggle('user-widget--abierta');
+        trigger.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+      });
+
+      document.addEventListener('click', (evento) => {
+        if (!widget.contains(evento.target)) {
+          cerrarPanelUsuario();
+        }
+      });
+
+      document.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Escape') {
+          cerrarPanelUsuario();
+        }
+      });
+    }).catch(err => {
+      console.warn('Error al obtener usuario', err);
+      if (widget) widget.hidden = true;
+    });
+  }
 
     function formatearCLP(valor) {
       const numero = Number(valor) || 0;
       return numero.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
     }
 
-    const map = L.map('map').setView([-33.45, -70.66], 12);
+    // CENTRAR MAPA EN CURICO
+
+    const map = L.map('map').setView([-34.984403, -71.239488], 14);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
+      minZoom: 12, // minimo zoom para el mapa por que si sdsadlk
       attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
@@ -173,7 +296,22 @@
         const response = await fetch('/api/propiedades');
         if (!response.ok) throw new Error('No fue posible obtener propiedades');
         const propiedades = await response.json();
-        dibujarPropiedades(propiedades);
+        let usuarioId = null;
+        try {
+          const meRes = await fetch('/api/me', { credentials: 'include' });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            usuarioId = me.id;
+          }
+        } catch (e) {
+          try {
+            const guardado = localStorage.getItem('usuarioActual');
+            if (guardado) usuarioId = JSON.parse(guardado).id;
+          } catch (_) {}
+        }
+
+        const propiedadesFiltradas = usuarioId == null ? propiedades : propiedades.filter(p => p.propietario == usuarioId || String(p.propietario) === String(usuarioId));
+        dibujarPropiedades(propiedadesFiltradas);
       } catch (error) {
         console.error(error);
         propList.innerHTML = '<li>Error al cargar propiedades.</li>';
@@ -211,7 +349,9 @@
         propList.appendChild(item);
       });
 
-      if (bounds.length) {
+      // Si hay mas de una propiedad ajustamos en el centro de ellas; si solo hay una,
+      // mantenemos el centro y zoom
+      if (bounds.length > 1) {
         map.fitBounds(bounds, { padding: [30, 30] });
       }
     }
@@ -307,7 +447,7 @@
       document.getElementById('formPanel').classList.remove('active');
     }
 
-    mostrarUsuario();
+    inicializarWidgetUsuario();
     cargarPropiedades();
   </script>
 </body>

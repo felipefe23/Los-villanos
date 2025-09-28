@@ -49,6 +49,8 @@
   </main>
 
 <script>
+    // Limpiar usuarioActual al cargar la pagina en secion
+  try { localStorage.removeItem('usuarioActual'); } catch (e) { /* ignore */ }
     const form = document.getElementById('loginForm');
     const messageEl = document.getElementById('formMessage');
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -101,7 +103,20 @@
         const data = await res.json();
 
         if (res.ok) {
+                                            // Error de archivos locales
+          try {
+            if (data.user) {
+              localStorage.setItem('usuarioActual', JSON.stringify(data.user));
+            }
+          } catch (e) {
+            console.warn('No se pudo guardar usuario en localStorage', e);
+          }
+
           if (data.redirect) {
+            try {
+              await fetch('/api/me', { credentials: 'include' });
+            } catch (e) {
+            }
             window.location.href = data.redirect;
             return;
           }

@@ -297,5 +297,31 @@
     "ciudad": "Curico",
     "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$N9XT3gpk9yUt51jF2olIBQ$eCa0Dkv7rwoy0ae/KDOd8ONJZbtcGWej00PnmeiW6bY",
     "fecha_registro": "2025-09-28T04:34:14.427893Z"
+  },
+  {
+    "id": 28,
+    "email": "testingdicloud@utalca.cl",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$WMDfgxyx5Fb7dZN1Chnizw$fOMLE2vp0pYQ+NW7sxCbJJWRoLLgZpiBj9p5dAxFHaI",
+    "nombre": "Testing",
+    "apellido": "DiCloud",
+    "telefono": "+56990924609",
+    "rut": "12312312-3",
+    "direccion": "Rauco, avenida diego portales",
+    "ciudad": "Curicó",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$+elV4sYuSusPWmn364XQcw$qJMVsARW3Z6G75o4qvpG4UHD3dgg1bce/Nth0+zgTtQ",
+    "fecha_registro": "2025-09-28T19:39:28.617513Z"
+  },
+  {
+    "id": 29,
+    "email": "testingdicloud2@utalca.cl",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$O2djkXRCIsIHLv3Kfpi+Sg$FnrOH/dVtZfWrygxkaHEyJhRWLUDKchD5XmKP2ExpCU",
+    "nombre": "Testing",
+    "apellido": "Diego",
+    "telefono": "+56990924609",
+    "rut": "12312312-3",
+    "direccion": "Rauco",
+    "ciudad": "Curicó",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$ep6OI7dUfVPZo1DHpCndGg$X9/Lcn//jIUe5/xVI/+h/dJjiTFTpEf1tJWlEFfMmVo",
+    "fecha_registro": "2025-09-28T20:06:24.981435Z"
   }
 ]

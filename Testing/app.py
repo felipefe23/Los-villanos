@@ -169,7 +169,7 @@ def login():
     try:
         ph.verify(user['password'], password)
     except Exception:
-        return jsonify({"error": "ContraseÃ±a incorrecta."}), 400
+        return jsonify({"error": "Contraseña incorrecta."}), 400
 
     stored_tipo = (user.get('tipo_usuario') or '').strip()
     possible_types = ['admin', 'administrador', 'vendedor', 'comprador']
@@ -263,7 +263,16 @@ def comprador_register_view():
 @login_required('comprador', 'administrador', 'admin')
 def comprador_dashboard_view():
     propiedades = leer_propiedades()
-    propiedades_filtradas = [p for p in propiedades if p.get("activo", True)]
+    usuarios = leer_usuarios()
+    nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
+    propiedades_filtradas = []
+    for p in propiedades:
+        if not p.get('activo', True):
+            continue
+        copia = p.copy()
+        prop_id = copia.get('propietario')
+        copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
+        propiedades_filtradas.append(copia)
     return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas)
 
 @app.get("/admin")
@@ -293,7 +302,16 @@ def ventas_view():
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():
     propiedades = leer_propiedades()
-    return jsonify(propiedades)
+    usuarios = leer_usuarios()
+    nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
+    propiedades_enriquecidas = []
+    for p in propiedades:
+        copia = p.copy()
+        prop_id = copia.get('propietario')
+        nombre = nombres.get(prop_id)
+        copia['propietario_nombre'] = nombre if nombre else None
+        propiedades_enriquecidas.append(copia)
+    return jsonify(propiedades_enriquecidas)
 
 @app.route('/api/propiedades', methods=['POST'])
 def add_propiedad():
@@ -303,7 +321,11 @@ def add_propiedad():
     if not descripcion:
         descripcion = "Sin descripción"
     precio = data.get('precio')
-    propietario = data.get('propietario')
+# Crear propiedad pero con autenticacion de usuario
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Autenticación requerida para crear propiedades."}), 401
+    propietario = user_id
     localizacion = data.get('localizacion')
     dormitorios = data.get('dormitorios')
     baños = data.get('baños')
@@ -386,6 +408,22 @@ def add_propiedad():
     guardar_propiedades(propiedades)
     return jsonify({"message": "Propiedad ingresada con éxito.", "propiedades": propiedades})
 
+# Error de archivos locales
+@app.route('/api/me', methods=['GET'])
+def api_me():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "No autenticado."}), 401
+
+    usuarios = leer_usuarios()
+    user = next((u for u in usuarios if u.get('id') == user_id), None)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado."}), 404
+
+    user_copy = user.copy()
+    user_copy.pop('password', None)
+    return jsonify(user_copy)
+# Error de archivos locales
 
 @app.errorhandler(404)
 def not_found_error(error):

@@ -18,6 +18,9 @@ body {
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  /* Aseguramos que el header y su contenido floten por encima del mapa */
+  position: relative;
+  z-index: 1500;
 }
 
 .header-left h1 {
@@ -36,6 +39,97 @@ body {
   display: flex;
   align-items: center;
   gap: 14px; 
+}
+
+.user-widget[hidden] {
+    display: none !important;
+}
+
+.user-widget {
+    position: relative;
+    display: flex;
+    align-items: center;
+  /* Elevar el contenedor del widget para evitar que elementos del mapa lo superpongan */
+  z-index: 1501;
+}
+
+.user-widget__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(248, 250, 252, 0.6);
+    background: rgba(15, 23, 42, 0.25);
+    color: #f8fafc;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-widget__trigger:hover {
+    background: rgba(15, 23, 42, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+
+.user-widget__initials {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.user-widget__name {
+    font-size: 14px;
+}
+
+.user-widget__panel {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    width: min(360px, 80vw);
+    padding: 20px;
+    background: #ffffff;
+    color: #0f172a;
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.22);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  /* Debe estar definitivamente por encima de los panes de Leaflet */
+  z-index: 1600;
+}
+
+.user-widget__panel h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.user-widget__panel ul {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.user-widget__panel span {
+    color: #475569;
+    font-weight: 500;
+}
+
+.user-widget--abierta .user-widget__panel {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 
 .user-chip {
@@ -308,4 +402,9 @@ ul#propList li strong {
   main { grid-template-columns: 1fr; }
   .map-wrapper { min-height: 360px; }
   #propForm { grid-template-columns: 1fr; }
+
+  .user-widget__trigger {
+    width: 100%;
+    justify-content: center;
+  }
 }
