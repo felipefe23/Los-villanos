@@ -86,6 +86,26 @@
           if (campo) campo.value = '';
         });
     }
+    function validarRUT(rut) {
+      rut = rut.replace(/\./g, '').replace(/-/g, '');
+      if (rut.length < 8 || rut.length > 9) return false;
+
+      const cuerpo = rut.slice(0, -1);
+      const dv = rut.slice(-1).toUpperCase();
+
+      let suma = 0;
+      let multiplo = 2;
+
+      for (let i = cuerpo.length - 1; i >= 0; i--) {
+        suma += parseInt(cuerpo[i]) * multiplo;
+        multiplo = multiplo < 7 ? multiplo + 1 : 2;
+      }
+
+      const dvEsperado = 11 - (suma % 11);
+      const dvFinal = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
+
+      return dv === dvFinal;
+    }
 
     form.addEventListener('submit', async (evento) => {
       evento.preventDefault();
@@ -120,8 +140,8 @@
         mensaje.textContent = 'Indica un teléfono de contacto.';
         return;
       }
-      if (!datos.rut) {
-        mensaje.textContent = 'Ingresa un RUT en formato 12345678-9.';
+      if (!validarRUT(datos.rut)) {
+        mensaje.textContent = 'RUT inválido. Usa formato 12345678-9 y asegúrate que el dígito verificador sea correcto.';
         return;
       }
       if (datos.direccion.length < 5) {

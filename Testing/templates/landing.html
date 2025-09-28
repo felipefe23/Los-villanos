@@ -48,7 +48,7 @@
     </section>
   </main>
 
-  <script>
+<script>
     const form = document.getElementById('loginForm');
     const messageEl = document.getElementById('formMessage');
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -62,7 +62,6 @@
       messageEl.classList.add('error');
     }
 
-    // mapa de rutas segun rol para dirigir al panel correcto
     const redirectByRole = {
       admin: '/admin',
       administrador: '/admin',
@@ -80,61 +79,38 @@
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
-      const formData = new FormData(form);
-      const email = formData.get('email').trim();
-      const password = formData.get('password').trim();
-
-      messageEl.textContent = '';
-      messageEl.classList.remove('success', 'error');
-
-      // vuelve con error rapido si los datos basicos no cumplen
-      if (!/^.{2,}@[^@]+\.[^@]+$/.test(email)) {
-        messageEl.textContent = 'Introduce un correo válido.';
-        messageEl.classList.add('error');
-        return;
-      }
-
-      if (!/^(?=.*\d).{8,}$/.test(password)) {
-        messageEl.textContent = 'La contraseña debe incluir 8 caracteres y al menos un número.';
-        messageEl.classList.add('error');
-        return;
-      }
-
-      submitBtn.disabled = true;
-      form.classList.add('is-loading');
+      const formData = Object.fromEntries(new FormData(form).entries());
+      const payload = {
+        email: (formData.email || '').trim().toLowerCase(),
+        password: (formData.password || '').trim(),
+        tipo_usuario: (formData.tipo_usuario || '').trim().toLowerCase()
+      };
 
       try {
-        // valida credenciales en la api y recibe los datos del usuario
-        const response = await fetch('/api/login', {
+        const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          credentials: 'include',
+          body: JSON.stringify(payload)
         });
 
-        const result = await response.json();
+        const data = await res.json();
 
-        if (!response.ok) {
-          throw new Error(result.error || 'Error al iniciar sesión');
+        if (res.ok) {
+
+          if (data.redirect) {
+            window.location.href = data.redirect;
+            return;
+          }
+          messageEl.textContent = data.message || 'Login exitoso.';
+          messageEl.classList.remove('error');
+        } else {
+          messageEl.textContent = data.error || 'Error en el login.';
+          messageEl.classList.add('error');
         }
-
-        const user = result.user || {};
-        localStorage.setItem('usuarioActual', JSON.stringify(user));
-
-        messageEl.textContent = result.message || 'Ingreso exitoso.';
-        messageEl.classList.add('success');
-
-        const role = String(user.tipo_usuario || '').toLowerCase();
-        // si el rol no esta configurado vuelve al inicio
-        const destination = redirectByRole[role] || '/';
-
-        setTimeout(() => {
-          window.location.href = destination;
-        }, 600);
-      } catch (error) {
-        messageEl.textContent = error.message || 'No se pudo iniciar sesión.';
+      } catch (err) {
+        messageEl.textContent = 'Error de red. Inténtalo nuevamente.';
         messageEl.classList.add('error');
-        submitBtn.disabled = false;
-        form.classList.remove('is-loading');
       }
     });
   </script>

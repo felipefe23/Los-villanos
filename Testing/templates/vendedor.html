@@ -9,17 +9,48 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor.css') }}">
 </head>
 <body>
-  <header>
-    <div>
-      <h1>Panel del Vendedor</h1>
-      <div class="user-box" id="userBox">Usuario sin identificar</div>
+  <header class="modern-header">
+  <div class="header-left">
+    <h1>Panel del Vendedor</h1>
+    <p class="subtitle">Administra tus propiedades publicadas y agrega nuevas fácilmente.</p>
+  </div>
+  
+  <div class="header-right">
+    <div class="user-chip">
+      <span class="avatar">JC</span>
+      <span class="username">Joaquín Contreras</span>
     </div>
-    <a href="{{ url_for('landing') }}">Cerrar sesión</a>
-  </header>
+    <a href="{{ url_for('landing') }}" class="logout-btn">Cerrar sesión</a>
+  </div>
+</header>
 
   <main>
     <div class="side-panel">
-      <form id="propForm">
+      <button type="button" class="toggle-btn" data-target="formPanel">
+        ➕ Agregar Propiedad
+      </button>
+
+      <section class="panel">
+        <button type="button" id="reloadBtn" style="margin-bottom:10px; padding:6px 10px;">📋 Actualizar lista</button>
+        <ul id="propList">
+          <li>No hay propiedades cargadas.</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="map-wrapper">
+      <h2>Mapa</h2>
+      <div id="map"></div>
+      <div class="map-legend">
+        <div>- Haz clic en el mapa para capturar las coordenadas.</div>
+        <div>- Los marcadores muestran las propiedades publicadas.</div>
+      </div>
+    </section>
+  </main>
+
+  <div id="formPanel">
+    <button type="button" class="close-btn" onclick="cerrarForm()">✖</button>
+    <form id="propForm">
       <h2>Agregar propiedad</h2>
       <label>
         Nombre
@@ -66,13 +97,11 @@
         Descripción
         <textarea name="descripcion" id="descripcion" rows="3" placeholder="Detalle breve"></textarea>
       </label>
-      <!-- CAMBIO AQUI -->
       <label>
         Imagen
         <input type="file" name="imagenFile" id="imagenFile" accept="image/jpeg,image/jpg" required>
         <small>Puedes arrastrar o seleccionar un archivo .jpg</small>
       </label>
-      <!-- FIN DEL CAMBIO -->
       <label>
         Coordenadas (lat,lng)
         <input type="text" name="coordenadas" id="coordenadas" placeholder="-33.4489,-70.6693" required>
@@ -88,25 +117,7 @@
       <div class="helper">También puedes hacer clic en el mapa para llenar las coordenadas.</div>
       <div id="propMessage"></div>
     </form>
-
-      <section class="panel">
-        <h2>Propiedades publicadas</h2>
-        <button type="button" id="reloadBtn" style="margin-bottom:10px; padding:6px 10px;">Actualizar lista</button>
-        <ul id="propList">
-          <li>No hay propiedades cargadas.</li>
-        </ul>
-      </section>
-    </div>
-
-    <section class="map-wrapper">
-      <h2>Mapa</h2>
-      <div id="map"></div>
-      <div class="map-legend">
-        <div>- Haz clic en el mapa para capturar las coordenadas.</div>
-        <div>- Los marcadores muestran las propiedades publicadas.</div>
-      </div>
-    </section>
-  </main>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -205,7 +216,7 @@
       }
     }
 
-    // FUNCION PARA CONVERTIR ARCHIVO A BASE64
+    // Convertir archivo a Base64
     function convertirArchivoABase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -286,6 +297,15 @@
         propSubmit.disabled = false;
       }
     });
+
+    // Funciones para abrir/cerrar el panel flotante
+    document.querySelector('[data-target="formPanel"]').addEventListener('click', () => {
+      document.getElementById('formPanel').classList.add('active');
+    });
+
+    function cerrarForm() {
+      document.getElementById('formPanel').classList.remove('active');
+    }
 
     mostrarUsuario();
     cargarPropiedades();

@@ -132,6 +132,7 @@ def register():
         return jsonify({"error": "El correo ya está registrado."}), 400
 
     hash_pw = ph.hash(password)
+    hash_tipo = ph.hash(tipo_usuario)
     usuarios = leer_usuarios()
     id_user = siguiente_id(usuarios)
     usuario = {
@@ -144,7 +145,7 @@ def register():
         'rut': rut.upper(),
         'direccion': direccion,
         'ciudad': ciudad,
-        'tipo_usuario': tipo_usuario,
+        'tipo_usuario': hash_tipo,
         'fecha_registro': datetime.utcnow().isoformat() + 'Z'
     }
     usuarios.append(usuario)
@@ -156,33 +157,70 @@ def register():
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json or {}
-    email = data.get('email', '').strip()
+    email = data.get('email', '').strip().lower()
     password = data.get('password', '').strip()
+    tipo_enviado = (data.get('tipo_usuario') or '').strip().lower()
+
     usuarios = leer_usuarios()
-    user = next((u for u in usuarios if u.get('email') == email), None)
+    user = next((u for u in usuarios if (u.get('email') or '').strip().lower() == email), None)
     if not user:
         return jsonify({"error": "Correo no encontrado."}), 400
+
     try:
         ph.verify(user['password'], password)
-        session.clear()
-        session['user_id'] = user.get('id')
-        session['user_role'] = (user.get('tipo_usuario') or '').lower()
-        session['user_email'] = user.get('email')
-        session.permanent = True
-        usuario_respuesta = user.copy()
-        usuario_respuesta.pop('password', None)
-        usuario_respuesta.setdefault('nombre', '')
-        usuario_respuesta.setdefault('apellido', '')
-        usuario_respuesta.setdefault('telefono', '')
-        usuario_respuesta.setdefault('rut', '')
-        usuario_respuesta.setdefault('direccion', '')
-        usuario_respuesta.setdefault('ciudad', '')
-        usuario_respuesta.setdefault('tipo_usuario', '')
-        usuario_respuesta.setdefault('fecha_registro', '')
-        return jsonify({"message": "Login exitoso.", "user": usuario_respuesta})
     except Exception:
-        return jsonify({"error": "Contraseña incorrecta."}), 400
+        return jsonify({"error": "ContraseÃ±a incorrecta."}), 400
 
+    stored_tipo = (user.get('tipo_usuario') or '').strip()
+    possible_types = ['admin', 'administrador', 'vendedor', 'comprador']
+    matched_tipo = None
+
+    if stored_tipo.startswith('$argon2'):
+        if tipo_enviado:
+            try:
+                if ph.verify(stored_tipo, tipo_enviado):
+                    matched_tipo = tipo_enviado
+            except Exception:
+                matched_tipo = None
+        if not matched_tipo:
+            for t in possible_types:
+                try:
+                    if ph.verify(stored_tipo, t):
+                        matched_tipo = t
+                        break
+                except Exception:
+                    continue
+    else:
+        matched_tipo = None
+
+    if not matched_tipo:
+        return jsonify({"error": "Tipo de usuario incorrecto."}), 400
+
+    session.clear()
+    session['user_id'] = user.get('id')
+    session['user_role'] = matched_tipo
+    session['user_email'] = user.get('email')
+    session.permanent = True
+
+    usuario_respuesta = user.copy()
+    usuario_respuesta.pop('password', None)
+    usuario_respuesta.setdefault('nombre', '')
+    usuario_respuesta.setdefault('apellido', '')
+    usuario_respuesta.setdefault('telefono', '')
+    usuario_respuesta.setdefault('rut', '')
+    usuario_respuesta.setdefault('direccion', '')
+    usuario_respuesta.setdefault('ciudad', '')
+    usuario_respuesta.setdefault('tipo_usuario', '')
+    usuario_respuesta.setdefault('fecha_registro', '')
+
+    if matched_tipo in ('admin', 'administrador'):
+        redirect_url = url_for('admin_dashboard_view')
+    elif matched_tipo == 'vendedor':
+        redirect_url = url_for('vendedor_view')
+    else:
+        redirect_url = url_for('comprador_dashboard_view')
+
+    return jsonify({"message": "Login exitoso.", "user": usuario_respuesta, "redirect": redirect_url})
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():

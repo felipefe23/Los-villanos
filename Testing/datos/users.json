@@ -191,7 +191,7 @@
     "rut": "21998961-K",
     "direccion": "Hualquillo 91",
     "ciudad": "Curico",
-    "tipo_usuario": "comprador",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$sIPQTFV6JokNVB3KfTE2MQ$AvS069LQWQ9zhJAKW3DhbacHjjlFh7BK2MVyO0S1wOc",
     "fecha_registro": "2025-09-27T03:17:14.337724Z"
   },
   {
@@ -204,7 +204,72 @@
     "rut": "21875467-8",
     "direccion": "Mexico 325",
     "ciudad": "Rengo",
-    "tipo_usuario": "comprador",
+    "tipo_usuario": "vendedor",
     "fecha_registro": "2025-09-27T23:32:55.930095Z"
+  },
+  {
+    "id": 21,
+    "email": "dirojas24@utalca.cl",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$QjyS8bWQFe3YaT3mPvqSuA$QMcfUwC1PLmEJPPuW7f+o8evE8zvyTzbOwv1D6W04FE",
+    "nombre": "Diego",
+    "apellido": "Rojas Acevedo",
+    "telefono": "+56990924609",
+    "rut": "12121212-7",
+    "direccion": "Rauco, avenida diego portales",
+    "ciudad": "Curicó",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$uWCsAxVLbf6gPHx75ff+bA$oFV8zG4ucjXj3xD1CBYB+kQtliJWVHHhqkcUfms1L9U",
+    "fecha_registro": "2025-09-28T03:02:53.858491Z"
+  },
+  {
+    "id": 22,
+    "email": "felipeguzman@utalca.cl",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$nl2LnhETpW4gRs2dPT7NfA$kCxKXxUpgF3pWXJT57iSncq8kVkSW5fGxdR83f0tMcY",
+    "nombre": "Felipe",
+    "apellido": "Guzmán",
+    "telefono": "+56912345678",
+    "rut": "12345678-9",
+    "direccion": "Santa Emilia",
+    "ciudad": "Curicó",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$gGlP9/KKFxbccXoHCjltzw$A2Sb2mrF+tPtld5ke9bbVDMZK+c2QhkyAaEl88B6wkU",
+    "fecha_registro": "2025-09-28T03:14:17.961197Z"
+  },
+  {
+    "id": 23,
+    "email": "emiliojoaquin127@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$PEiOCkyoh1TbMfF5ouW9zw$rkPgl7B6nD2Ngw4SuC98R4Z+/ha1evFNLf6Wl3NSLWA",
+    "nombre": "Joaquin",
+    "apellido": "Contreras",
+    "telefono": "+56986454095",
+    "rut": "21998961-K",
+    "direccion": "Roberto Campaña",
+    "ciudad": "Pelequen",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$1UulYs0mLLcLn6jbwho67A$+NHs9B+zIz4aA4KPxD9Qjf1asuz9Hqr3SMLqpUMag2E",
+    "fecha_registro": "2025-09-28T03:15:42.356218Z"
+  },
+  {
+    "id": 24,
+    "email": "frreyes24@utalca.cl",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$cmwMn/vYcTDqVCthmABc7w$Rh68LcEuzRL+DoZZcdMe4peftE72IaVBkagzGmCjKSM",
+    "nombre": "Francisco",
+    "apellido": "Reyes",
+    "telefono": "+56912345678",
+    "rut": "22114519-4",
+    "direccion": "Santa Fé",
+    "ciudad": "Curicó",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$LWCTSATpNc1u5fgwJ0+39A$FHI54h7n12YLtQeNPPYWCVhh/zEFABKjXJ/F3Ioqm9M",
+    "fecha_registro": "2025-09-28T03:17:36.381655Z"
+  },
+  {
+    "id": 25,
+    "email": "1111111@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$5asc2Mnp3BFJsXMabRZIgw$HHh9oBM6YUDTupDaMOXp7jDlWx6Fn5CiYaubGX8Ak9s",
+    "nombre": "Joaquin",
+    "apellido": "Contreras",
+    "telefono": "+56 9 1112 2222",
+    "rut": "21998961-K",
+    "direccion": "Hualquillo 91",
+    "ciudad": "Curico",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$fpSNkVr3UqOuwgKjHQXjMQ$zRmJhsUA6jx4HQGd+FJJa/OmWD+U9gMz9+jNx7rykoI",
+    "fecha_registro": "2025-09-28T03:29:57.782283Z"
   }
 ]
