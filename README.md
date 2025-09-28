@@ -2,7 +2,6 @@
 - *Interfaz fácil de usar:* La página contará con un diseño limpio y sencillo, permitiendo una navegación fluida.
 
 ### BITACIORA DE AVANCES:
-## BITACIORA DE AVANCES:
 
 # Detalles de avance - Semana 1:
 Como grupo decidimos conocernos y ver que intereses en común teníamos para llegar a una idea en concreto para el proyecto, sumado a una definición del
@@ -26,14 +25,13 @@ ya que logramos implementar el mapa interactivo de la API, logrando agregar punt
 
 <img width="1899" height="947" alt="image" src="https://github.com/user-attachments/assets/e832aff5-90e0-44d5-8267-fc7d8b9336d7" />
 
-
-
 # Detalles de avance - Semana 5 (de regreso de la semana sin entrega):
 Esta semana trabajamos en nuestros nuevos roles con el cambio de Sprint, el cual fue Francisco Reyes: Lider; Diego Rojas: Backend; Joaquin Contreras: Frontend; y por ultimo Luis Guzman: Documentacion.
 
 Principalmente definimos un metodo de trabajo en donde el backend y el frontend trabajan juntos para implementar lo solicitado, y el lider y la documentacion a su vez se encargan de revisar y detallar los avances correspondientes.
 
 En este avance implementamos un html con un puerto local y un login con un manejo de errores sencillo pero funcional, vinculando el login de "vendedor" que una vez inicia sesion se redirige a el mapa interactivo de la API presentado en la semana 4, adjunto imagenes:
+
 # Ventana inicial de Inicio de Sesion:
 <img width="1914" height="940" alt="image" src="https://github.com/user-attachments/assets/96491d4d-1c49-4f54-99bf-b1e3d3bad801" />
 
@@ -46,3 +44,4 @@ Si se ingresa un usuario y contraseña existente se redijira hacia el mapa de la
 
 # Login de Administrador:
 <img width="1900" height="942" alt="image" src="https://github.com/user-attachments/assets/a066bec2-b0b5-4911-934d-aa711a6cb0e9" />
+
