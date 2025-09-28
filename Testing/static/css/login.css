@@ -21,7 +21,6 @@ body {
   align-items: center;
   justify-content: center;
   padding: clamp(24px, 8vw, 64px);
-  /* fondo degradado con textura suave para enmarcar el formulario */
   background:
     radial-gradient(1200px 600px at 20% -200px, rgba(59, 130, 246, 0.55), transparent 70%),
     radial-gradient(1100px 680px at 80% 120%, rgba(56, 189, 248, 0.55), transparent 65%),
@@ -114,8 +113,10 @@ form {
   color: var(--text);
 }
 
+/* 🔹 FIX: también incluimos input[type="text"] */
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+input[type="text"] {
   width: 100%;
   border-radius: 14px;
   border: 1px solid rgba(99, 102, 241, 0.25);

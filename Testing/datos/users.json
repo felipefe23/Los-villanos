@@ -193,5 +193,18 @@
     "ciudad": "Curico",
     "tipo_usuario": "comprador",
     "fecha_registro": "2025-09-27T03:17:14.337724Z"
+  },
+  {
+    "id": 17,
+    "email": "hola123@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$KrSLDTmWHPeDajamiziQxg$OzP53DELKEgPFN+/FH8Td88E8UWKQ6A0GIS1JmkNFw0",
+    "nombre": "Vicente",
+    "apellido": "Rojas",
+    "telefono": "+56 9 1112 2222",
+    "rut": "21875467-8",
+    "direccion": "Mexico 325",
+    "ciudad": "Rengo",
+    "tipo_usuario": "comprador",
+    "fecha_registro": "2025-09-27T23:32:55.930095Z"
   }
 ]

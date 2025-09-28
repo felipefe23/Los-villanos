@@ -27,7 +27,9 @@
           <span>Contraseña</span>
           <div class="password-field">
             <input type="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
-            <button type="button" class="toggle-pass" aria-label="Mostrar u ocultar contraseña">👁️</button>
+            <button type="button" class="toggle-pass" aria-label="Mostrar u ocultar contraseña">
+              <span id="eye-icon">👁️</span>
+            </button>
           </div>
         </label>
 
@@ -41,7 +43,7 @@
 
       <div class="helper-links">
         <a href="{{ url_for('comprador_register_view') }}">Crear cuenta de comprador</a>
-        <a href="{{ url_for('vendedor_register_view') }}">Registrar vendedor</a>
+        <a href="{{ url_for('vendedor_register_view') }}">Crear cuenta de vendedor</a>
       </div>
     </section>
   </main>
@@ -51,8 +53,9 @@
     const messageEl = document.getElementById('formMessage');
     const submitBtn = form.querySelector('button[type="submit"]');
     const togglePassBtn = form.querySelector('.toggle-pass');
-    const passwordInput = form.querySelector('input[type="password"]');
-    const serverErrorMessage = {{ (error_message or '')|tojson }};
+    const passwordInput = form.querySelector('input[name="password"]');
+    const eyeIcon = document.getElementById('eye-icon');
+    const serverErrorMessage = {{ (error_message or '') | tojson | safe }};
 
     if (serverErrorMessage) {
       messageEl.textContent = serverErrorMessage;
@@ -70,7 +73,7 @@
     togglePassBtn.addEventListener('click', () => {
       const isPassword = passwordInput.type === 'password';
       passwordInput.type = isPassword ? 'text' : 'password';
-      togglePassBtn.textContent = '👁️';
+      eyeIcon.textContent = isPassword ? '🙈' : '👁️';
       passwordInput.focus();
     });
 
