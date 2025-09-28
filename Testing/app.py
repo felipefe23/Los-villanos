@@ -1,15 +1,20 @@
 from flask import Flask, render_template, request, jsonify
-from flask import redirect, url_for
+from flask import redirect, url_for, session
+from functools import wraps
 from persistencia.manejoArchivo import leer_propiedades, guardar_propiedades, coordenadas_repetidas, siguiente_id
 import os
 import re
 import json
 from argon2 import PasswordHasher
 from datetime import datetime
+import base64
 
 
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key')
+app.config.setdefault('SESSION_COOKIE_HTTPONLY', True)
+app.config.setdefault('SESSION_COOKIE_SAMESITE', 'Lax')
 
 # HASHEADO EN ARGON2 TESTING
 
@@ -39,6 +44,50 @@ def leer_usuarios():
 def guardar_usuarios(lista_usuarios):
     with open(USERS_FILE, 'w', encoding='utf-8') as f:
         json.dump(lista_usuarios, f, indent=2, ensure_ascii=False)
+
+
+def _prefers_json():
+    best = request.accept_mimetypes.best
+    if not best:
+        return False
+    if best != 'application/json':
+        return False
+    return request.accept_mimetypes[best] >= request.accept_mimetypes['text/html']
+
+#Funcion para hardcodear la cache
+@app.after_request
+def harden_cache_headers(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+#Funcion para validar el login
+def login_required(*roles):
+    roles_normalizados = {r.lower() for r in roles if isinstance(r, str)} if roles else set()
+
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapped_view(*args, **kwargs):
+            user_id = session.get('user_id')
+            user_role = (session.get('user_role') or '').lower()
+
+            if not user_id:
+                if _prefers_json():
+                    return jsonify({"error": "Autenticación requerida."}), 401
+                return redirect(url_for('login_view'))
+
+            if roles_normalizados and user_role not in roles_normalizados:
+                if user_role not in {'admin', 'administrador'}:
+                    if _prefers_json():
+                        return jsonify({"error": "Permisos insuficientes."}), 403
+                    return redirect(url_for('landing'))
+
+            return view_func(*args, **kwargs)
+
+        return wrapped_view
+
+    return decorator
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -83,6 +132,7 @@ def register():
         return jsonify({"error": "El correo ya está registrado."}), 400
 
     hash_pw = ph.hash(password)
+    hash_tipo = ph.hash(tipo_usuario)
     usuarios = leer_usuarios()
     id_user = siguiente_id(usuarios)
     usuario = {
@@ -95,7 +145,7 @@ def register():
         'rut': rut.upper(),
         'direccion': direccion,
         'ciudad': ciudad,
-        'tipo_usuario': tipo_usuario,
+        'tipo_usuario': hash_tipo,
         'fecha_registro': datetime.utcnow().isoformat() + 'Z'
     }
     usuarios.append(usuario)
@@ -107,57 +157,131 @@ def register():
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json or {}
-    email = data.get('email', '').strip()
+    email = data.get('email', '').strip().lower()
     password = data.get('password', '').strip()
+    tipo_enviado = (data.get('tipo_usuario') or '').strip().lower()
+
     usuarios = leer_usuarios()
-    user = next((u for u in usuarios if u.get('email') == email), None)
+    user = next((u for u in usuarios if (u.get('email') or '').strip().lower() == email), None)
     if not user:
         return jsonify({"error": "Correo no encontrado."}), 400
+
     try:
         ph.verify(user['password'], password)
-        usuario_respuesta = user.copy()
-        usuario_respuesta.pop('password', None)
-        usuario_respuesta.setdefault('nombre', '')
-        usuario_respuesta.setdefault('apellido', '')
-        usuario_respuesta.setdefault('telefono', '')
-        usuario_respuesta.setdefault('rut', '')
-        usuario_respuesta.setdefault('direccion', '')
-        usuario_respuesta.setdefault('ciudad', '')
-        usuario_respuesta.setdefault('tipo_usuario', '')
-        usuario_respuesta.setdefault('fecha_registro', '')
-        return jsonify({"message": "Login exitoso.", "user": usuario_respuesta})
     except Exception:
         return jsonify({"error": "Contraseña incorrecta."}), 400
+
+    stored_tipo = (user.get('tipo_usuario') or '').strip()
+    possible_types = ['admin', 'administrador', 'vendedor', 'comprador']
+    matched_tipo = None
+
+    if stored_tipo.startswith('$argon2'):
+        if tipo_enviado:
+            try:
+                if ph.verify(stored_tipo, tipo_enviado):
+                    matched_tipo = tipo_enviado
+            except Exception:
+                matched_tipo = None
+        if not matched_tipo:
+            for t in possible_types:
+                try:
+                    if ph.verify(stored_tipo, t):
+                        matched_tipo = t
+                        break
+                except Exception:
+                    continue
+    else:
+        matched_tipo = None
+
+    if not matched_tipo:
+        return jsonify({"error": "Tipo de usuario incorrecto."}), 400
+
+    session.clear()
+    session['user_id'] = user.get('id')
+    session['user_role'] = matched_tipo
+    session['user_email'] = user.get('email')
+    session.permanent = True
+
+    usuario_respuesta = user.copy()
+    usuario_respuesta.pop('password', None)
+    usuario_respuesta.setdefault('nombre', '')
+    usuario_respuesta.setdefault('apellido', '')
+    usuario_respuesta.setdefault('telefono', '')
+    usuario_respuesta.setdefault('rut', '')
+    usuario_respuesta.setdefault('direccion', '')
+    usuario_respuesta.setdefault('ciudad', '')
+    usuario_respuesta.setdefault('tipo_usuario', '')
+    usuario_respuesta.setdefault('fecha_registro', '')
+
+    if matched_tipo in ('admin', 'administrador'):
+        redirect_url = url_for('admin_dashboard_view')
+    elif matched_tipo == 'vendedor':
+        redirect_url = url_for('vendedor_view')
+    else:
+        redirect_url = url_for('comprador_dashboard_view')
+
+    return jsonify({"message": "Login exitoso.", "user": usuario_respuesta, "redirect": redirect_url})
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    session.clear()
+    if request.method == 'POST' or _prefers_json():
+        return jsonify({"message": "Sesión cerrada."})
+    return redirect(url_for('login_view'))
 
 # HASHEADO EN ARGON2 TESTING
 
 @app.route('/')
 def landing():
-    return render_template('landing.html')
+    mensaje_error = session.pop('error_message', '')
+    session.clear()
+    return render_template('landing.html', error_message=mensaje_error)
+
+@app.get('/login')
+def login_view():
+    mensaje_error = session.pop('error_message', '')
+    session.clear()
+    return render_template('landing.html', error_message=mensaje_error)
 
 @app.get("/admin/login")
 def admin_login_view():
-    return render_template("admin_login.html")
+    return redirect(url_for('landing'))
 
 @app.get("/vendedor/login")
 def vendedor_login_view():
-    return render_template("vendedor_login.html")
+    return redirect(url_for('landing'))
 
 @app.get("/comprador/login")
 def comprador_login_view():
-    return render_template("comprador_login.html")
+    return redirect(url_for('landing'))
 
 @app.get("/comprador/register")
 def comprador_register_view():
     return render_template("comprador_register.html")
 
 @app.get("/comprador")
+@login_required('comprador', 'administrador', 'admin')
 def comprador_dashboard_view():
     propiedades = leer_propiedades()
-    propiedades_venta = [p for p in propiedades if p.get("estado", "").lower() == "venta"]
-    return render_template("comprador_dashboard.html", propiedades=propiedades_venta)
+    usuarios = leer_usuarios()
+    nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
+    propiedades_filtradas = []
+    for p in propiedades:
+        if not p.get('activo', True):
+            continue
+        copia = p.copy()
+        prop_id = copia.get('propietario')
+        copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
+        propiedades_filtradas.append(copia)
+    return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas)
+
+@app.get("/admin")
+@login_required('admin', 'administrador')
+def admin_dashboard_view():
+    return render_template("admin_dashboard.html")
 
 @app.get("/vendedor")
+@login_required('vendedor', 'administrador', 'admin')
 def vendedor_view():
     return render_template("vendedor.html")
 
@@ -178,15 +302,30 @@ def ventas_view():
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():
     propiedades = leer_propiedades()
-    return jsonify(propiedades)
+    usuarios = leer_usuarios()
+    nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
+    propiedades_enriquecidas = []
+    for p in propiedades:
+        copia = p.copy()
+        prop_id = copia.get('propietario')
+        nombre = nombres.get(prop_id)
+        copia['propietario_nombre'] = nombre if nombre else None
+        propiedades_enriquecidas.append(copia)
+    return jsonify(propiedades_enriquecidas)
 
 @app.route('/api/propiedades', methods=['POST'])
 def add_propiedad():
     data = request.json
     nombre = data.get('nombre')
     descripcion = data.get('descripcion')
+    if not descripcion:
+        descripcion = "Sin descripción"
     precio = data.get('precio')
-    propietario = data.get('propietario')
+# Crear propiedad pero con autenticacion de usuario
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Autenticación requerida para crear propiedades."}), 401
+    propietario = user_id
     localizacion = data.get('localizacion')
     dormitorios = data.get('dormitorios')
     baños = data.get('baños')
@@ -268,6 +407,33 @@ def add_propiedad():
     propiedades.append(nueva)
     guardar_propiedades(propiedades)
     return jsonify({"message": "Propiedad ingresada con éxito.", "propiedades": propiedades})
+
+# Error de archivos locales
+@app.route('/api/me', methods=['GET'])
+def api_me():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "No autenticado."}), 401
+
+    usuarios = leer_usuarios()
+    user = next((u for u in usuarios if u.get('id') == user_id), None)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado."}), 404
+
+    user_copy = user.copy()
+    user_copy.pop('password', None)
+    return jsonify(user_copy)
+# Error de archivos locales
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template("error.html", message="La página que buscas no existe (Error 404)."), 404
+
+def convertir_a_base64(ruta_imagen):
+    with open(ruta_imagen, "rb") as img:
+        return base64.b64encode(img.read()).decode("utf-8")
+
+
 
 if __name__ == '__main__':
 

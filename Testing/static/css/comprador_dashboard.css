@@ -21,6 +21,9 @@ body {
     color: #f8fafc;
     padding: 48px 0 40px;
     box-shadow: 0 18px 42px rgba(15, 23, 42, 0.22);
+    /* Asegurar que el header y su contenido queden por encima del mapa */
+    position: relative;
+    z-index: 1500;
 }
 
 .encabezado h1 {
@@ -61,6 +64,7 @@ body {
     position: relative;
     display: flex;
     align-items: center;
+    z-index: 1501;
 }
 
 .user-widget__trigger {
@@ -115,7 +119,7 @@ body {
     pointer-events: none;
     transform: translateY(8px);
     transition: opacity 0.2s ease, transform 0.2s ease;
-    z-index: 20;
+    z-index: 1600;
 }
 
 .user-widget__panel h2 {

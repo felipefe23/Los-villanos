@@ -1,53 +1,141 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViviendaDigital - Home</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ViviendaDigital · Iniciar Sesión</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="logo">
-            🏠
-        </div>
-        <h1>Bienvenido a ViviendaDigital</h1>
-        <p>Selecciona tu tipo de cuenta para continuar</p>
-
-        <div class="cards">
-            <a href="{{ url_for('admin_login_view') }}" class="card admin">
-                <h2>Administrador</h2>
-                <p>Gestiona toda la plataforma</p>
-                <ul>
-                    <li>Gestionar usuarios</li>
-                    <li>Ver estadísticas</li>
-                    <li>Configurar sistema</li>
-                </ul>
-            </a>
-
-           
-            <a href="{{ url_for('vendedor_login_view') }}" class="card seller">
-                <h2>Vendedor</h2>
-                <p>Publica y gestiona propiedades</p>
-                <ul>
-                    <li>Publicar propiedades</li>
-                    <li>Gestionar anuncios</li>
-                    <li>Ver consultas</li>
-                </ul>
-            </a>
-
-            <a href="{{ url_for('comprador_login_view') }}" class="card buyer">
-                <h2>Comprador</h2>
-                <p>Busca y consulta propiedades</p>
-                <ul>
-                    <li>Buscar propiedades</li>
-                    <li>Guardar favoritos</li>
-                    <li>Contactar vendedores</li>
-                </ul>
-            </a>
-        </div>
-
-        <p class="note">¿No estás seguro? Puedes cambiar tu tipo de cuenta más tarde</p>
+  <main class="login-only" aria-label="Formulario de inicio de sesión">
+    <div class="brand-pill">
+      <span class="brand-icon">🏠</span>
+      <span>ViviendaDigital</span>
     </div>
+
+    <section class="form-card">
+      <h1>Inicia sesión</h1>
+      <p class="subtitle">Accede con tu correo y contraseña registrados.</p>
+
+      <form id="loginForm" novalidate>
+        <label class="field">
+          <span>Correo electrónico</span>
+          <input type="email" name="email" placeholder="ejemplo@correo.com" autocomplete="email" required>
+        </label>
+
+        <label class="field">
+          <span>Contraseña</span>
+          <div class="password-field">
+            <input type="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="toggle-pass" aria-label="Mostrar u ocultar contraseña">
+              <span id="eye-icon">👁️</span>
+            </button>
+          </div>
+        </label>
+
+        <button type="submit" class="btn-primary">
+          <span class="btn-label">Ingresar</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <p id="formMessage" class="form-message" role="alert" aria-live="polite"></p>
+
+      <div class="helper-links">
+        <a href="{{ url_for('comprador_register_view') }}">Crear cuenta de comprador</a>
+        <a href="{{ url_for('vendedor_register_view') }}">Crear cuenta de vendedor</a>
+      </div>
+    </section>
+  </main>
+
+<script>
+    // Limpiar usuarioActual al cargar la pagina en secion
+  try { localStorage.removeItem('usuarioActual'); } catch (e) { /* ignore */ }
+    const form = document.getElementById('loginForm');
+    const messageEl = document.getElementById('formMessage');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const togglePassBtn = form.querySelector('.toggle-pass');
+    const passwordInput = form.querySelector('input[name="password"]');
+    const eyeIcon = document.getElementById('eye-icon');
+    const serverErrorMessage = {{ (error_message or '') | tojson | safe }};
+
+    if (serverErrorMessage) {
+      messageEl.textContent = serverErrorMessage;
+      messageEl.classList.add('error');
+    }
+
+    const redirectByRole = {
+      admin: '/admin',
+      administrador: '/admin',
+      vendedor: '/vendedor',
+      comprador: '/comprador'
+    };
+
+    togglePassBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      eyeIcon.textContent = isPassword ? '🙈' : '👁️';
+      passwordInput.focus();
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      // 🔹 Activar ruedita de carga
+      submitBtn.classList.add('is-loading');
+      submitBtn.setAttribute('disabled', true);
+
+      const formData = Object.fromEntries(new FormData(form).entries());
+      const payload = {
+        email: (formData.email || '').trim().toLowerCase(),
+        password: (formData.password || '').trim(),
+        tipo_usuario: (formData.tipo_usuario || '').trim().toLowerCase()
+      };
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+                                            // Error de archivos locales
+          try {
+            if (data.user) {
+              localStorage.setItem('usuarioActual', JSON.stringify(data.user));
+            }
+          } catch (e) {
+            console.warn('No se pudo guardar usuario en localStorage', e);
+          }
+
+          if (data.redirect) {
+            try {
+              await fetch('/api/me', { credentials: 'include' });
+            } catch (e) {
+            }
+            window.location.href = data.redirect;
+            return;
+          }
+          messageEl.textContent = data.message || 'Login exitoso.';
+          messageEl.classList.remove('error');
+        } else {
+          messageEl.textContent = data.error || 'Error en el login.';
+          messageEl.classList.add('error');
+        }
+      } catch (err) {
+        messageEl.textContent = 'Error de red. Inténtalo nuevamente.';
+        messageEl.classList.add('error');
+      } finally {
+        // 🔹 Desactivar ruedita de carga
+        submitBtn.classList.remove('is-loading');
+        submitBtn.removeAttribute('disabled');
+      }
+    });
+</script>
+
 </body>
 </html>

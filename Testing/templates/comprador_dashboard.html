@@ -11,7 +11,7 @@
     <header class="encabezado">
         <div class="contenedor">
             <div class="barra-superior">
-                <a class="btn-volver" href="{{ url_for('landing') }}">← Volver</a>
+                <a class="btn-volver" href="{{ url_for('landing') }}">← Cerrar sesión</a>
                 <div class="user-widget" id="userWidget" hidden>
                     <button class="user-widget__trigger" id="userTrigger" aria-label="Mostrar datos del usuario" aria-expanded="false">
                         <span class="user-widget__initials" id="userInitials">US</span>
@@ -26,7 +26,7 @@
                             <li><span>RUT:</span> <strong id="userRut"></strong></li>
                             <li><span>Dirección:</span> <strong id="userDireccion"></strong></li>
                             <li><span>Ciudad:</span> <strong id="userCiudad"></strong></li>
-                            <li><span>Tipo de usuario:</span> <strong id="userTipo"></strong></li>
+                            
                             <li><span>Registrado el:</span> <strong id="userFecha"></strong></li>
                         </ul>
                     </div>
@@ -51,14 +51,17 @@
                         <article class="tarjeta">
                             <div class="imagen" aria-hidden="true">
                                 {% if propiedad.get('img') %}
-                                    <img src="{{ propiedad.get('img') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
+                                    <img src="data:image/jpeg;base64,{{ propiedad.get('img') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
                                 {% else %}
                                     <div class="imagen-placeholder">Sin imagen</div>
                                 {% endif %}
                             </div>
                             <div class="contenido">
                                 <h2>{{ propiedad.get('nombre', 'Propiedad sin nombre') }}</h2>
-                                <p class="precio">${{ '{:,}'.format(precio|int).replace(',', '.') }}</p>
+                                <p class="precio">
+                                    ${{ '{:,}'.format(precio|int).replace(',', '.') }}
+                                    {% if propiedad.get('estado') == 'arriendo' %} /mes{% endif %}
+                                </p>
                                 <p class="descripcion">{{ propiedad.get('descripcion', 'Sin descripción disponible') }}</p>
                                 <ul class="detalles">
                                     <li><span>Ubicación:</span> {{ propiedad.get('localizacion', 'No indicada') }}</li>
@@ -97,13 +100,23 @@
             rut: document.getElementById('userRut'),
             direccion: document.getElementById('userDireccion'),
             ciudad: document.getElementById('userCiudad'),
-            tipo: document.getElementById('userTipo'),
             fecha: document.getElementById('userFecha'),
             initials: document.getElementById('userInitials'),
             shortName: document.getElementById('userShortName')
         };
+// Error de archivos locales
+        async function obtenerUsuarioActual() {
+            try {
+                const res = await fetch('/api/me', { credentials: 'include' });
+                if (res.ok) {
+                    const usuario = await res.json();
+                    try { localStorage.setItem('usuarioActual', JSON.stringify(usuario)); } catch (e) { /* ignore */ }
+                    return usuario;
+                }
+            } catch (e) {
+                // si no resulta, caer en localstorage
+            }
 
-        function obtenerUsuarioActual() {
             try {
                 const guardado = localStorage.getItem('usuarioActual');
                 if (!guardado) return null;
@@ -156,7 +169,6 @@
             camposUsuario.rut.textContent = usuario.rut || 'Sin RUT';
             camposUsuario.direccion.textContent = usuario.direccion || 'Sin dirección';
             camposUsuario.ciudad.textContent = usuario.ciudad || 'Sin ciudad';
-            camposUsuario.tipo.textContent = formatearTipo(usuario.tipo_usuario);
             camposUsuario.fecha.textContent = formatearFecha(usuario.fecha_registro);
             camposUsuario.initials.textContent = formatearIniciales(usuario.nombre, usuario.apellido, usuario.email);
             camposUsuario.shortName.textContent = formatearNombreCorto(usuario.nombre, usuario.email);
@@ -167,20 +179,29 @@
             widget.classList.remove('user-widget--abierta');
             if (trigger) trigger.setAttribute('aria-expanded', 'false');
         }
-
+// Error de archivos locales
         function inicializarWidgetUsuario() {
-            const usuario = obtenerUsuarioActual();
-            if (!usuario || !widget || !trigger || !panel) {
+            if (!widget || !trigger || !panel) {
                 if (widget) widget.hidden = true;
                 return;
             }
+            obtenerUsuarioActual().then(usuario => {
+                if (!usuario) {
+                    if (widget) widget.hidden = true;
+                    return;
+                }
 
-            poblarWidget(usuario);
+                poblarWidget(usuario);
 
-            trigger.addEventListener('click', () => {
-                const abierta = widget.classList.toggle('user-widget--abierta');
-                trigger.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+                trigger.addEventListener('click', () => {
+                    const abierta = widget.classList.toggle('user-widget--abierta');
+                    trigger.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+                });
+            }).catch(err => {
+                console.warn('Error al obtener usuario', err);
+                if (widget) widget.hidden = true;
             });
+// Error de archivos locales
 
             document.addEventListener('click', (evento) => {
                 if (!widget.contains(evento.target)) {
@@ -204,7 +225,7 @@
         };
 
         let mapaInicializado = false;
-        const propiedadesVenta = {{ propiedades|tojson }};
+        const propiedadesVenta = {{ propiedades | tojson }};
 
         function activarVista(nombreVista) {
             Object.keys(vistas).forEach(vista => {
@@ -232,9 +253,10 @@
             if (!document.getElementById('map')) {
                 return;
             }
-            const mapa = L.map('map').setView([-33.45, -70.6667], 12);
+            const mapa = L.map('map').setView([-34.984403, -71.239488], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
+                minZoom: 12,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(mapa);
 
@@ -251,10 +273,17 @@
                 if (partes.length === 2 && !Number.isNaN(partes[0]) && !Number.isNaN(partes[1])) {
                     const marker = L.marker(partes).addTo(grupo);
                     const precio = Number(propiedad.precio) || 0;
+                    const esArriendo = (propiedad.estado || '').toLowerCase() === 'arriendo';
+                    const propietarioNombre = propiedad.propietario_nombre || null;
+                    const propietarioId = propiedad.propietario || 'N/D';
                     marker.bindPopup(`
                         <strong>${propiedad.nombre || 'Propiedad sin nombre'}</strong><br>
-                        Precio: $${precio.toLocaleString('es-CL')}<br>
-                        Ubicación: ${propiedad.localizacion || 'No indicada'}
+                        Precio: $${precio.toLocaleString('es-CL')}${esArriendo ? ' /mes' : ''}<br>
+                        Ubicación: ${propiedad.localizacion || 'No indicada'}<br>
+                        Propietario: ${propietarioNombre || propietarioId}<br>
+                        ${propiedad.img ? `<img src="data:image/jpeg;base64,${propiedad.img}" 
+                            alt="Imagen de propiedad" 
+                            style="max-width:150px;max-height:100px;object-fit:cover;margin-top:4px;border:1px solid #ccc;">` : ''}
                     `);
                     bounds.push(partes);
                 }
