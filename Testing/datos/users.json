@@ -271,5 +271,31 @@
     "ciudad": "Curico",
     "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$fpSNkVr3UqOuwgKjHQXjMQ$zRmJhsUA6jx4HQGd+FJJa/OmWD+U9gMz9+jNx7rykoI",
     "fecha_registro": "2025-09-28T03:29:57.782283Z"
+  },
+  {
+    "id": 26,
+    "email": "prueba1@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$BI1symeh01bvFaKh//SjEw$Agbtsvqx46yvPoNsmwBFDK4Bwa/X3NuNkdJiQdEer/g",
+    "nombre": "Joaquin",
+    "apellido": "Contreras",
+    "telefono": "+56 9 8645 4095",
+    "rut": "21998961-K",
+    "direccion": "Hualquillo 91",
+    "ciudad": "Curico",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$sNb98vjTdq6D0lCjQjaShA$cdKoSDqTx2lz1XSpqyKjRuE71WoiF4eTq9I9Y8CocTE",
+    "fecha_registro": "2025-09-28T04:16:04.606271Z"
+  },
+  {
+    "id": 27,
+    "email": "prueba2@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$mK92aifOawGZ1Wm3YKjyhA$mnMzoCfx2b08DqFrUMeFvQToMV8A0nLeD25idmmVmZo",
+    "nombre": "Joaquin",
+    "apellido": "Contreras",
+    "telefono": "+56 9 8645 4095",
+    "rut": "21998961-K",
+    "direccion": "Hualquillo 91",
+    "ciudad": "Curico",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$N9XT3gpk9yUt51jF2olIBQ$eCa0Dkv7rwoy0ae/KDOd8ONJZbtcGWej00PnmeiW6bY",
+    "fecha_registro": "2025-09-28T04:34:14.427893Z"
   }
 ]

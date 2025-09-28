@@ -296,6 +296,12 @@ ul#propList li strong {
 .toggle-btn:active {
   transform: scale(0.98);
 }
+.map-wrapper h2 {
+  text-align: center;
+  margin: 16px 0;
+  font-size: 22px;
+  font-weight: 700;
+}
 
 
 @media (max-width: 900px) {

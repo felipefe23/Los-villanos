@@ -79,6 +79,10 @@
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
+      // 🔹 Activar ruedita de carga
+      submitBtn.classList.add('is-loading');
+      submitBtn.setAttribute('disabled', true);
+
       const formData = Object.fromEntries(new FormData(form).entries());
       const payload = {
         email: (formData.email || '').trim().toLowerCase(),
@@ -97,7 +101,6 @@
         const data = await res.json();
 
         if (res.ok) {
-
           if (data.redirect) {
             window.location.href = data.redirect;
             return;
@@ -111,8 +114,13 @@
       } catch (err) {
         messageEl.textContent = 'Error de red. Inténtalo nuevamente.';
         messageEl.classList.add('error');
+      } finally {
+        // 🔹 Desactivar ruedita de carga
+        submitBtn.classList.remove('is-loading');
+        submitBtn.removeAttribute('disabled');
       }
     });
-  </script>
+</script>
+
 </body>
 </html>

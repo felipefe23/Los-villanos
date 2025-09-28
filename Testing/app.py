@@ -263,8 +263,8 @@ def comprador_register_view():
 @login_required('comprador', 'administrador', 'admin')
 def comprador_dashboard_view():
     propiedades = leer_propiedades()
-    propiedades_venta = [p for p in propiedades if p.get("estado", "").lower() == "venta"]
-    return render_template("comprador_dashboard.html", propiedades=propiedades_venta)
+    propiedades_filtradas = [p for p in propiedades if p.get("activo", True)]
+    return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas)
 
 @app.get("/admin")
 @login_required('admin', 'administrador')

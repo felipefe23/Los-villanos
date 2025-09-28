@@ -113,7 +113,7 @@ form {
   color: var(--text);
 }
 
-/* 🔹 FIX: también incluimos input[type="text"] */
+/* 🔹 Inputs */
 input[type="email"],
 input[type="password"],
 input[type="text"] {
@@ -133,6 +133,7 @@ input:focus {
   background: #ffffff;
 }
 
+/* 🔹 Campo contraseña */
 .password-field {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -156,6 +157,7 @@ input:focus {
   background: rgba(37, 99, 235, 0.2);
 }
 
+/* 🔹 Botón principal */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -185,6 +187,12 @@ input:focus {
   box-shadow: none;
 }
 
+/* 🔹 Texto dentro del botón */
+.btn-label {
+  transition: opacity 0.2s ease;
+}
+
+/* 🔹 Spinner de carga */
 .btn-spinner {
   width: 16px;
   height: 16px;
@@ -195,14 +203,22 @@ input:focus {
   display: none;
 }
 
-form.is-loading .btn-spinner {
+/* 🔹 Cuando el botón tiene is-loading, mostrar la ruedita */
+.btn-primary.is-loading .btn-spinner {
   display: inline-block;
 }
 
-form.is-loading .btn-label {
-  opacity: 0.7;
+.btn-primary.is-loading .btn-label {
+  opacity: 0.7; /* opcional */
 }
 
+/* 🔹 Animación de giro */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* 🔹 Mensajes */
 .form-message {
   min-height: 20px;
   font-size: 14px;
@@ -225,6 +241,7 @@ form.is-loading .btn-label {
   transform: translateY(2px);
 }
 
+/* 🔹 Links de ayuda */
 .helper-links {
   display: grid;
   gap: 6px;
@@ -242,15 +259,7 @@ form.is-loading .btn-label {
   color: var(--primary-dark);
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
+/* 🔹 Responsive */
 @media (max-width: 560px) {
   body {
     padding: 20px;

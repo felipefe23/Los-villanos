@@ -58,7 +58,10 @@
                             </div>
                             <div class="contenido">
                                 <h2>{{ propiedad.get('nombre', 'Propiedad sin nombre') }}</h2>
-                                <p class="precio">${{ '{:,}'.format(precio|int).replace(',', '.') }}</p>
+                                <p class="precio">
+                                    ${{ '{:,}'.format(precio|int).replace(',', '.') }}
+                                    {% if propiedad.get('estado') == 'arriendo' %} /mes{% endif %}
+                                </p>
                                 <p class="descripcion">{{ propiedad.get('descripcion', 'Sin descripción disponible') }}</p>
                                 <ul class="detalles">
                                     <li><span>Ubicación:</span> {{ propiedad.get('localizacion', 'No indicada') }}</li>
@@ -251,9 +254,10 @@
                 if (partes.length === 2 && !Number.isNaN(partes[0]) && !Number.isNaN(partes[1])) {
                     const marker = L.marker(partes).addTo(grupo);
                     const precio = Number(propiedad.precio) || 0;
+                    const esArriendo = (propiedad.estado || '').toLowerCase() === 'arriendo';
                     marker.bindPopup(`
                         <strong>${propiedad.nombre || 'Propiedad sin nombre'}</strong><br>
-                        Precio: $${precio.toLocaleString('es-CL')}<br>
+                        Precio: $${precio.toLocaleString('es-CL')}${esArriendo ? ' /mes' : ''}<br>
                         Ubicación: ${propiedad.localizacion || 'No indicada'}<br>
                         ${propiedad.img ? `<img src="data:image/jpeg;base64,${propiedad.img}" 
                             alt="Imagen de propiedad" 
