@@ -45,3 +45,43 @@ Si se ingresa un usuario y contraseña existente se redijira hacia el mapa de la
 # Login de Administrador:
 <img width="1900" height="942" alt="image" src="https://github.com/user-attachments/assets/a066bec2-b0b5-4911-934d-aa711a6cb0e9" />
 
+
+# Detalles de avance - Semana 6:
+Bien, directamente esta semana realizamos cambios y avances muy fuertes a comparación de lo que llevábamos realizado. Primeramente hubieron cambios en el inicio de sesión y la manera de administrar los usuarios, ahora estos tienen un valor que indica si son administradores, compradores y vendedores, las cuales el backend decidio implementarlo con hasheo de Argon 2, para así tener mas seguridad y agregar dificultad para un intento de robo de datos. He aquí una foto del nuevo inicio de sesión y de la estructura de usuario:
+<img width="1915" height="936" alt="image" src="https://github.com/user-attachments/assets/4f3279f0-6e34-4ee0-8214-bc306059d744" />
+
+<img width="985" height="515" alt="image" src="https://github.com/user-attachments/assets/d28233f3-9e99-4ddd-9ea0-d819c0fc68ef" />
+
+Mantuvimos 2 registros distintos para comprador y vendedor, el registro de administrador lo agregamos solo para cuando se necesita crear una cuenta admin, como ya hay varias listas para nuestro uso no hemos necesitado implementarlo mas.
+
+# Administrador
+Este es el panel de administrador, se ofrece botones que responden y envían a distintas secciones para poder administrarlas, de momento esta agregado el panel de vendedor que permite agregar casa al igual que una cuenta de ese tipo, y un botón que redirige a las propiedades publicadas desde un punto de vista como comprador. Adjunto imágenes:
+
+<img width="1910" height="935" alt="image" src="https://github.com/user-attachments/assets/42c48a8f-75af-4660-aac4-4c22c91b732a" />
+
+Y en cuanto al apartado de registro comprador/vendedor, es similar al anterior, contiene sus respectivas validaciones, como la de no repetir un correo que este vinculado a un usuario, largo de contraseña, validación de rut, etc. Adjunto imagen:
+
+<img width="1900" height="944" alt="image" src="https://github.com/user-attachments/assets/94b3efd5-5b9a-4ea3-a0cb-1f36e39a911d" />
+
+# Comprador
+En cuanto al apartado de comprador, se muestran las casas tanto en modo mosaico, como en modo mapa. Esta vez se agregaron las imagenes, las cuales son convertidas en base64 y de momento solo se admiten archivos jpg. Adjunto imagen:
+# Modo Mosaico:
+<img width="1902" height="941" alt="image" src="https://github.com/user-attachments/assets/dd1bd654-2cd5-4127-97a6-0a8001298206" />
+
+# Modo Mapa:
+<img width="1901" height="945" alt="image" src="https://github.com/user-attachments/assets/32c4b475-0111-4027-b630-4d66a9462610" />
+
+# Vendedor
+Ahora el apartado de vendedor, este contiene funciones nuevas bien interesantes, como un boton de actualizar lista, que enseña tus propiedades publicadas, ahora ya no es necesario agregar coordenadas manualmente, si no que el usuario mismo puede poner un punto en el mapa para escoger la ubicacion de la propiedad. He aqui una imagen:
+
+<img width="1909" height="936" alt="image" src="https://github.com/user-attachments/assets/4b2620b1-481b-47a9-a915-0960186948c7" />
+
+Si presionamos el boton de agregar propiedad, se desplegara una ventana pequeña al costado donde se podran rellenar los datos, el cual de las coordenadas se va actualizando dependiendo donde coloques el punto en el mapa. Adjunto imagen:
+
+<img width="1916" height="945" alt="image" src="https://github.com/user-attachments/assets/5b96d6b8-59f6-4b9e-8c11-fa0a1207fd1f" />
+
+# Pantalla de error 404
+Y por ultimo pero no menos importante, tenemos nuestra ventana de error 404 ya implementada
+<img width="1910" height="947" alt="image" src="https://github.com/user-attachments/assets/7e801d65-0387-4d9e-8fe6-27fee69e9b87" />
+
+Estos fueron los avances registrados esta semana, decidimos conectar todo de manera efectiva y sin errores, como por ejemplo al volver atras y que se pudiera iniciar sesion igualmente, agregar la pantalla de error 404, tambien el no poder acceder a rutas desde la url, etc. Estamos satisfechos con este avance, ya que ahora tenemos una base muy firme para poder ir concretando los detalles que faltan por implementar y mejorar.
