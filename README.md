@@ -9,7 +9,8 @@ Este proyecto tiene como objetivo crear una plataforma web donde los usuarios pu
 - Francisco Javier Reyes. GitHub: frryesss  Trello: @fcooreyes44
 - Joaquin Emilio Contreras. GitHub: Jo4King09  Trello: @jocontreras24
 
-Caracteristicas claves:
+## Características clave:
+- *Búsqueda de propiedades:* Los usuarios pueden buscar casas según su ubicación, precio, y características.
 - *Mapa interactivo:* La API de leaflet se utilizará para mostrar la ubicación exacta de cada propiedad.
 - *Interfaz fácil de usar:* La página contará con un diseño limpio y sencillo, permitiendo una navegación fluida.
 
