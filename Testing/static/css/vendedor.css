@@ -8,6 +8,10 @@ body {
   flex-direction: column;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .modern-header {
   background: linear-gradient(180deg, #1e293b, #0f172a);
   color: #fff;
@@ -246,6 +250,12 @@ section.panel {
   grid-column: span 2;
 }
 
+#imagenActualInfo {
+  display: block;
+  color: #475569;
+  margin-top: 6px;
+}
+
 form button {
   margin-top: 14px;
   padding: 12px 18px;
@@ -265,6 +275,30 @@ form button:hover {
 #propMessage.error { color: #dc2626; font-weight: 500; }
 #propMessage.success { color: #16a34a; font-weight: 500; }
 
+.form-actions {
+  grid-column: span 2;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.form-actions button {
+  flex: 1;
+  min-width: 140px;
+}
+
+.form-actions .secondary {
+  background: #e5e7eb;
+  color: #1f2937;
+  border: 1px solid #cbd5f5;
+  box-shadow: none;
+}
+
+.form-actions .secondary:hover {
+  background: #d1d5db;
+  transform: none;
+}
+
 ul#propList {
   list-style: none;
   padding: 0;
@@ -280,6 +314,10 @@ ul#propList li {
   font-size: 14px;
   box-shadow: 0 1px 6px rgba(0,0,0,0.05);
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
 }
 ul#propList li:hover {
   transform: translateY(-2px);
@@ -290,6 +328,47 @@ ul#propList li strong {
   margin-bottom: 6px;
   font-size: 15px;
   font-weight: 600;
+}
+
+.prop-details {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.prop-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prop-action {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.prop-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+.prop-action--edit {
+  background: #2563eb;
+  color: #fff;
+}
+
+.prop-action--delete {
+  background: #ef4444;
+  color: #fff;
+}
+
+.prop-action--delete:hover {
+  background: #dc2626;
 }
 
 .map-wrapper {

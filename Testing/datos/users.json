@@ -323,5 +323,31 @@
     "ciudad": "Curicó",
     "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$ep6OI7dUfVPZo1DHpCndGg$X9/Lcn//jIUe5/xVI/+h/dJjiTFTpEf1tJWlEFfMmVo",
     "fecha_registro": "2025-09-28T20:06:24.981435Z"
+  },
+  {
+    "id": 30,
+    "email": "guz1@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$L/6hdWnz8i2OjE6xTJS7Zw$nH8FLuKtlTdBqAa4AqXfO22SueMMeHGdiGF4OylFmw4",
+    "nombre": "luis",
+    "apellido": "guzman",
+    "telefono": "+56976533105",
+    "rut": "21767477-8",
+    "direccion": "santa emilia",
+    "ciudad": "curico",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$HHAelVdyseE5RxePzz+lbg$vAR3jFbqaA2O7wxwpN3w2ZGiQz9zSObnBE5fTomyAd8",
+    "fecha_registro": "2025-09-29T13:11:31.271686Z"
+  },
+  {
+    "id": 31,
+    "email": "12@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$2Va7JWfajgaPfg6pD61bFQ$/iHBfQ/DZFQI4yjcUaTYSmzfV4gfx2z0kPTZthua+dE",
+    "nombre": "felipe",
+    "apellido": "guzman",
+    "telefono": "+56984737343",
+    "rut": "21767477-8",
+    "direccion": "santa emilia",
+    "ciudad": "curico",
+    "tipo_usuario": "$argon2id$v=19$m=65536,t=3,p=4$Yu7Gh2AnvPAa9Poc1NGzBw$5Z+lAwcm8QsBgXPi6EGT0cidawi1RJDvWrIs0T3ki+w",
+    "fecha_registro": "2025-09-29T13:14:22.874701Z"
   }
 ]

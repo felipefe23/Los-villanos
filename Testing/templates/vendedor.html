@@ -65,6 +65,7 @@
   <div id="formPanel">
     <button type="button" class="close-btn" onclick="cerrarForm()">✖</button>
     <form id="propForm">
+      <input type="hidden" id="propId">
       <h2>Agregar propiedad</h2>
       <label>
         Nombre
@@ -114,8 +115,9 @@
       </label>
       <label>
         Imagen
-        <input type="file" name="imagenFile" id="imagenFile" accept="image/jpeg,image/jpg" required>
+        <input type="file" name="imagenFile" id="imagenFile" accept="image/jpeg,image/jpg">
         <small>Puedes arrastrar o seleccionar un archivo .jpg</small>
+        <small id="imagenActualInfo" class="hidden"></small>
       </label>
       <label>
         Coordenadas (lat,lng)
@@ -128,7 +130,10 @@
           <option value="false">No</option>
         </select>
       </label>
-      <button type="submit" id="propSubmit">Guardar</button>
+      <div class="form-actions">
+        <button type="submit" id="propSubmit">Guardar</button>
+        <button type="button" id="cancelEditBtn" class="secondary hidden">Cancelar edición</button>
+      </div>
       <div class="helper">También puedes hacer clic en el mapa para llenar las coordenadas.</div>
       <div id="propMessage"></div>
     </form>
@@ -138,11 +143,71 @@
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
   const propForm = document.getElementById('propForm');
-    const propMessage = document.getElementById('propMessage');
-    const propSubmit = document.getElementById('propSubmit');
-    const propList = document.getElementById('propList');
-    const reloadBtn = document.getElementById('reloadBtn');
-    const coordsInput = document.getElementById('coordenadas');
+  const propMessage = document.getElementById('propMessage');
+  const propSubmit = document.getElementById('propSubmit');
+  const propList = document.getElementById('propList');
+  const reloadBtn = document.getElementById('reloadBtn');
+  const coordsInput = document.getElementById('coordenadas');
+  const propIdInput = document.getElementById('propId');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const imagenActualInfo = document.getElementById('imagenActualInfo');
+  const toggleFormBtn = document.querySelector('[data-target="formPanel"]');
+  const formPanel = document.getElementById('formPanel');
+  const imagenInput = document.getElementById('imagenFile');
+  const camposFormulario = {
+    nombre: document.getElementById('nombre'),
+    precio: document.getElementById('precio'),
+    localizacion: document.getElementById('localizacion'),
+    tipo: document.getElementById('tipo'),
+    estado: document.getElementById('estado'),
+    dormitorios: document.getElementById('dormitorios'),
+    baños: document.getElementById('baños'),
+    area: document.getElementById('area'),
+    descripcion: document.getElementById('descripcion'),
+    activo: document.getElementById('activo')
+  };
+
+  let propiedadesCargadas = [];
+  let editandoId = null;
+  let imagenBase64Temporal = null;
+
+  function mostrarMensaje(texto, tipo) {
+    propMessage.textContent = texto || '';
+    propMessage.classList.remove('error', 'success');
+    if (tipo) {
+      propMessage.classList.add(tipo);
+    }
+  }
+
+  function resetForm() {
+    propForm.reset();
+    editandoId = null;
+    imagenBase64Temporal = null;
+    propIdInput.value = '';
+    imagenInput.value = '';
+    propForm.querySelector('h2').textContent = 'Agregar propiedad';
+    propSubmit.textContent = 'Guardar';
+    cancelEditBtn.classList.add('hidden');
+    imagenActualInfo.textContent = '';
+    imagenActualInfo.classList.add('hidden');
+    mostrarMensaje('', null);
+  }
+
+  function abrirPanel() {
+    formPanel.classList.add('active');
+  }
+
+  function cerrarForm() {
+    formPanel.classList.remove('active');
+    resetForm();
+  }
+
+  cancelEditBtn.addEventListener('click', () => resetForm());
+  toggleFormBtn.addEventListener('click', () => {
+    resetForm();
+    abrirPanel();
+  });
+
   const widget = document.getElementById('userWidget');
   const trigger = document.getElementById('userTrigger');
   const panel = document.getElementById('userPanel');
@@ -262,128 +327,223 @@
     });
   }
 
-    function formatearCLP(valor) {
-      const numero = Number(valor) || 0;
-      return numero.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+  function formatearCLP(valor) {
+    const numero = Number(valor) || 0;
+    return numero.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+  }
+
+  const map = L.map('map').setView([-34.984403, -71.239488], 14);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    minZoom: 12,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  const propiedadesLayer = L.layerGroup().addTo(map);
+  const marcadorTemporal = L.layerGroup().addTo(map);
+
+  map.on('click', (event) => {
+    const { lat, lng } = event.latlng;
+    coordsInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    marcadorTemporal.clearLayers();
+    L.marker([lat, lng], { opacity: 0.7 }).addTo(marcadorTemporal);
+  });
+
+  function iniciarEdicion(propiedad) {
+    if (!propiedad) return;
+    editandoId = propiedad.id;
+    propIdInput.value = propiedad.id;
+    camposFormulario.nombre.value = propiedad.nombre || '';
+    camposFormulario.precio.value = propiedad.precio ?? '';
+    camposFormulario.localizacion.value = propiedad.localizacion || '';
+    camposFormulario.tipo.value = propiedad.tipo || '';
+    camposFormulario.estado.value = (propiedad.estado || '').toLowerCase();
+    camposFormulario.dormitorios.value = propiedad.dormitorios ?? '';
+    camposFormulario['baños'].value = propiedad['baños'] ?? propiedad.banos ?? '';
+    camposFormulario.area.value = propiedad.area ?? '';
+    camposFormulario.descripcion.value = propiedad.descripcion || '';
+    camposFormulario.activo.value = propiedad.activo ? 'true' : 'false';
+    coordsInput.value = propiedad.coordenadas || '';
+
+    imagenBase64Temporal = propiedad.img || null;
+    if (imagenBase64Temporal) {
+      imagenActualInfo.textContent = 'Se conservará la imagen actual a menos que subas una nueva.';
+    } else {
+      imagenActualInfo.textContent = 'La propiedad no tiene imagen almacenada. Debes seleccionar una nueva.';
+    }
+    imagenActualInfo.classList.remove('hidden');
+
+    propForm.querySelector('h2').textContent = 'Editar propiedad';
+    propSubmit.textContent = 'Actualizar';
+    cancelEditBtn.classList.remove('hidden');
+    mostrarMensaje('Editando propiedad seleccionada. Realiza los cambios y presiona Actualizar.', 'success');
+
+    const coords = (propiedad.coordenadas || '').split(',').map((v) => Number(v.trim()));
+    if (coords.length === 2 && coords.every((n) => Number.isFinite(n))) {
+      marcadorTemporal.clearLayers();
+      L.marker(coords, { opacity: 0.7 }).addTo(marcadorTemporal);
+      map.setView(coords, 16);
     }
 
-    // CENTRAR MAPA EN CURICO
+    abrirPanel();
+  }
 
-    const map = L.map('map').setView([-34.984403, -71.239488], 14);
+  async function eliminarPropiedad(propiedadId) {
+    if (!propiedadId) return;
+    if (!window.confirm('¿Deseas eliminar esta propiedad? Esta acción no se puede deshacer.')) {
+      return;
+    }
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      minZoom: 12, // minimo zoom para el mapa por que si sdsadlk
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
-
-    const propiedadesLayer = L.layerGroup().addTo(map);
-    const marcadorTemporal = L.layerGroup().addTo(map);
-
-    map.on('click', (event) => {
-      const { lat, lng } = event.latlng;
-      coordsInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    try {
+      const respuesta = await fetch(`/api/propiedades/${propiedadId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const resultado = await respuesta.json().catch(() => ({}));
+      if (!respuesta.ok) {
+        throw new Error(resultado.error || 'No se pudo eliminar la propiedad.');
+      }
+      resetForm();
+      abrirPanel();
+      mostrarMensaje(resultado.message || 'Propiedad eliminada con éxito.', 'success');
       marcadorTemporal.clearLayers();
-      L.marker([lat, lng], { opacity: 0.7 }).addTo(marcadorTemporal);
+      await cargarPropiedades();
+    } catch (error) {
+      console.error(error);
+      abrirPanel();
+      mostrarMensaje(error.message || 'No se pudo eliminar la propiedad.', 'error');
+    }
+  }
+
+  reloadBtn.addEventListener('click', () => {
+    resetForm();
+    cargarPropiedades();
+  });
+
+  async function cargarPropiedades() {
+    try {
+      propiedadesLayer.clearLayers();
+      propList.innerHTML = '<li>Cargando propiedades...</li>';
+      const response = await fetch('/api/propiedades');
+      if (!response.ok) throw new Error('No fue posible obtener propiedades');
+      const propiedades = await response.json();
+      let usuarioId = null;
+      try {
+        const meRes = await fetch('/api/me', { credentials: 'include' });
+        if (meRes.ok) {
+          const me = await meRes.json();
+          usuarioId = me.id;
+        }
+      } catch (e) {
+        try {
+          const guardado = localStorage.getItem('usuarioActual');
+          if (guardado) usuarioId = JSON.parse(guardado).id;
+        } catch (_) {}
+      }
+
+      const propiedadesFiltradas = usuarioId == null
+        ? propiedades
+        : propiedades.filter((p) => p.propietario == usuarioId || String(p.propietario) === String(usuarioId));
+
+      propiedadesCargadas = propiedadesFiltradas.map((p) => ({ ...p }));
+      dibujarPropiedades(propiedadesCargadas);
+    } catch (error) {
+      console.error(error);
+      propList.innerHTML = '<li>Error al cargar propiedades.</li>';
+    }
+  }
+
+  function dibujarPropiedades(propiedades) {
+    propiedadesLayer.clearLayers();
+    if (!propiedades.length) {
+      propList.innerHTML = '<li>No hay propiedades cargadas.</li>';
+      return;
+    }
+
+    propList.innerHTML = '';
+    const bounds = [];
+
+    propiedades.forEach((prop) => {
+      const coords = (prop.coordenadas || '').split(',').map((v) => Number(v.trim()));
+      const banos = prop['baños'] ?? prop.banos ?? 0;
+      if (coords.length === 2 && coords.every((n) => Number.isFinite(n))) {
+        const marker = L.marker(coords).addTo(propiedadesLayer);
+        marker.bindPopup(`
+          <strong>${prop.nombre || 'Propiedad sin nombre'}</strong><br>
+          ${formatearCLP(prop.precio)}<br>
+          ${prop.localizacion || 'Sin localización'}
+        `);
+        bounds.push(coords);
+      }
+
+      const item = document.createElement('li');
+      item.classList.add('prop-item');
+
+      const detalles = document.createElement('div');
+      detalles.classList.add('prop-details');
+      detalles.innerHTML = `
+        <strong>${prop.nombre || 'Propiedad sin nombre'}</strong>
+        <div>${formatearCLP(prop.precio)} · ${prop.tipo || ''} · ${prop.estado || ''}</div>
+        <div>${prop.dormitorios || 0} dorm · ${banos || 0} baños · ${prop.area || 0} m²</div>
+      `;
+
+      const acciones = document.createElement('div');
+      acciones.classList.add('prop-actions');
+
+      const editarBtn = document.createElement('button');
+      editarBtn.type = 'button';
+      editarBtn.textContent = 'Editar';
+      editarBtn.classList.add('prop-action', 'prop-action--edit');
+      editarBtn.addEventListener('click', () => iniciarEdicion(prop));
+
+      const eliminarBtn = document.createElement('button');
+      eliminarBtn.type = 'button';
+      eliminarBtn.textContent = 'Eliminar';
+      eliminarBtn.classList.add('prop-action', 'prop-action--delete');
+      eliminarBtn.addEventListener('click', () => eliminarPropiedad(prop.id));
+
+      acciones.appendChild(editarBtn);
+      acciones.appendChild(eliminarBtn);
+
+      item.appendChild(detalles);
+      item.appendChild(acciones);
+      propList.appendChild(item);
     });
 
-    reloadBtn.addEventListener('click', cargarPropiedades);
-
-    async function cargarPropiedades() {
-      try {
-        propiedadesLayer.clearLayers();
-        propList.innerHTML = '<li>Cargando propiedades...</li>';
-        const response = await fetch('/api/propiedades');
-        if (!response.ok) throw new Error('No fue posible obtener propiedades');
-        const propiedades = await response.json();
-        let usuarioId = null;
-        try {
-          const meRes = await fetch('/api/me', { credentials: 'include' });
-          if (meRes.ok) {
-            const me = await meRes.json();
-            usuarioId = me.id;
-          }
-        } catch (e) {
-          try {
-            const guardado = localStorage.getItem('usuarioActual');
-            if (guardado) usuarioId = JSON.parse(guardado).id;
-          } catch (_) {}
-        }
-
-        const propiedadesFiltradas = usuarioId == null ? propiedades : propiedades.filter(p => p.propietario == usuarioId || String(p.propietario) === String(usuarioId));
-        dibujarPropiedades(propiedadesFiltradas);
-      } catch (error) {
-        console.error(error);
-        propList.innerHTML = '<li>Error al cargar propiedades.</li>';
-      }
+    if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [30, 30] });
     }
+  }
 
-    function dibujarPropiedades(propiedades) {
-      if (!propiedades.length) {
-        propList.innerHTML = '<li>No hay propiedades cargadas.</li>';
-        return;
+  function convertirArchivoABase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  }
+
+  propForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    mostrarMensaje('', null);
+
+    const datos = new FormData(propForm);
+    const archivoImagen = imagenInput.files[0];
+    const esEdicion = Boolean(editandoId);
+
+    try {
+      if (archivoImagen) {
+        imagenBase64Temporal = await convertirArchivoABase64(archivoImagen);
       }
 
-      propList.innerHTML = '';
-      const bounds = [];
-
-      propiedades.forEach((prop) => {
-        const coords = (prop.coordenadas || '').split(',').map((v) => Number(v.trim()));
-        const banos = prop['baños'] ?? prop.banos ?? 0;
-        if (coords.length === 2 && coords.every((n) => Number.isFinite(n))) {
-          const marker = L.marker(coords).addTo(propiedadesLayer);
-          marker.bindPopup(`
-            <strong>${prop.nombre || 'Propiedad sin nombre'}</strong><br>
-            ${formatearCLP(prop.precio)}<br>
-            ${prop.localizacion || 'Sin localización'}
-          `);
-          bounds.push(coords);
-        }
-
-        const item = document.createElement('li');
-        item.innerHTML = `
-          <strong>${prop.nombre || 'Propiedad sin nombre'}</strong>
-          <div>${formatearCLP(prop.precio)} · ${prop.tipo || ''} · ${prop.estado || ''}</div>
-          <div>${prop.dormitorios || 0} dorm · ${banos || 0} baños · ${prop.area || 0} m²</div>
-        `;
-        propList.appendChild(item);
-      });
-
-      // Si hay mas de una propiedad ajustamos en el centro de ellas; si solo hay una,
-      // mantenemos el centro y zoom
-      if (bounds.length > 1) {
-        map.fitBounds(bounds, { padding: [30, 30] });
+      if (!imagenBase64Temporal) {
+        throw new Error('Debes seleccionar una imagen en formato JPG.');
       }
-    }
-
-    // Convertir archivo a Base64
-    function convertirArchivoABase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          const base64 = reader.result.split(",")[1]; 
-          resolve(base64);
-        };
-        reader.onerror = (error) => reject(error);
-      });
-    }
-
-    propForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      propMessage.textContent = '';
-      propMessage.classList.remove('error', 'success');
-
-      const datos = new FormData(propForm);
-      const archivoImagen = document.getElementById('imagenFile').files[0];
-      
-      if (!archivoImagen) {
-        propMessage.textContent = 'Debes seleccionar una imagen en formato JPG.';
-        propMessage.classList.add('error');
-        return;
-      }
-
-      const imagenBase64 = await convertirArchivoABase64(archivoImagen);
 
       const payload = {
         nombre: datos.get('nombre')?.trim(),
@@ -395,9 +555,8 @@
         baños: Number(datos.get('baños')),
         area: Number(datos.get('area')),
         descripcion: datos.get('descripcion')?.trim(),
-        img: imagenBase64, 
+        img: imagenBase64Temporal,
         coordenadas: datos.get('coordenadas')?.trim(),
-        propietario: '',
         activo: datos.get('activo') !== 'false'
       };
 
@@ -410,45 +569,36 @@
       });
 
       if (faltantes.length) {
-        propMessage.textContent = 'Completa todos los campos obligatorios.';
-        propMessage.classList.add('error');
-        return;
+        throw new Error('Completa todos los campos obligatorios.');
       }
+
+      const url = esEdicion ? `/api/propiedades/${editandoId}` : '/api/propiedades';
+      const method = esEdicion ? 'PUT' : 'POST';
 
       propSubmit.disabled = true;
-      try {
-        const response = await fetch('/api/propiedades', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const resultado = await response.json();
-        if (!response.ok) throw new Error(resultado.error || 'No se pudo guardar la propiedad');
-        propMessage.textContent = resultado.message || 'Propiedad agregada correctamente.';
-        propMessage.classList.add('success');
-        propForm.reset();
-        marcadorTemporal.clearLayers();
-        cargarPropiedades();
-      } catch (error) {
-        console.error(error);
-        propMessage.textContent = error.message || 'No se pudo guardar la propiedad.';
-        propMessage.classList.add('error');
-      } finally {
-        propSubmit.disabled = false;
-      }
-    });
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const resultado = await response.json();
+      if (!response.ok) throw new Error(resultado.error || 'No se pudo guardar la propiedad');
 
-    // Funciones para abrir/cerrar el panel flotante
-    document.querySelector('[data-target="formPanel"]').addEventListener('click', () => {
-      document.getElementById('formPanel').classList.add('active');
-    });
-
-    function cerrarForm() {
-      document.getElementById('formPanel').classList.remove('active');
+      const mensajeExito = resultado.message || (esEdicion ? 'Propiedad actualizada correctamente.' : 'Propiedad agregada correctamente.');
+      resetForm();
+      mostrarMensaje(mensajeExito, 'success');
+      marcadorTemporal.clearLayers();
+      await cargarPropiedades();
+    } catch (error) {
+      console.error(error);
+      mostrarMensaje(error.message || 'No se pudo guardar la propiedad.', 'error');
+    } finally {
+      propSubmit.disabled = false;
     }
+  });
 
-    inicializarWidgetUsuario();
-    cargarPropiedades();
+  inicializarWidgetUsuario();
+  cargarPropiedades();
   </script>
 </body>
 </html>

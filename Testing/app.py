@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from flask import redirect, url_for, session
 from functools import wraps
-from persistencia.manejoArchivo import leer_propiedades, guardar_propiedades, coordenadas_repetidas, siguiente_id
+from persistencia.manejoArchivo import leer_propiedades, guardar_propiedades, siguiente_id
 import os
 import re
 import json
@@ -54,6 +54,136 @@ def _prefers_json():
         return False
     return request.accept_mimetypes[best] >= request.accept_mimetypes['text/html']
 
+
+def _es_admin(role):
+    return (role or '').lower() in {'admin', 'administrador'}
+
+
+def _normalizar_bool(valor, campo):
+    if isinstance(valor, bool):
+        return valor
+    if isinstance(valor, str):
+        valor_normalizado = valor.strip().lower()
+        if valor_normalizado in {'true', '1', 'si', 'sí', 'on'}:
+            return True
+        if valor_normalizado in {'false', '0', 'no', 'off'}:
+            return False
+    raise ValueError(f"El campo '{campo}' debe ser booleano.")
+
+
+def _validar_y_normalizar_propiedad(data, parcial, propiedades_existentes, propiedad_actual=None):
+    if not isinstance(data, dict):
+        raise ValueError("Formato de datos inválido para la propiedad.")
+
+    resultado = {}
+    campos_texto_obligatorios = ['nombre', 'localizacion', 'tipo']
+    campos_numericos = ['precio', 'dormitorios', 'baños', 'area']
+    campos_permitidos = {
+        'nombre', 'descripcion', 'precio', 'localizacion', 'dormitorios', 'baños',
+        'area', 'tipo', 'estado', 'activo', 'img', 'coordenadas'
+    }
+
+    for campo in campos_texto_obligatorios:
+        if campo not in data:
+            if parcial:
+                continue
+            raise ValueError(f"El campo '{campo}' es obligatorio.")
+        valor = data.get(campo)
+        if valor is None:
+            raise ValueError(f"El campo '{campo}' no puede estar vacío.")
+        valor = str(valor).strip()
+        if not valor:
+            raise ValueError(f"El campo '{campo}' no puede estar vacío.")
+        resultado[campo] = valor
+
+    for campo in campos_numericos:
+        if campo not in data:
+            if parcial:
+                continue
+            raise ValueError(f"El campo '{campo}' es obligatorio.")
+        valor = data.get(campo)
+        if isinstance(valor, str):
+            valor = valor.strip()
+        if valor in (None, ''):
+            raise ValueError({
+                'precio': "El precio debe ser un número.",
+                'dormitorios': "Los dormitorios deben ser un número.",
+                'baños': "Los baños deben ser un número.",
+                'area': "El área debe ser un número."
+            }[campo])
+        try:
+            valor_entero = int(valor)
+        except (TypeError, ValueError):
+            raise ValueError({
+                'precio': "El precio debe ser un número.",
+                'dormitorios': "Los dormitorios deben ser un número.",
+                'baños': "Los baños deben ser un número.",
+                'area': "El área debe ser un número."
+            }[campo])
+        if valor_entero <= 0:
+            raise ValueError({
+                'precio': "El precio debe ser un número entero positivo o mayor a 0.",
+                'dormitorios': "El número de dormitorios debe ser un entero no negativo.",
+                'baños': "El número de baños debe ser un entero no negativo.",
+                'area': "El área debe ser un entero no negativo ni 0."
+            }[campo])
+        resultado[campo] = valor_entero
+
+    if 'descripcion' in data:
+        descripcion = data.get('descripcion')
+        if descripcion is None or (isinstance(descripcion, str) and not descripcion.strip()):
+            resultado['descripcion'] = "Sin descripción"
+        else:
+            resultado['descripcion'] = str(descripcion).strip()
+    elif not parcial:
+        resultado['descripcion'] = "Sin descripción"
+
+    if 'estado' in data:
+        estado = data.get('estado')
+        if estado is None:
+            raise ValueError("El estado debe ser 'venta' o 'arriendo'.")
+        estado_normalizado = str(estado).strip().lower()
+        if estado_normalizado not in {'venta', 'arriendo'}:
+            raise ValueError("El estado debe ser 'venta' o 'arriendo'.")
+        resultado['estado'] = estado_normalizado
+    elif not parcial:
+        raise ValueError("El campo 'estado' es obligatorio.")
+
+    if 'coordenadas' in data:
+        coordenadas = data.get('coordenadas')
+        if coordenadas is None:
+            raise ValueError("Las coordenadas no pueden estar vacías.")
+        coordenadas_normalizadas = str(coordenadas).strip()
+        if not coordenadas_normalizadas:
+            raise ValueError("Las coordenadas no pueden estar vacías.")
+        propiedad_id_actual = propiedad_actual.get('id') if propiedad_actual else None
+        for propiedad in propiedades_existentes:
+            if propiedad.get('coordenadas') == coordenadas_normalizadas and propiedad.get('id') != propiedad_id_actual:
+                raise ValueError("Las coordenadas ya existen en otra propiedad.")
+        resultado['coordenadas'] = coordenadas_normalizadas
+    elif not parcial:
+        raise ValueError("El campo 'coordenadas' es obligatorio.")
+
+    if 'activo' in data:
+        resultado['activo'] = _normalizar_bool(data.get('activo'), 'activo')
+    elif not parcial:
+        resultado['activo'] = True
+
+    if 'img' in data:
+        img = data.get('img')
+        if img is None:
+            resultado['img'] = None
+        else:
+            resultado['img'] = str(img)
+    elif not parcial:
+        resultado['img'] = None
+
+    campos_extra = set(data.keys()) - campos_permitidos - {'id', 'propietario'}
+    if campos_extra:
+        raise ValueError(f"Campos no permitidos: {', '.join(sorted(campos_extra))}.")
+
+    return resultado
+
 #Funcion para hardcodear la cache
 @app.after_request
 def harden_cache_headers(response):
@@ -91,7 +221,7 @@ def login_required(*roles):
 
 @app.route('/api/register', methods=['POST'])
 def register():
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
     email = data.get('email', '').strip()
     password = data.get('password', '').strip()
     nombre = data.get('nombre', '').strip()
@@ -156,7 +286,7 @@ def register():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
     email = data.get('email', '').strip().lower()
     password = data.get('password', '').strip()
     tipo_enviado = (data.get('tipo_usuario') or '').strip().lower()
@@ -313,100 +443,89 @@ def get_propiedades():
         propiedades_enriquecidas.append(copia)
     return jsonify(propiedades_enriquecidas)
 
+
 @app.route('/api/propiedades', methods=['POST'])
+@login_required('vendedor', 'administrador', 'admin')
 def add_propiedad():
-    data = request.json
-    nombre = data.get('nombre')
-    descripcion = data.get('descripcion')
-    if not descripcion:
-        descripcion = "Sin descripción"
-    precio = data.get('precio')
-# Crear propiedad pero con autenticacion de usuario
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({"error": "Autenticación requerida para crear propiedades."}), 401
-    propietario = user_id
-    localizacion = data.get('localizacion')
-    dormitorios = data.get('dormitorios')
-    baños = data.get('baños')
-    area = data.get('area')
-    tipo = data.get('tipo')
-    estado = data.get('estado')
-    activo = data.get('activo', True)
-    img = data.get('img')
-    coordenadas = data.get('coordenadas')
-
-
-
- ## VALIDACIONES !!!!!!!
- 
-    try:
-        precio = int(precio)
-    except (ValueError, TypeError):
-        return jsonify({"error": "El precio debe ser un número."}), 400
-    
-    try:
-        dormitorios = int(dormitorios)
-    except (ValueError, TypeError):
-        return jsonify({"error": "Los dormitorios deben ser un número."}), 400
-    
-    try:
-        baños = int(baños)
-    except (ValueError, TypeError):
-        return jsonify({"error": "Los baños deben ser un número."}), 400
-
-    try:
-        area = int(area)
-    except (ValueError, TypeError):
-        return jsonify({"error": "El área debe ser un número."}), 400 
-    
-    
-    estado= estado.lower()
-    if estado != "venta" and estado != "arriendo":
-        return jsonify({"error": "El estado debe ser 'venta' o 'arriendo'."}), 400
-    
-
-    if coordenadas_repetidas(leer_propiedades(), coordenadas):
-        return jsonify({"error": "Las coordenadas ya existen en otra propiedad."}), 400
-    
-
-    if precio is None or precio <= 0:
-        return jsonify({"error": "El precio debe ser un número entero positivo o mayor a 0."}), 400
-    
-    if dormitorios is None or dormitorios <= 0:
-        return jsonify({"error": "El número de dormitorios debe ser un entero no negativo."}), 400
-    
-    if baños is None or baños <= 0:
-        return jsonify({"error": "El número de baños debe ser un entero no negativo."}), 400
-
-    if area is None or area <= 0:
-        return jsonify({"error": "El área debe ser un entero no negativo ni 0."}), 400
-
-    if descripcion.strip() == "":
-        descripcion = "Sin descripción"
-
-
-    
+    data = request.get_json(silent=True) or {}
     propiedades = leer_propiedades()
-    nueva = {
-        "id": siguiente_id(propiedades),
-        "nombre": nombre,
-        "descripcion": descripcion,
-        "precio": precio,
-        "propietario": propietario,
-        "localizacion": localizacion,
-        "dormitorios": dormitorios,
-        "baños": baños,
-        "area": area,
-        "tipo": tipo,
-        "estado": estado,
-        "activo": activo,
-        "img": img,
-        "coordenadas": coordenadas
-    }
+    try:
+        campos = _validar_y_normalizar_propiedad(
+            data,
+            parcial=False,
+            propiedades_existentes=propiedades
+        )
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Autenticación requerida para crear propiedades."}), 401
+
+    campos['propietario'] = user_id
+    nueva = {"id": siguiente_id(propiedades), **campos}
     propiedades.append(nueva)
     guardar_propiedades(propiedades)
-    return jsonify({"message": "Propiedad ingresada con éxito.", "propiedades": propiedades})
+    return jsonify({
+        "message": "Propiedad ingresada con éxito.",
+        "propiedad": nueva,
+        "propiedades": propiedades
+    }), 201
+
+
+@app.route('/api/propiedades/<int:propiedad_id>', methods=['PUT', 'PATCH'])
+@login_required('vendedor', 'administrador', 'admin')
+def update_propiedad(propiedad_id):
+    propiedades = leer_propiedades()
+    indice = next((i for i, p in enumerate(propiedades) if p.get('id') == propiedad_id), None)
+    if indice is None:
+        return jsonify({"error": "Propiedad no encontrada."}), 404
+
+    propiedad_actual = propiedades[indice]
+    user_id = session.get('user_id')
+    user_role = session.get('user_role')
+    if not _es_admin(user_role) and propiedad_actual.get('propietario') != user_id:
+        return jsonify({"error": "No tienes permiso para modificar esta propiedad."}), 403
+
+    data = request.get_json(silent=True) or {}
+    parcial = request.method == 'PATCH'
+    try:
+        campos_actualizados = _validar_y_normalizar_propiedad(
+            data,
+            parcial=parcial,
+            propiedades_existentes=propiedades,
+            propiedad_actual=propiedad_actual
+        )
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+
+    if not campos_actualizados:
+        return jsonify({"error": "No se proporcionaron campos para actualizar."}), 400
+
+    propiedad_actualizada = propiedad_actual.copy()
+    propiedad_actualizada.update(campos_actualizados)
+    propiedades[indice] = propiedad_actualizada
+    guardar_propiedades(propiedades)
+    return jsonify({"message": "Propiedad actualizada con éxito.", "propiedad": propiedad_actualizada})
+
+
+@app.route('/api/propiedades/<int:propiedad_id>', methods=['DELETE'])
+@login_required('vendedor', 'administrador', 'admin')
+def delete_propiedad(propiedad_id):
+    propiedades = leer_propiedades()
+    indice = next((i for i, p in enumerate(propiedades) if p.get('id') == propiedad_id), None)
+    if indice is None:
+        return jsonify({"error": "Propiedad no encontrada."}), 404
+
+    propiedad_actual = propiedades[indice]
+    user_id = session.get('user_id')
+    user_role = session.get('user_role')
+    if not _es_admin(user_role) and propiedad_actual.get('propietario') != user_id:
+        return jsonify({"error": "No tienes permiso para eliminar esta propiedad."}), 403
+
+    propiedades.pop(indice)
+    guardar_propiedades(propiedades)
+    return jsonify({"message": "Propiedad eliminada con éxito."})
 
 # Error de archivos locales
 @app.route('/api/me', methods=['GET'])
