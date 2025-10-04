@@ -87,7 +87,8 @@ En cuanto al apartado de comprador, se muestran las casas tanto en modo mosaico,
 # Vendedor
 Ahora el apartado de vendedor, este contiene funciones nuevas bien interesantes, como un boton de actualizar lista, que enseña tus propiedades publicadas, el cual a su vez contiene las funciones de editar y eliminar la propiedad que desee, esto seria el Crud implementado para mostrar el flujo de datos con las propiedades. Tambien ya no es necesario agregar coordenadas manualmente, si no que el usuario mismo puede poner un punto en el mapa para escoger la ubicacion de la propiedad. He aqui una imagen:
 
-<img width="1909" height="936" alt="image" src="https://github.com/user-attachments/assets/4b2620b1-481b-47a9-a915-0960186948c7" />
+<img width="1915" height="945" alt="image" src="https://github.com/user-attachments/assets/0fc631c5-f3d1-4560-96a6-27419c0e37ba" />
+
 
 Si presionamos el boton de agregar propiedad, se desplegara una ventana pequeña al costado donde se podran rellenar los datos, el cual de las coordenadas se va actualizando dependiendo donde coloques el punto en el mapa. Adjunto imagen:
 
