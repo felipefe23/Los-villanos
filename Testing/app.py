@@ -408,7 +408,27 @@ def comprador_dashboard_view():
 @app.get("/admin")
 @login_required('admin', 'administrador')
 def admin_dashboard_view():
-    return render_template("admin_dashboard.html")
+    propiedades = leer_propiedades()
+    usuarios = leer_usuarios()
+    nombres = {
+        u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip()
+        for u in usuarios
+    }
+    propiedades_total = []
+    for p in propiedades:
+        copia = p.copy()
+        prop_id = copia.get('propietario')
+        copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
+        propiedades_total.append(copia)
+    for u in usuarios:
+        u['rol_legible'] = rol_legible(u.get('tipo_usuario'))
+    return render_template(
+        "admin_dashboard.html",
+        propiedades=propiedades_total,
+        usuarios=usuarios
+    )
+
+
 
 @app.get("/vendedor")
 @login_required('vendedor', 'administrador', 'admin')
@@ -427,8 +447,49 @@ def ventas_view():
     propiedades_venta = [p for p in propiedades if p.get("estado", "").lower() == "venta"]
     return render_template("ventas.html", propiedades=propiedades_venta)
 
+@app.get("/api/usuarios")
+@login_required('admin', 'administrador')  
+def api_usuarios():
+    try:
+        usuarios = leer_usuarios()
+        for u in usuarios:
+            u["rol_legible"] = u.get("rol_legible") or "desconocido"
+        return jsonify(usuarios)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+@app.route("/api/usuarios/<int:user_id>", methods=["POST"])
+@login_required('admin', 'administrador')
+def actualizar_usuario(user_id):
+    usuarios = leer_usuarios()  
+    data = request.get_json()
 
+    for u in usuarios:
+        if u["id"] == user_id:
+            u["nombre"] = data.get("nombre", u["nombre"])
+            u["apellido"] = data.get("apellido", u["apellido"])
+            u["email"] = data.get("email", u["email"])
+            u["telefono"] = data.get("telefono", u["telefono"])
+            u["rut"] = data.get("rut", u["rut"])
+            u["direccion"] = data.get("direccion", u["direccion"])
+            u["ciudad"] = data.get("ciudad", u["ciudad"])
+            guardar_usuarios(usuarios)
+            return jsonify({"message": "Usuario actualizado correctamente."}), 200
+
+    return jsonify({"error": "Usuario no encontrado."}), 404
+
+@app.route("/api/usuarios/<int:user_id>", methods=["POST"])
+@login_required('admin', 'administrador')
+def eliminar_usuario(user_id):
+    usuarios = leer_usuarios()
+    indice = next((i for i, u in enumerate(usuarios) if u.get("id") == user_id), None)
+
+    if indice is None:
+        return jsonify({"error": "Usuario no encontrado."}), 404
+    eliminado = usuarios.pop(indice)
+    guardar_usuarios(usuarios)
+
+    return jsonify({"message": f"Usuario {eliminado.get('nombre', '')} eliminado correctamente."}), 200
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():
     propiedades = leer_propiedades()
@@ -443,6 +504,42 @@ def get_propiedades():
         propiedades_enriquecidas.append(copia)
     return jsonify(propiedades_enriquecidas)
 
+@app.route('/api/propiedades/editar/<int:propiedad_id>', methods=['POST'])
+@login_required('vendedor', 'administrador', 'admin')
+def editar_propiedad(propiedad_id):
+    propiedades = leer_propiedades()
+    data = request.get_json()
+
+    for p in propiedades:
+        if p["id"] == propiedad_id:
+            p["nombre"] = data.get("nombre", p["nombre"])
+            p["precio"] = data.get("precio", p["precio"])
+            p["localizacion"] = data.get("localizacion", p["localizacion"])
+            p["tipo"] = data.get("tipo", p["tipo"])
+            p["estado"] = data.get("estado", p["estado"])
+            p["dormitorios"] = data.get("dormitorios", p["dormitorios"])
+            p["baños"] = data.get("baños", p["baños"])
+            p["area"] = data.get("area", p["area"])
+            p["descripcion"] = data.get("descripcion", p["descripcion"])
+            p["coordenadas"] = data.get("coordenadas", p["coordenadas"])
+            p["activo"] = data.get("activo", p["activo"])
+            p["img"] = data.get("img", p.get("img"))
+            guardar_propiedades(propiedades)
+            return jsonify({"message": "Propiedad actualizada con éxito."}), 200
+
+    return jsonify({"error": "Propiedad no encontrada."}), 404
+
+@app.route('/api/propiedades/eliminar/<int:propiedad_id>', methods=['POST'])
+@login_required('vendedor', 'administrador', 'admin')
+def eliminar_propiedad(propiedad_id):
+    propiedades = leer_propiedades()
+    indice = next((i for i, p in enumerate(propiedades) if p["id"] == propiedad_id), None)
+    if indice is None:
+        return jsonify({"error": "Propiedad no encontrada."}), 404
+
+    propiedades.pop(indice)
+    guardar_propiedades(propiedades)
+    return jsonify({"message": "Propiedad eliminada correctamente."}), 200
 
 @app.route('/api/propiedades', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
@@ -551,7 +648,20 @@ def not_found_error(error):
 def convertir_a_base64(ruta_imagen):
     with open(ruta_imagen, "rb") as img:
         return base64.b64encode(img.read()).decode("utf-8")
+ph = PasswordHasher()
 
+ROLES_POSIBLES = ["admin", "vendedor", "comprador"]
+
+def rol_legible(hash_guardado):
+    if not hash_guardado:
+        return "desconocido"
+    for rol in ROLES_POSIBLES:
+        try:
+            if ph.verify(hash_guardado, rol):
+                return rol
+        except Exception:
+            continue
+    return "desconocido"
 
 
 if __name__ == '__main__':

@@ -93,22 +93,22 @@ body {
   color: #1e293b;
 }
 
-.placeholder h3 {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.placeholder p {
-  font-size: 14px;
-  color: #475569;
-  line-height: 1.6;
+.placeholder {
+  display: flex;           
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 6px;
+  display: flex;       
+  justify-content: flex-start;
+}
+
+.actions .btn {
+  flex: 0 0 auto;
+  min-width: 160px;
+  text-align: center;
 }
 
 .btn {
@@ -152,6 +152,68 @@ code {
   font-size: 13px;
 }
 
+
+.table-wrapper {
+  max-height: 400px;   
+  overflow-y: auto;   
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+.table-wrapper table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.table-wrapper thead th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  z-index: 1;
+}
+
+.crud-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.crud-table th,
+.crud-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.crud-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.crud-table tr:hover {
+  background: #f9fafb;
+}
+
+.btn-edit {
+  color: #2563eb;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.btn-user-edit{
+  color: #2563eb;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+
+.btn-delete {
+  color: #dc2626;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 @media (max-width: 640px) {
   .topbar {
     flex-direction: column;
@@ -162,4 +224,174 @@ code {
     width: 100%;
     justify-content: flex-start;
   }
+  .actions {
+    width: 100%;
+  }
+
+  .actions .btn {
+    width: 100%; 
+  }
+}
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  animation: fadeIn 0.25s ease-in-out;
+  max-height: 85vh;   
+  overflow-y: auto;   
+  scrollbar-width: thin; 
+}
+
+@keyframes fadeIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-content h2 {
+  margin-bottom: 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+#propMessage {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#propMessage.error {
+  color: #dc2626;
+}
+
+#propMessage.success {
+  color: #16a34a;
+}
+#closeModalBtn {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+#closeModalBtn:hover {
+  background: #cbd5e1;
+}
+.search-box {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-box label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.search-box input {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 150px;
+}
+#userFormPanel .modal-content {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;        
+  overflow-y: auto;       
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.25s ease-in-out;
+}
+#closeUserModalBtn {
+  background: #e2e8f0;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+#closeUserModalBtn:hover {
+  background: #cbd5e1;
+}
+
+
+#userForm .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn-edit-prop, .btn-edit-user {
+  color: #2563eb;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.btn-edit-prop:hover, .btn-edit-user:hover {
+  transform: translateY(-2px);
+  color: #1d4ed8;
+}
+
+.btn-delete-prop, .btn-delete-user {
+  color: #dc2626;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.btn-delete-prop:hover, .btn-delete-user:hover {
+  transform: translateY(-2px);
+  color: #b91c1c;
 }
