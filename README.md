@@ -100,3 +100,17 @@ Y por ultimo pero no menos importante, tenemos nuestra ventana de error 404 ya i
 <img width="1910" height="947" alt="image" src="https://github.com/user-attachments/assets/7e801d65-0387-4d9e-8fe6-27fee69e9b87" />
 
 Estos fueron los avances registrados esta semana, decidimos conectar todo de manera efectiva y sin errores, como por ejemplo al volver atras y que se pudiera iniciar sesion igualmente, agregar la pantalla de error 404, tambien el no poder acceder a rutas desde la url, etc. Estamos satisfechos con este avance, ya que ahora tenemos una base muy firme para poder ir concretando los detalles que faltan por implementar y mejorar.
+
+# Detalles de avance - Semana 7:
+Esta semana nos centramos principalmente en concretar bien los avances para la entrega del hito 1, los cuales fueron centrados en la zona del panel de administrador y una mejora en el CRUD, permitiendo que este no solo sea en cuanto a las propiedades, si no que tambien pueda administrar los usuarios registrados hasta el momento. Adjunto imagenes de como luce actualmente:
+
+<img width="1344" height="643" alt="image" src="https://github.com/user-attachments/assets/a7f20c7b-ed82-4675-b7cb-37447987aa65" />
+
+Para ambas secciones aparece un boton de editar y eliminar, claramente el de eliminar borra al usuario del archivo JSON, y el de editar despliega la siguiente ventana permitiendo los siguientes cambios:
+
+<img width="1348" height="641" alt="image" src="https://github.com/user-attachments/assets/74e7ef59-7efa-4a4b-ba42-147a1abf34a4" />
+
+Como se puede apreciar, inlcuso se permite una modificacion al tipo de usuario vinculado.
+
+Ahora el enfoque para la siguiente semana sera migrar a una base de datos funcional, la cual esta en desarrollo hasta el momento.
+
