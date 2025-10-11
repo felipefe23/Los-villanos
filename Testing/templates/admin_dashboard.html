@@ -23,10 +23,7 @@
   <main class="dashboard">
     <section class="card">
       <h2>Gestión de propiedades</h2>
-      <div class="search-box">
-        <label for="searchId">Buscar por ID:</label>
-        <input type="number" id="searchId" placeholder="Ej: 15">
-      </div>
+      
 
       <div class="table-wrapper">
         <table class="crud-table">
@@ -60,10 +57,7 @@
     </section>
     <section class="card">
       <h2>Gestión de usuarios</h2>
-      <div class="search-box">
-        <label for="searchUser">Buscar por ID o Email:</label>
-        <input type="text" id="searchUser" placeholder="Ej: 3 o usuario@correo.com">
-      </div>
+     
 
       <div class="table-wrapper">
         <table class="crud-table">
@@ -222,6 +216,8 @@ const propMessage = document.getElementById("propMessage");
 const imagenInput = document.getElementById("imagenFile");
 const imagenActualInfo = document.getElementById("imagenActualInfo");
 let imagenBase64Temporal = null;
+const searchPropInput = document.getElementById("searchId");
+const propRows = Array.from(document.querySelectorAll("#propTableBody tr"));
 
 closeModalBtn.addEventListener("click", () => formPanel.classList.add("hidden"));
 
@@ -309,6 +305,20 @@ document.querySelectorAll(".btn-delete-prop").forEach(btn => {
   });
 });
 
+function filtrarPropiedades() {
+  if (!searchPropInput) return;
+  const query = (searchPropInput.value || "").trim();
+  propRows.forEach(row => {
+    const idCell = row.querySelector("td");
+    const coincide = !query || (idCell && idCell.textContent.trim().includes(query));
+    row.style.display = coincide ? "" : "none";
+  });
+}
+
+if (searchPropInput) {
+  searchPropInput.addEventListener("input", filtrarPropiedades);
+}
+
 
   // ======== USUARIOS ======== //
   const userFormPanel = document.getElementById("userFormPanel");
@@ -316,6 +326,8 @@ document.querySelectorAll(".btn-delete-prop").forEach(btn => {
   const closeUserModalBtn = document.getElementById("closeUserModalBtn");
   const userMessage = document.getElementById("userMessage");
   let editandoUsuarioId = null;
+  const searchUserInput = document.getElementById("searchUser");
+  const userRows = Array.from(document.querySelectorAll("#userTableBody tr"));
 
   closeUserModalBtn.addEventListener("click", () => userFormPanel.classList.add("hidden"));
 
@@ -336,7 +348,8 @@ document.querySelectorAll("button.btn-edit-user").forEach(btn => {
     document.getElementById("userRut").value = user.rut || "";
     document.getElementById("userDireccion").value = user.direccion || "";
     document.getElementById("userCiudad").value = user.ciudad || "";
-    document.getElementById("userTipo").value = user.rol_legible || "";
+    const tipoSeleccionado = (user.rol_legible || "").toLowerCase();
+    document.getElementById("userTipo").value = tipoSeleccionado;
 
     userFormPanel.classList.remove("hidden");
   });
@@ -356,11 +369,11 @@ const payload = {
   tipo_usuario: document.getElementById("userTipo").value,
 };
 
-const res = await fetch(`/api/usuarios/${editandoUsuarioId}`, {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload)
-}); 
+    const res = await fetch(`/api/usuarios/${editandoUsuarioId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }); 
 
     const data = await res.json();
     userMessage.textContent = data.message || data.error || "Error";
@@ -371,12 +384,29 @@ document.querySelectorAll(".btn-delete-user").forEach(btn => {
   btn.addEventListener("click", async () => {
     const id = btn.dataset.id;
     if (confirm("¿Eliminar usuario?")) {
-      const res = await fetch(`/api/usuarios/${id}`, { method: "POST" });
+      const res = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
       const data = await res.json();
       alert(data.message || "Usuario eliminado");
       if (res.ok) location.reload();
     }
   });
+});
+
+function filtrarUsuarios() {
+  if (!searchUserInput) return;
+  const query = (searchUserInput.value || "").trim().toLowerCase();
+  userRows.forEach(row => {
+    const idText = (row.children[0]?.textContent || "").trim();
+    const emailText = (row.children[2]?.textContent || "").trim().toLowerCase();
+    const coincide = !query || idText.includes(query) || emailText.includes(query);
+    row.style.display = coincide ? "" : "none";
+  });
+}
+
+if (searchUserInput) {
+  searchUserInput.addEventListener("input", filtrarUsuarios);
+}
+
 });
 </script>
 </body>

@@ -1,10 +1,22 @@
 from flask import Flask, render_template, request, jsonify
 from flask import redirect, url_for, session
 from functools import wraps
-from persistencia.manejoArchivo import leer_propiedades, guardar_propiedades, siguiente_id
+from persistencia.base_datos import (
+    init_db,
+    obtener_usuarios,
+    obtener_usuario_por_email,
+    obtener_usuario_por_id,
+    crear_usuario,
+    actualizar_usuario as actualizar_usuario_db,
+    eliminar_usuario as eliminar_usuario_db,
+    obtener_propiedades,
+    obtener_propiedad_por_id,
+    crear_propiedad,
+    actualizar_propiedad as actualizar_propiedad_db,
+    eliminar_propiedad as eliminar_propiedad_db,
+)
 import os
 import re
-import json
 from argon2 import PasswordHasher
 from datetime import datetime
 import base64
@@ -16,10 +28,17 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key')
 app.config.setdefault('SESSION_COOKIE_HTTPONLY', True)
 app.config.setdefault('SESSION_COOKIE_SAMESITE', 'Lax')
 
+init_db()
+
 # HASHEADO EN ARGON2 TESTING
 
-USERS_FILE = os.path.join('Testing', 'datos', 'users.json')
 ph = PasswordHasher()
+TIPOS_USUARIO_PERMITIDOS = {
+    "admin": "admin",
+    "administrador": "admin",
+    "vendedor": "vendedor",
+    "comprador": "comprador"
+}
 
 def validar_email(email):
     # Mínimo 2 caracteres antes del @ y formato básico
@@ -30,20 +49,11 @@ def validar_password(password):
     return re.match(r'^(?=.*\d).{8,}$', password)
 
 def leer_usuarios():
-    if not os.path.exists(USERS_FILE):
-        return []
-    try:
-        with open(USERS_FILE, 'r', encoding='utf-8') as f:
-            contenido = f.read().strip()
-            if not contenido:
-                return []
-            return json.loads(contenido)
-    except Exception:
-        return []
+    return obtener_usuarios()
 
-def guardar_usuarios(lista_usuarios):
-    with open(USERS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(lista_usuarios, f, indent=2, ensure_ascii=False)
+
+def leer_propiedades():
+    return obtener_propiedades()
 
 
 def _prefers_json():
@@ -222,7 +232,8 @@ def login_required(*roles):
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json(silent=True) or {}
-    email = data.get('email', '').strip()
+    email_original = data.get('email', '').strip()
+    email = email_original.lower()
     password = data.get('password', '').strip()
     nombre = data.get('nombre', '').strip()
     apellido = data.get('apellido', '').strip()
@@ -232,7 +243,7 @@ def register():
     ciudad = data.get('ciudad', '').strip()
     tipo_usuario = data.get('tipo_usuario', '').strip().lower()
 
-    if not validar_email(email):
+    if not validar_email(email_original):
         return jsonify({"error": "Correo inválido (mínimo 2 caracteres antes del @)."}), 400
     if not validar_password(password):
         return jsonify({"error": "Contraseña debe tener al menos 8 caracteres y 1 número."}), 400
@@ -257,16 +268,13 @@ def register():
     if tipo_usuario not in {"vendedor", "comprador"}:
         return jsonify({"error": "El tipo de usuario debe ser 'vendedor' o 'comprador'."}), 400
 
-    usuarios = leer_usuarios()
-    if any(u.get('email') == email for u in usuarios):
+    existente = obtener_usuario_por_email(email)
+    if existente:
         return jsonify({"error": "El correo ya está registrado."}), 400
 
     hash_pw = ph.hash(password)
     hash_tipo = ph.hash(tipo_usuario)
-    usuarios = leer_usuarios()
-    id_user = siguiente_id(usuarios)
     usuario = {
-        'id': id_user,
         'email': email,
         'password': hash_pw,
         'nombre': nombre,
@@ -278,9 +286,8 @@ def register():
         'tipo_usuario': hash_tipo,
         'fecha_registro': datetime.utcnow().isoformat() + 'Z'
     }
-    usuarios.append(usuario)
-    guardar_usuarios(usuarios)
-    usuario_sin_password = usuario.copy()
+    usuario_creado = crear_usuario(usuario)
+    usuario_sin_password = usuario_creado.copy()
     usuario_sin_password.pop('password', None)
     return jsonify({"message": "Usuario registrado con éxito.", "user": usuario_sin_password})
 
@@ -291,8 +298,7 @@ def login():
     password = data.get('password', '').strip()
     tipo_enviado = (data.get('tipo_usuario') or '').strip().lower()
 
-    usuarios = leer_usuarios()
-    user = next((u for u in usuarios if (u.get('email') or '').strip().lower() == email), None)
+    user = obtener_usuario_por_email(email)
     if not user:
         return jsonify({"error": "Correo no encontrado."}), 400
 
@@ -448,48 +454,87 @@ def ventas_view():
     return render_template("ventas.html", propiedades=propiedades_venta)
 
 @app.get("/api/usuarios")
-@login_required('admin', 'administrador')  
+@login_required('admin', 'administrador')
 def api_usuarios():
     try:
         usuarios = leer_usuarios()
-        for u in usuarios:
-            u["rol_legible"] = u.get("rol_legible") or "desconocido"
-        return jsonify(usuarios)
+        respuesta = []
+        for usuario in usuarios:
+            usuario_copy = usuario.copy()
+            usuario_copy.pop("password", None)
+            usuario_copy["rol_legible"] = rol_legible(usuario.get("tipo_usuario"))
+            respuesta.append(usuario_copy)
+        return jsonify(respuesta)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/usuarios/<int:user_id>", methods=["POST"])
+@app.route("/api/usuarios/<int:user_id>", methods=["PUT"])
 @login_required('admin', 'administrador')
 def actualizar_usuario(user_id):
-    usuarios = leer_usuarios()  
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
+    usuario = obtener_usuario_por_id(user_id)
+    if not usuario:
+        return jsonify({"error": "Usuario no encontrado."}), 404
 
-    for u in usuarios:
-        if u["id"] == user_id:
-            u["nombre"] = data.get("nombre", u["nombre"])
-            u["apellido"] = data.get("apellido", u["apellido"])
-            u["email"] = data.get("email", u["email"])
-            u["telefono"] = data.get("telefono", u["telefono"])
-            u["rut"] = data.get("rut", u["rut"])
-            u["direccion"] = data.get("direccion", u["direccion"])
-            u["ciudad"] = data.get("ciudad", u["ciudad"])
-            guardar_usuarios(usuarios)
-            return jsonify({"message": "Usuario actualizado correctamente."}), 200
+    cambios = {}
+    email = data.get("email")
+    if email is not None:
+        email = email.strip()
+        if not validar_email(email):
+            return jsonify({"error": "Correo inválido (mínimo 2 caracteres antes del @)."}), 400
+        email_normalizado = email.lower()
+        existente = obtener_usuario_por_email(email_normalizado)
+        if existente and existente.get("id") != user_id:
+            return jsonify({"error": "El correo ya está registrado."}), 400
+        cambios["email"] = email
 
-    return jsonify({"error": "Usuario no encontrado."}), 404
+    campos_texto = {
+        "nombre": lambda v: v.strip(),
+        "apellido": lambda v: v.strip(),
+        "telefono": lambda v: v.strip(),
+        "rut": lambda v: v.strip().upper(),
+        "direccion": lambda v: v.strip(),
+        "ciudad": lambda v: v.strip(),
+    }
 
-@app.route("/api/usuarios/<int:user_id>", methods=["POST"])
+    for campo, normalizador in campos_texto.items():
+        if campo in data and data[campo] is not None:
+            valor = str(data[campo])
+            cambios[campo] = normalizador(valor)
+
+    tipo_usuario_enviado = data.get("tipo_usuario")
+    if tipo_usuario_enviado is not None:
+        tipo_normalizado = str(tipo_usuario_enviado).strip().lower()
+        tipo_canonico = TIPOS_USUARIO_PERMITIDOS.get(tipo_normalizado)
+        if not tipo_canonico:
+            return jsonify({"error": "Tipo de usuario inválido."}), 400
+        cambios["tipo_usuario"] = ph.hash(tipo_canonico)
+
+    if cambios:
+        usuario_actualizado = actualizar_usuario_db(user_id, cambios)
+    else:
+        usuario_actualizado = usuario
+
+    if not usuario_actualizado:
+        return jsonify({"error": "Usuario no encontrado."}), 404
+
+    usuario_sin_password = usuario_actualizado.copy()
+    usuario_sin_password.pop("password", None)
+    usuario_sin_password["rol_legible"] = rol_legible(usuario_actualizado.get("tipo_usuario"))
+    return jsonify({"message": "Usuario actualizado correctamente.", "user": usuario_sin_password}), 200
+
+@app.route("/api/usuarios/<int:user_id>", methods=["DELETE"])
 @login_required('admin', 'administrador')
 def eliminar_usuario(user_id):
-    usuarios = leer_usuarios()
-    indice = next((i for i, u in enumerate(usuarios) if u.get("id") == user_id), None)
-
-    if indice is None:
+    usuario = obtener_usuario_por_id(user_id)
+    if not usuario:
         return jsonify({"error": "Usuario no encontrado."}), 404
-    eliminado = usuarios.pop(indice)
-    guardar_usuarios(usuarios)
 
-    return jsonify({"message": f"Usuario {eliminado.get('nombre', '')} eliminado correctamente."}), 200
+    eliminado = eliminar_usuario_db(user_id)
+    if not eliminado:
+        return jsonify({"error": "Usuario no encontrado."}), 404
+
+    return jsonify({"message": f"Usuario {usuario.get('nombre', '')} eliminado correctamente."}), 200
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():
     propiedades = leer_propiedades()
@@ -507,50 +552,54 @@ def get_propiedades():
 @app.route('/api/propiedades/editar/<int:propiedad_id>', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
 def editar_propiedad(propiedad_id):
-    propiedades = leer_propiedades()
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
+    propiedad = obtener_propiedad_por_id(propiedad_id)
+    if not propiedad:
+        return jsonify({"error": "Propiedad no encontrada."}), 404
 
-    for p in propiedades:
-        if p["id"] == propiedad_id:
-            p["nombre"] = data.get("nombre", p["nombre"])
-            p["precio"] = data.get("precio", p["precio"])
-            p["localizacion"] = data.get("localizacion", p["localizacion"])
-            p["tipo"] = data.get("tipo", p["tipo"])
-            p["estado"] = data.get("estado", p["estado"])
-            p["dormitorios"] = data.get("dormitorios", p["dormitorios"])
-            p["baños"] = data.get("baños", p["baños"])
-            p["area"] = data.get("area", p["area"])
-            p["descripcion"] = data.get("descripcion", p["descripcion"])
-            p["coordenadas"] = data.get("coordenadas", p["coordenadas"])
-            p["activo"] = data.get("activo", p["activo"])
-            p["img"] = data.get("img", p.get("img"))
-            guardar_propiedades(propiedades)
-            return jsonify({"message": "Propiedad actualizada con éxito."}), 200
+    cambios = {
+        "nombre": data.get("nombre", propiedad["nombre"]),
+        "precio": data.get("precio", propiedad["precio"]),
+        "localizacion": data.get("localizacion", propiedad["localizacion"]),
+        "tipo": data.get("tipo", propiedad["tipo"]),
+        "estado": data.get("estado", propiedad["estado"]),
+        "dormitorios": data.get("dormitorios", propiedad["dormitorios"]),
+        "baños": data.get("baños", propiedad["baños"]),
+        "area": data.get("area", propiedad["area"]),
+        "descripcion": data.get("descripcion", propiedad["descripcion"]),
+        "coordenadas": data.get("coordenadas", propiedad["coordenadas"]),
+        "activo": data.get("activo", propiedad["activo"]),
+        "img": data.get("img", propiedad.get("img")),
+    }
 
-    return jsonify({"error": "Propiedad no encontrada."}), 404
+    actualizada = actualizar_propiedad_db(propiedad_id, cambios)
+    if not actualizada:
+        return jsonify({"error": "Propiedad no encontrada."}), 404
+
+    return jsonify({"message": "Propiedad actualizada con éxito."}), 200
 
 @app.route('/api/propiedades/eliminar/<int:propiedad_id>', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
 def eliminar_propiedad(propiedad_id):
-    propiedades = leer_propiedades()
-    indice = next((i for i, p in enumerate(propiedades) if p["id"] == propiedad_id), None)
-    if indice is None:
+    propiedad = obtener_propiedad_por_id(propiedad_id)
+    if not propiedad:
         return jsonify({"error": "Propiedad no encontrada."}), 404
 
-    propiedades.pop(indice)
-    guardar_propiedades(propiedades)
+    eliminado = eliminar_propiedad_db(propiedad_id)
+    if not eliminado:
+        return jsonify({"error": "Propiedad no encontrada."}), 404
+
     return jsonify({"message": "Propiedad eliminada correctamente."}), 200
 
 @app.route('/api/propiedades', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
 def add_propiedad():
     data = request.get_json(silent=True) or {}
-    propiedades = leer_propiedades()
     try:
         campos = _validar_y_normalizar_propiedad(
             data,
             parcial=False,
-            propiedades_existentes=propiedades
+            propiedades_existentes=leer_propiedades()
         )
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
@@ -560,9 +609,8 @@ def add_propiedad():
         return jsonify({"error": "Autenticación requerida para crear propiedades."}), 401
 
     campos['propietario'] = user_id
-    nueva = {"id": siguiente_id(propiedades), **campos}
-    propiedades.append(nueva)
-    guardar_propiedades(propiedades)
+    nueva = crear_propiedad(campos)
+    propiedades = leer_propiedades()
     return jsonify({
         "message": "Propiedad ingresada con éxito.",
         "propiedad": nueva,
@@ -573,12 +621,10 @@ def add_propiedad():
 @app.route('/api/propiedades/<int:propiedad_id>', methods=['PUT', 'PATCH'])
 @login_required('vendedor', 'administrador', 'admin')
 def update_propiedad(propiedad_id):
-    propiedades = leer_propiedades()
-    indice = next((i for i, p in enumerate(propiedades) if p.get('id') == propiedad_id), None)
-    if indice is None:
+    propiedad_actual = obtener_propiedad_por_id(propiedad_id)
+    if not propiedad_actual:
         return jsonify({"error": "Propiedad no encontrada."}), 404
 
-    propiedad_actual = propiedades[indice]
     user_id = session.get('user_id')
     user_role = session.get('user_role')
     if not _es_admin(user_role) and propiedad_actual.get('propietario') != user_id:
@@ -590,7 +636,7 @@ def update_propiedad(propiedad_id):
         campos_actualizados = _validar_y_normalizar_propiedad(
             data,
             parcial=parcial,
-            propiedades_existentes=propiedades,
+            propiedades_existentes=leer_propiedades(),
             propiedad_actual=propiedad_actual
         )
     except ValueError as error:
@@ -599,29 +645,29 @@ def update_propiedad(propiedad_id):
     if not campos_actualizados:
         return jsonify({"error": "No se proporcionaron campos para actualizar."}), 400
 
-    propiedad_actualizada = propiedad_actual.copy()
-    propiedad_actualizada.update(campos_actualizados)
-    propiedades[indice] = propiedad_actualizada
-    guardar_propiedades(propiedades)
+    propiedad_actualizada = actualizar_propiedad_db(propiedad_id, campos_actualizados)
+    if not propiedad_actualizada:
+        return jsonify({"error": "Propiedad no encontrada."}), 404
+
     return jsonify({"message": "Propiedad actualizada con éxito.", "propiedad": propiedad_actualizada})
 
 
 @app.route('/api/propiedades/<int:propiedad_id>', methods=['DELETE'])
 @login_required('vendedor', 'administrador', 'admin')
 def delete_propiedad(propiedad_id):
-    propiedades = leer_propiedades()
-    indice = next((i for i, p in enumerate(propiedades) if p.get('id') == propiedad_id), None)
-    if indice is None:
+    propiedad_actual = obtener_propiedad_por_id(propiedad_id)
+    if not propiedad_actual:
         return jsonify({"error": "Propiedad no encontrada."}), 404
 
-    propiedad_actual = propiedades[indice]
     user_id = session.get('user_id')
     user_role = session.get('user_role')
     if not _es_admin(user_role) and propiedad_actual.get('propietario') != user_id:
         return jsonify({"error": "No tienes permiso para eliminar esta propiedad."}), 403
 
-    propiedades.pop(indice)
-    guardar_propiedades(propiedades)
+    eliminado = eliminar_propiedad_db(propiedad_id)
+    if not eliminado:
+        return jsonify({"error": "Propiedad no encontrada."}), 404
+
     return jsonify({"message": "Propiedad eliminada con éxito."})
 
 # Error de archivos locales
@@ -631,8 +677,7 @@ def api_me():
     if not user_id:
         return jsonify({"error": "No autenticado."}), 401
 
-    usuarios = leer_usuarios()
-    user = next((u for u in usuarios if u.get('id') == user_id), None)
+    user = obtener_usuario_por_id(user_id)
     if not user:
         return jsonify({"error": "Usuario no encontrado."}), 404
 
@@ -648,17 +693,13 @@ def not_found_error(error):
 def convertir_a_base64(ruta_imagen):
     with open(ruta_imagen, "rb") as img:
         return base64.b64encode(img.read()).decode("utf-8")
-ph = PasswordHasher()
-
-ROLES_POSIBLES = ["admin", "vendedor", "comprador"]
-
 def rol_legible(hash_guardado):
     if not hash_guardado:
         return "desconocido"
-    for rol in ROLES_POSIBLES:
+    for rol, canonico in TIPOS_USUARIO_PERMITIDOS.items():
         try:
             if ph.verify(hash_guardado, rol):
-                return rol
+                return canonico
         except Exception:
             continue
     return "desconocido"
