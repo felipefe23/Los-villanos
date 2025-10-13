@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel del Vendedor</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor.css') }}">
+</head>
+<body>
+  <header class="modern-header">
+  <div class="header-left">
+    <h1>Panel del Vendedor</h1>
+    <p class="subtitle">Administra tus propiedades publicadas y agrega nuevas fácilmente.</p>
+  </div>
+  
+  <div class="header-right">
+    <div class="user-widget" id="userWidget" hidden>
+      <button class="user-widget__trigger" id="userTrigger" aria-label="Mostrar datos del usuario" aria-expanded="false">
+          <span class="user-widget__initials" id="userInitials">US</span>
+          <span class="user-widget__name" id="userShortName"></span>
+      </button>
+      <div class="user-widget__panel" id="userPanel" role="dialog" aria-modal="false">
+          <h2>Datos del usuario</h2>
+          <ul>
+              <li><span>Nombre completo:</span> <strong id="userNombre"></strong></li>
+              <li><span>Correo:</span> <strong id="userEmail"></strong></li>
+              <li><span>Teléfono:</span> <strong id="userTelefono"></strong></li>
+              <li><span>RUT:</span> <strong id="userRut"></strong></li>
+              <li><span>Dirección:</span> <strong id="userDireccion"></strong></li>
+              <li><span>Ciudad:</span> <strong id="userCiudad"></strong></li>
+              <li><span>Registrado el:</span> <strong id="userFecha"></strong></li>
+          </ul>
+      </div>
+  </div>
+    <a href="{{ url_for('landing') }}" class="logout-btn">Cerrar sesión</a>
+  </div>
+</header>
+
+  <main>
+    <div class="side-panel">
+      <button type="button" class="toggle-btn" data-target="formPanel">
+        ➕ Agregar Propiedad
+      </button>
+
+      <section class="panel">
+        <button type="button" id="reloadBtn" style="margin-bottom:10px; padding:6px 10px;">📋 Actualizar lista</button>
+        <ul id="propList">
+          <li>No hay propiedades cargadas.</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="map-wrapper">
+      <h2>Mapa</h2>
+      <div id="map"></div>
+      <div class="map-legend">
+        <div>- Haz clic en el mapa para capturar las coordenadas.</div>
+        <div>- Los marcadores muestran las propiedades publicadas.</div>
+      </div>
+    </section>
+  </main>
+
+  <div id="formPanel">
+    <button type="button" class="close-btn" onclick="cerrarForm()">✖</button>
+    <form id="propForm">
+      <input type="hidden" id="propId">
+      <h2>Agregar propiedad</h2>
+      <label>
+        Nombre
+        <input type="text" name="nombre" id="nombre" placeholder="Casa en Providencia" required>
+      </label>
+      <label>
+        Precio (CLP)
+        <input type="number" name="precio" id="precio" placeholder="180000000" min="0" required>
+      </label>
+      <label>
+        Localización
+        <input type="text" name="localizacion" id="localizacion" placeholder="Calle, comuna" required>
+      </label>
+      <label>
+        Tipo
+        <select name="tipo" id="tipo" required>
+          <option value="">Selecciona...</option>
+          <option value="Casa">Casa</option>
+          <option value="Departamento">Departamento</option>
+          <option value="Terreno">Terreno</option>
+          <option value="Comercial">Comercial</option>
+          <option value="Recidencia_Estudiantes">Residencia de Estudiantes</option>
+        </select>
+      </label>
+      <label>
+        Estado
+        <select name="estado" id="estado" required>
+          <option value="venta">Venta</option>
+          <option value="arriendo">Arriendo</option>
+        </select>
+      </label>
+      <label>
+        Dormitorios
+        <input type="number" name="dormitorios" id="dormitorios" placeholder="3" min="0" required>
+      </label>
+      <label>
+        Baños
+        <input type="number" name="baños" id="baños" placeholder="2" min="0" required>
+      </label>
+      <label>
+        Área (m²)
+        <input type="number" name="area" id="area" placeholder="75" min="0" required>
+      </label>
+      <label>
+        Descripción
+        <textarea name="descripcion" id="descripcion" rows="3" placeholder="Detalle breve"></textarea>
+      </label>
+      <label>
+        Imagen
+        <input type="file" name="imagenFile" id="imagenFile" accept="image/jpeg,image/jpg">
+        <small>Puedes arrastrar o seleccionar un archivo .jpg</small>
+        <small id="imagenActualInfo" class="hidden"></small>
+      </label>
+      <label>
+        Coordenadas (lat,lng)
+        <input type="text" name="coordenadas" id="coordenadas" placeholder="-33.4489,-70.6693" required>
+      </label>
+      <label>
+        Activo
+        <select name="activo" id="activo">
+          <option value="true" selected>Sí</option>
+          <option value="false">No</option>
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="submit" id="propSubmit">Guardar</button>
+        <button type="button" id="cancelEditBtn" class="secondary hidden">Cancelar edición</button>
+      </div>
+      <div class="helper">También puedes hacer clic en el mapa para llenar las coordenadas.</div>
+      <div id="propMessage"></div>
+    </form>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+  const propForm = document.getElementById('propForm');
+  const propMessage = document.getElementById('propMessage');
+  const propSubmit = document.getElementById('propSubmit');
+  const propList = document.getElementById('propList');
+  const reloadBtn = document.getElementById('reloadBtn');
+  const coordsInput = document.getElementById('coordenadas');
+  const propIdInput = document.getElementById('propId');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const imagenActualInfo = document.getElementById('imagenActualInfo');
+  const toggleFormBtn = document.querySelector('[data-target="formPanel"]');
+  const formPanel = document.getElementById('formPanel');
+  const imagenInput = document.getElementById('imagenFile');
+  const camposFormulario = {
+    nombre: document.getElementById('nombre'),
+    precio: document.getElementById('precio'),
+    localizacion: document.getElementById('localizacion'),
+    tipo: document.getElementById('tipo'),
+    estado: document.getElementById('estado'),
+    dormitorios: document.getElementById('dormitorios'),
+    baños: document.getElementById('baños'),
+    area: document.getElementById('area'),
+    descripcion: document.getElementById('descripcion'),
+    activo: document.getElementById('activo')
+  };
+
+  let propiedadesCargadas = [];
+  let editandoId = null;
+  let imagenBase64Temporal = null;
+
+  function mostrarMensaje(texto, tipo) {
+    propMessage.textContent = texto || '';
+    propMessage.classList.remove('error', 'success');
+    if (tipo) {
+      propMessage.classList.add(tipo);
+    }
+  }
+
+  function resetForm() {
+    propForm.reset();
+    editandoId = null;
+    imagenBase64Temporal = null;
+    propIdInput.value = '';
+    imagenInput.value = '';
+    propForm.querySelector('h2').textContent = 'Agregar propiedad';
+    propSubmit.textContent = 'Guardar';
+    cancelEditBtn.classList.add('hidden');
+    imagenActualInfo.textContent = '';
+    imagenActualInfo.classList.add('hidden');
+    mostrarMensaje('', null);
+  }
+
+  function abrirPanel() {
+    formPanel.classList.add('active');
+  }
+
+  function cerrarForm() {
+    formPanel.classList.remove('active');
+    resetForm();
+  }
+
+  cancelEditBtn.addEventListener('click', () => resetForm());
+  toggleFormBtn.addEventListener('click', () => {
+    resetForm();
+    abrirPanel();
+  });
+
+  const widget = document.getElementById('userWidget');
+  const trigger = document.getElementById('userTrigger');
+  const panel = document.getElementById('userPanel');
+  const camposUsuario = {
+    nombre: document.getElementById('userNombre'),
+    email: document.getElementById('userEmail'),
+    telefono: document.getElementById('userTelefono'),
+    rut: document.getElementById('userRut'),
+    direccion: document.getElementById('userDireccion'),
+    ciudad: document.getElementById('userCiudad'),
+    fecha: document.getElementById('userFecha'),
+    initials: document.getElementById('userInitials'),
+    shortName: document.getElementById('userShortName')
+  };
+
+  async function obtenerUsuarioActual() {
+    try {
+      const res = await fetch('/api/me', { credentials: 'include' });
+      if (res.ok) {
+        const usuario = await res.json();
+        try { localStorage.setItem('usuarioActual', JSON.stringify(usuario)); } catch (e) { /* ignore */ }
+        return usuario;
+      }
+    } catch (e) {
+    }
+
+    try {
+      const guardado = localStorage.getItem('usuarioActual');
+      if (!guardado) return null;
+      return JSON.parse(guardado);
+    } catch (error) {
+      console.warn('No fue posible leer los datos de usuario almacenados', error);
+      return null;
+    }
+  }
+
+  function formatearIniciales(nombre, apellido, email) {
+    const letras = [];
+    if (nombre) letras.push(nombre.trim()[0]);
+    if (apellido) letras.push(apellido.trim()[0]);
+    if (letras.length === 0 && email) letras.push(email.trim()[0]);
+    return letras.join('').toUpperCase().slice(0, 2) || 'US';
+  }
+
+  function formatearNombreCorto(nombre, email) {
+    if (nombre) return nombre.split(' ')[0];
+    if (email) return email.split('@')[0];
+    return 'Usuario';
+  }
+
+  function formatearTipo(tipo) {
+    if (!tipo) return 'Sin especificar';
+    const mapa = { vendedor: 'Vendedor', comprador: 'Comprador' };
+    return mapa[tipo.toLowerCase()] || tipo;
+  }
+
+  function formatearFecha(fechaIso) {
+    if (!fechaIso) return 'Sin dato';
+    const fecha = new Date(fechaIso);
+    if (Number.isNaN(fecha.getTime())) return 'Sin dato';
+    return new Intl.DateTimeFormat('es-CL', { dateStyle: 'long' }).format(fecha);
+  }
+
+  function poblarWidget(usuario) {
+    if (!widget || !usuario) return;
+    widget.hidden = false;
+    camposUsuario.nombre.textContent = `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || 'Sin nombre';
+    camposUsuario.email.textContent = usuario.email || 'Sin correo';
+    camposUsuario.telefono.textContent = usuario.telefono || 'Sin teléfono';
+    camposUsuario.rut.textContent = usuario.rut || 'Sin RUT';
+    camposUsuario.direccion.textContent = usuario.direccion || 'Sin dirección';
+    camposUsuario.ciudad.textContent = usuario.ciudad || 'Sin ciudad';
+    camposUsuario.fecha.textContent = formatearFecha(usuario.fecha_registro);
+    camposUsuario.initials.textContent = formatearIniciales(usuario.nombre, usuario.apellido, usuario.email);
+    camposUsuario.shortName.textContent = formatearNombreCorto(usuario.nombre, usuario.email);
+  }
+
+  function cerrarPanelUsuario() {
+    if (!widget) return;
+    widget.classList.remove('user-widget--abierta');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function inicializarWidgetUsuario() {
+    if (!widget || !trigger || !panel) {
+      if (widget) widget.hidden = true;
+      return;
+    }
+
+    obtenerUsuarioActual().then(usuario => {
+      if (!usuario) {
+        if (widget) widget.hidden = true;
+        return;
+      }
+
+      poblarWidget(usuario);
+
+      trigger.addEventListener('click', () => {
+        const abierta = widget.classList.toggle('user-widget--abierta');
+        trigger.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+      });
+
+      document.addEventListener('click', (evento) => {
+        if (!widget.contains(evento.target)) {
+          cerrarPanelUsuario();
+        }
+      });
+
+      document.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Escape') {
+          cerrarPanelUsuario();
+        }
+      });
+    }).catch(err => {
+      console.warn('Error al obtener usuario', err);
+      if (widget) widget.hidden = true;
+    });
+  }
+
+  function formatearCLP(valor) {
+    const numero = Number(valor) || 0;
+    return numero.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+  }
+
+  const map = L.map('map').setView([-34.984403, -71.239488], 14);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    minZoom: 12,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  const propiedadesLayer = L.layerGroup().addTo(map);
+  const marcadorTemporal = L.layerGroup().addTo(map);
+
+  map.on('click', (event) => {
+    const { lat, lng } = event.latlng;
+    coordsInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    marcadorTemporal.clearLayers();
+    L.marker([lat, lng], { opacity: 0.7 }).addTo(marcadorTemporal);
+  });
+
+  function iniciarEdicion(propiedad) {
+    if (!propiedad) return;
+    editandoId = propiedad.id;
+    propIdInput.value = propiedad.id;
+    camposFormulario.nombre.value = propiedad.nombre || '';
+    camposFormulario.precio.value = propiedad.precio ?? '';
+    camposFormulario.localizacion.value = propiedad.localizacion || '';
+    camposFormulario.tipo.value = propiedad.tipo || '';
+    camposFormulario.estado.value = (propiedad.estado || '').toLowerCase();
+    camposFormulario.dormitorios.value = propiedad.dormitorios ?? '';
+    camposFormulario['baños'].value = propiedad['baños'] ?? propiedad.banos ?? '';
+    camposFormulario.area.value = propiedad.area ?? '';
+    camposFormulario.descripcion.value = propiedad.descripcion || '';
+    camposFormulario.activo.value = propiedad.activo ? 'true' : 'false';
+    coordsInput.value = propiedad.coordenadas || '';
+
+    imagenBase64Temporal = propiedad.img || null;
+    if (imagenBase64Temporal) {
+      imagenActualInfo.textContent = 'Se conservará la imagen actual a menos que subas una nueva.';
+    } else {
+      imagenActualInfo.textContent = 'La propiedad no tiene imagen almacenada. Debes seleccionar una nueva.';
+    }
+    imagenActualInfo.classList.remove('hidden');
+
+    propForm.querySelector('h2').textContent = 'Editar propiedad';
+    propSubmit.textContent = 'Actualizar';
+    cancelEditBtn.classList.remove('hidden');
+    mostrarMensaje('Editando propiedad seleccionada. Realiza los cambios y presiona Actualizar.', 'success');
+
+    const coords = (propiedad.coordenadas || '').split(',').map((v) => Number(v.trim()));
+    if (coords.length === 2 && coords.every((n) => Number.isFinite(n))) {
+      marcadorTemporal.clearLayers();
+      L.marker(coords, { opacity: 0.7 }).addTo(marcadorTemporal);
+      map.setView(coords, 16);
+    }
+
+    abrirPanel();
+  }
+
+  async function eliminarPropiedad(propiedadId) {
+    if (!propiedadId) return;
+    if (!window.confirm('¿Deseas eliminar esta propiedad? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      const respuesta = await fetch(`/api/propiedades/${propiedadId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const resultado = await respuesta.json().catch(() => ({}));
+      if (!respuesta.ok) {
+        throw new Error(resultado.error || 'No se pudo eliminar la propiedad.');
+      }
+      resetForm();
+      abrirPanel();
+      mostrarMensaje(resultado.message || 'Propiedad eliminada con éxito.', 'success');
+      marcadorTemporal.clearLayers();
+      await cargarPropiedades();
+    } catch (error) {
+      console.error(error);
+      abrirPanel();
+      mostrarMensaje(error.message || 'No se pudo eliminar la propiedad.', 'error');
+    }
+  }
+
+  reloadBtn.addEventListener('click', () => {
+    resetForm();
+    cargarPropiedades();
+  });
+
+  async function cargarPropiedades() {
+    try {
+      propiedadesLayer.clearLayers();
+      propList.innerHTML = '<li>Cargando propiedades...</li>';
+      const response = await fetch('/api/propiedades');
+      if (!response.ok) throw new Error('No fue posible obtener propiedades');
+      const propiedades = await response.json();
+      let usuarioId = null;
+      try {
+        const meRes = await fetch('/api/me', { credentials: 'include' });
+        if (meRes.ok) {
+          const me = await meRes.json();
+          usuarioId = me.id;
+        }
+      } catch (e) {
+        try {
+          const guardado = localStorage.getItem('usuarioActual');
+          if (guardado) usuarioId = JSON.parse(guardado).id;
+        } catch (_) {}
+      }
+
+      const propiedadesFiltradas = usuarioId == null
+        ? propiedades
+        : propiedades.filter((p) => p.propietario == usuarioId || String(p.propietario) === String(usuarioId));
+
+      propiedadesCargadas = propiedadesFiltradas.map((p) => ({ ...p }));
+      dibujarPropiedades(propiedadesCargadas);
+    } catch (error) {
+      console.error(error);
+      propList.innerHTML = '<li>Error al cargar propiedades.</li>';
+    }
+  }
+
+  function dibujarPropiedades(propiedades) {
+    propiedadesLayer.clearLayers();
+    if (!propiedades.length) {
+      propList.innerHTML = '<li>No hay propiedades cargadas.</li>';
+      return;
+    }
+
+    propList.innerHTML = '';
+    const bounds = [];
+
+    propiedades.forEach((prop) => {
+      const coords = (prop.coordenadas || '').split(',').map((v) => Number(v.trim()));
+      const banos = prop['baños'] ?? prop.banos ?? 0;
+      if (coords.length === 2 && coords.every((n) => Number.isFinite(n))) {
+        const marker = L.marker(coords).addTo(propiedadesLayer);
+        marker.bindPopup(`
+          <strong>${prop.nombre || 'Propiedad sin nombre'}</strong><br>
+          ${formatearCLP(prop.precio)}<br>
+          ${prop.localizacion || 'Sin localización'}
+        `);
+        bounds.push(coords);
+      }
+
+      const item = document.createElement('li');
+      item.classList.add('prop-item');
+
+      const detalles = document.createElement('div');
+      detalles.classList.add('prop-details');
+      detalles.innerHTML = `
+        <strong>${prop.nombre || 'Propiedad sin nombre'}</strong>
+        <div>${formatearCLP(prop.precio)} · ${prop.tipo || ''} · ${prop.estado || ''}</div>
+        <div>${prop.dormitorios || 0} dorm · ${banos || 0} baños · ${prop.area || 0} m²</div>
+      `;
+
+      const acciones = document.createElement('div');
+      acciones.classList.add('prop-actions');
+
+      const editarBtn = document.createElement('button');
+      editarBtn.type = 'button';
+      editarBtn.textContent = 'Editar';
+      editarBtn.classList.add('prop-action', 'prop-action--edit');
+      editarBtn.addEventListener('click', () => iniciarEdicion(prop));
+
+      const eliminarBtn = document.createElement('button');
+      eliminarBtn.type = 'button';
+      eliminarBtn.textContent = 'Eliminar';
+      eliminarBtn.classList.add('prop-action', 'prop-action--delete');
+      eliminarBtn.addEventListener('click', () => eliminarPropiedad(prop.id));
+
+      acciones.appendChild(editarBtn);
+      acciones.appendChild(eliminarBtn);
+
+      item.appendChild(detalles);
+      item.appendChild(acciones);
+      propList.appendChild(item);
+    });
+
+    if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+  }
+
+  function convertirArchivoABase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  }
+
+  propForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    mostrarMensaje('', null);
+
+    const datos = new FormData(propForm);
+    const archivoImagen = imagenInput.files[0];
+    const esEdicion = Boolean(editandoId);
+
+    try {
+      if (archivoImagen) {
+        imagenBase64Temporal = await convertirArchivoABase64(archivoImagen);
+      }
+
+      if (!imagenBase64Temporal) {
+        throw new Error('Debes seleccionar una imagen en formato JPG.');
+      }
+
+      const payload = {
+        nombre: datos.get('nombre')?.trim(),
+        precio: Number(datos.get('precio')),
+        localizacion: datos.get('localizacion')?.trim(),
+        tipo: datos.get('tipo')?.trim(),
+        estado: datos.get('estado')?.trim(),
+        dormitorios: Number(datos.get('dormitorios')),
+        baños: Number(datos.get('baños')),
+        area: Number(datos.get('area')),
+        descripcion: datos.get('descripcion')?.trim(),
+        img: imagenBase64Temporal,
+        coordenadas: datos.get('coordenadas')?.trim(),
+        activo: datos.get('activo') !== 'false'
+      };
+
+      const obligatorios = ['nombre', 'precio', 'localizacion', 'tipo', 'estado', 'dormitorios', 'baños', 'area', 'coordenadas'];
+      const faltantes = obligatorios.filter((campo) => {
+        if (['precio', 'dormitorios', 'baños', 'area'].includes(campo)) {
+          return !Number.isFinite(payload[campo]);
+        }
+        return !payload[campo];
+      });
+
+      if (faltantes.length) {
+        throw new Error('Completa todos los campos obligatorios.');
+      }
+
+      const url = esEdicion ? `/api/propiedades/${editandoId}` : '/api/propiedades';
+      const method = esEdicion ? 'PUT' : 'POST';
+
+      propSubmit.disabled = true;
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const resultado = await response.json();
+      if (!response.ok) throw new Error(resultado.error || 'No se pudo guardar la propiedad');
+
+      const mensajeExito = resultado.message || (esEdicion ? 'Propiedad actualizada correctamente.' : 'Propiedad agregada correctamente.');
+      resetForm();
+      mostrarMensaje(mensajeExito, 'success');
+      marcadorTemporal.clearLayers();
+      await cargarPropiedades();
+    } catch (error) {
+      console.error(error);
+      mostrarMensaje(error.message || 'No se pudo guardar la propiedad.', 'error');
+    } finally {
+      propSubmit.disabled = false;
+    }
+  });
+
+  inicializarWidgetUsuario();
+  cargarPropiedades();
+  </script>
+</body>
+</html>
