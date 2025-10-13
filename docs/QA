@@ -1,0 +1,7 @@
+Como requisitos para poder ejecutar de manera efectiva el programa, deberemos considerar los siguientes complementos y la forma de implementarlos:
+
+1. Instalar Flask: Para poder instalarlo debemos abrir una terminal y escribir en esta "pip install flask", con esto se comenzara a instalar de manera automatica el flask.
+2. Instalar Argon2: Para el argon2 es un proceso similar, solo que en este debemos colocar "pip install argon2-cffi"
+3. EJecutar el archivo "app.py"
+
+Con esto el programa deberia arrancar y ejecutar el puerto local sin ningun tipo de problema.
