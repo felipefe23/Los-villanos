@@ -29,3 +29,47 @@
 
 ### Servidor
 - El servidor debe contar con al menos 4 GB de memoria RAM, etc.
+
+## Requisitos de instalacion paso a paso
+
+# 1) tener instalado python 3.9 o superior
+# 2) crear un entorno virtual con el siguiente comando en la terminal; python -m venv venv
+# 3) activar el entorno virtual mediante la terminal con; .\venv\Scripts\activate ; si la activación fue exitosa veras algo asi:
+<img width="835" height="70" alt="image" src="https://github.com/user-attachments/assets/9102c8e3-fca2-4846-a7ac-4a829663aca2" />
+
+# 4) ahora, en caso de no poseer pip, instalar extension pip con ; python -m ensurepip --default-pip ; adjunto imagen:
+
+(necesaria para los siguientes pasos)
+
+# 5) en la terminal ejecutar ; pip install flask ; el cual si se ejecuto bien arrojará algo así hasta finalizar la descarga, adjunto imagen:
+
+
+# 6) a continuación instalaremos el Argon2, el cual necesita del siguiente comando en terminal; pip install argon2-cffi ; y de manera al flask muy similar arroja lo siguiente:
+
+
+# 7) ahora por último, instalaremos supabase para poder ejecutar la base de datos, se utiliza el siguiente comando; pip install supabase ; el cual, al igual que las otras extensiones, arroja esto:
+
+
+
+
+
+# 8) como requerimiento también instalar dotenv con; pip install dotenv ; arroja esto si funciono bien:
+
+ 
+
+# 9) Ya como uno de los ultimos paso, es crear el .env manualmente con los siguientes valores:
+
+
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_KEY=tu-clave-service-role
+SECRET_KEY=clave-secreta-para-flask
+FLASK_ENV=development
+SUPABASE_USERS_TABLE=users
+SUPABASE_PROPIEDADES_TABLE=propiedades
+
+# 10) verificar donde se creó el archivo ; .env ; el cual debe estar acá:
+
+Debe estar dentro de la raíz del proyecto, fuera de las subcarpetas.
+
+# 11) Finalmente ejecutar y abrir el puerto local que tiene la aplicación.
+
