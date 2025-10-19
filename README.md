@@ -114,3 +114,25 @@ Como se puede apreciar, inlcuso se permite una modificacion al tipo de usuario v
 
 Ahora el enfoque para la siguiente semana sera migrar a una base de datos funcional, la cual esta en desarrollo hasta el momento.
 
+
+# Detalles de avance - Semana 8:
+Durante esta semana nos correspondio realizar una migracion a base de datos, la cual fue exitosa en nuestro caso. El avance debia ser un crud funcional de lo que ya teniamos, pero en la base de datos seleccionada,
+la cual, para nuestro proyecto es supabase (aunque de manera poco probable podia ocurrir un cambio). A continuacion mostrare imagenes de como luce la base de datos y como esta fue conectada al proyecto.
+
+FUNCIONES UTILIZADAS EN CODIGO PARA LA MIGRACION:
+
+
+Y asi es como luce una tabla de datos, en este caso propiedades:
+
+<img width="1855" height="404" alt="image" src="https://github.com/user-attachments/assets/30192360-e1f7-41e1-9053-5af8300a8b9d" />
+
+Cabe mencionar que todos los valores que llevabamos registrados en los JSON fueron correctamente migrados. Estas tablas contienen validaciones extras, las cuales estamos tratando de entender bien su funcionamiento y aporte
+ya que la base de datos es en base a la conexion a internet y puede relentizarse.
+
+<img width="650" height="874" alt="image" src="https://github.com/user-attachments/assets/3781f5fc-9cb8-48bb-a5b5-8363db123dcc" />
+
+Este es el menu de edicion de cada tabla, si presionamos el engranaje de un valor, nos arrojara a la ventana de validaciones extra:
+
+<img width="641" height="486" alt="image" src="https://github.com/user-attachments/assets/4b9efe62-9fc5-4a68-b27c-3abfefa61119" />
+
+Para ir finalizando, el crud esta completamente funcional para el panel de administracion, crear publicaciones de casas y usuarios nuevos, por lo cual la migracion no presento drama alguno mas alla de tiempos de carga sobre el promedio.
