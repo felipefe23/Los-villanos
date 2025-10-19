@@ -116,8 +116,8 @@ Ahora el enfoque para la siguiente semana sera migrar a una base de datos funcio
 
 
 # Detalles de avance - Semana 8:
-Durante esta semana nos correspondio realizar una migracion a base de datos, la cual fue exitosa en nuestro caso. El avance debia ser un crud funcional de lo que ya teniamos perp en la base de datos seleccionada
-la cual para nuestro proyecto es supabase, aunque de manera poco probable podia ocurrir un cambio. A continuacion mostrare imagenes de como luce la base de datos y como esta fue conectada al proyecto.
+Durante esta semana nos correspondio realizar una migracion a base de datos, la cual fue exitosa en nuestro caso. El avance debia ser un crud funcional de lo que ya teniamos, pero en la base de datos seleccionada,
+la cual, para nuestro proyecto es supabase (aunque de manera poco probable podia ocurrir un cambio). A continuacion mostrare imagenes de como luce la base de datos y como esta fue conectada al proyecto.
 
 FUNCIONES UTILIZADAS EN CODIGO PARA LA MIGRACION:
 
@@ -136,4 +136,5 @@ Este es el menu de edicion de cada tabla, si presionamos el engranaje de un valo
 <img width="641" height="486" alt="image" src="https://github.com/user-attachments/assets/4b9efe62-9fc5-4a68-b27c-3abfefa61119" />
 
 Para ir finalizando, el crud esta completamente funcional para el panel de administracion, crear publicaciones de casas y usuarios nuevos, por lo cual la migracion no presento drama alguno mas alla de tiempos de carga sobre el promedio.
+
 
