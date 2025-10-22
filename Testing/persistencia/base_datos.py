@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 
-"""
+
 # CARGA DEL ARCHIVO .env DE FORMA FIABLE
 
 dotenv_path = Path(__file__).resolve().parents[1] / ".env"
@@ -15,7 +15,7 @@ if dotenv_path.exists():
     print(f"Archivo .env cargado desde: {dotenv_path}")
 else:
     print("No se encontró el archivo .env en la carpeta padre.")
-"""
+
 
 # Carga directa desde la raíz del proyecto
 load_dotenv(dotenv_path=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '.env')))
