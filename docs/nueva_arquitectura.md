@@ -1,4 +1,4 @@
-# Acutalización Arquitectura en Capas - *Los Villanos*
+# Actualización Arquitectura en Capas - *Los Villanos*
 
 ## 📌 Contexto
 El proyecto original tenía toda la lógica (rutas, validaciones, acceso a base de datos, etc.) concentrada dentro de `app.py`.  
