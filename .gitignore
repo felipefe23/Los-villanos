@@ -4,8 +4,10 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Variables de entorno
 .env
 .env.*
 *.env
 
+# Entorno virtual
 venv/
