@@ -119,8 +119,12 @@ Ahora el enfoque para la siguiente semana sera migrar a una base de datos funcio
 Durante esta semana nos correspondio realizar una migracion a base de datos, la cual fue exitosa en nuestro caso. El avance debia ser un crud funcional de lo que ya teniamos, pero en la base de datos seleccionada,
 la cual, para nuestro proyecto es supabase (aunque de manera poco probable podia ocurrir un cambio). A continuacion mostrare imagenes de como luce la base de datos y como esta fue conectada al proyecto.
 
-FUNCIONES UTILIZADAS EN CODIGO PARA LA MIGRACION:
+FUNCION UTILIZADAS EN CODIGO PARA LA MIGRACION:
+Para lograr una migracion se tuvo que crear un nuevo archivo en /persistencia, el cual se encarga de manejar la base de datos. Este contiene el siguiente bloque que carga el .env y migra a la base:
 
+<img width="501" height="149" alt="image" src="https://github.com/user-attachments/assets/16051452-ee4d-4351-8b33-ee194b62f597" />
+
+El archivo tiene como nombre base_datos.py y contiene todo lo necesario, importa el supabase, crea las variables de entorno, etc.
 
 Y asi es como luce una tabla de datos, en este caso propiedades:
 
@@ -136,3 +140,7 @@ Este es el menu de edicion de cada tabla, si presionamos el engranaje de un valo
 <img width="641" height="486" alt="image" src="https://github.com/user-attachments/assets/4b9efe62-9fc5-4a68-b27c-3abfefa61119" />
 
 Para ir finalizando, el crud esta completamente funcional para el panel de administracion, crear publicaciones de casas y usuarios nuevos, por lo cual la migracion no presento drama alguno mas alla de tiempos de carga sobre el promedio.
+
+
+
+

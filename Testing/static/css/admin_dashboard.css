@@ -174,6 +174,7 @@ code {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  table-layout: fixed;
 }
 
 .crud-table th,
@@ -181,6 +182,7 @@ code {
   padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
+  word-wrap: break-word;
 }
 
 .crud-table th {
@@ -189,8 +191,38 @@ code {
   color: #1e293b;
 }
 
+/* Anchos específicos para las columnas */
+.crud-table th:nth-child(1), .crud-table td:nth-child(1) { width: 8%; } /* ID */
+.crud-table th:nth-child(2), .crud-table td:nth-child(2) { width: 25%; } /* Nombre */
+.crud-table th:nth-child(3), .crud-table td:nth-child(3) { width: 30%; } /* Email */
+.crud-table th:nth-child(4), .crud-table td:nth-child(4) { width: 15%; } /* Rol */
+.crud-table th:nth-child(5), .crud-table td:nth-child(5) { width: 22%; } /* Acciones */
+
+/* Para la tabla de propiedades */
+.crud-table th:nth-child(1), .crud-table td:nth-child(1) { width: 8%; } /* ID */
+.crud-table th:nth-child(2), .crud-table td:nth-child(2) { width: 25%; } /* Nombre */
+.crud-table th:nth-child(3), .crud-table td:nth-child(3) { width: 15%; } /* Precio */
+.crud-table th:nth-child(4), .crud-table td:nth-child(4) { width: 20%; } /* Localización */
+.crud-table th:nth-child(5), .crud-table td:nth-child(5) { width: 15%; } /* Propietario */
+.crud-table th:nth-child(6), .crud-table td:nth-child(6) { width: 17%; } /* Acciones */
+
 .crud-table tr:hover {
   background: #f9fafb;
+}
+
+/* Estilo para las celdas de acciones */
+.crud-table td:last-child {
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Contenedor para los botones de acción */
+.crud-table td:last-child {
+  grid-template-columns: repeat(2, 1fr);
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .btn-edit {
@@ -231,6 +263,29 @@ code {
   .actions .btn {
     width: 100%; 
   }
+
+  /* Ajustes para tablas en móviles */
+  .crud-table {
+    font-size: 12px;
+  }
+
+  .crud-table th,
+  .crud-table td {
+    padding: 8px 6px;
+  }
+
+  .btn-edit-prop, .btn-edit-user,
+  .btn-delete-prop, .btn-delete-user {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+
+  /* Ajustar anchos de columnas en móviles */
+  .crud-table th:nth-child(1), .crud-table td:nth-child(1) { width: 10%; } /* ID */
+  .crud-table th:nth-child(2), .crud-table td:nth-child(2) { width: 30%; } /* Nombre */
+  .crud-table th:nth-child(3), .crud-table td:nth-child(3) { width: 35%; } /* Email */
+  .crud-table th:nth-child(4), .crud-table td:nth-child(4) { width: 15%; } /* Rol */
+  .crud-table th:nth-child(5), .crud-table td:nth-child(5) { width: 25%; } /* Acciones */
 }
 .modal {
   position: fixed;
@@ -369,29 +424,41 @@ code {
 }
 
 .btn-edit-prop, .btn-edit-user {
-  color: #2563eb;
-  background: transparent;
+  color: #ffffff;
+  background: #2563eb;
   border: none;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.2s ease, color 0.2s ease;
+  font-size: 12px;
+  padding: 4px 8px;
+  margin: 0 2px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-edit-prop:hover, .btn-edit-user:hover {
-  transform: translateY(-2px);
+  background: rgba(37, 99, 235, 0.1);
   color: #1d4ed8;
+  transform: translateY(-1px);
 }
 
 .btn-delete-prop, .btn-delete-user {
-  color: #dc2626;
-  background: transparent;
+  color: #ffffff;
+  background: red;
   border: none;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.2s ease, color 0.2s ease;
+  font-size: 12px;
+  padding: 4px 8px;
+  margin: 0 2px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-delete-prop:hover, .btn-delete-user:hover {
-  transform: translateY(-2px);
+  background: rgba(220, 38, 38, 0.1);
   color: #b91c1c;
+  transform: translateY(-1px);
 }

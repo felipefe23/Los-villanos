@@ -243,6 +243,7 @@ def register():
     ciudad = data.get('ciudad', '').strip()
     tipo_usuario = data.get('tipo_usuario', '').strip().lower()
 
+    # Validaciones
     if not validar_email(email_original):
         return jsonify({"error": "Correo inválido (mínimo 2 caracteres antes del @)."}), 400
     if not validar_password(password):
@@ -268,28 +269,32 @@ def register():
     if tipo_usuario not in {"vendedor", "comprador"}:
         return jsonify({"error": "El tipo de usuario debe ser 'vendedor' o 'comprador'."}), 400
 
+    # Verificar si el usuario ya existe en Supabase
     existente = obtener_usuario_por_email(email)
     if existente:
         return jsonify({"error": "El correo ya está registrado."}), 400
 
-    hash_pw = ph.hash(password)
-    hash_tipo = ph.hash(tipo_usuario)
-    usuario = {
-        'email': email,
-        'password': hash_pw,
-        'nombre': nombre,
-        'apellido': apellido,
-        'telefono': telefono,
-        'rut': rut.upper(),
-        'direccion': direccion,
-        'ciudad': ciudad,
-        'tipo_usuario': hash_tipo,
-        'fecha_registro': datetime.utcnow().isoformat() + 'Z'
-    }
-    usuario_creado = crear_usuario(usuario)
-    usuario_sin_password = usuario_creado.copy()
-    usuario_sin_password.pop('password', None)
-    return jsonify({"message": "Usuario registrado con éxito.", "user": usuario_sin_password})
+    try:
+        # Crear usuario en Supabase con contraseña hasheada usando Argon2
+        hash_pw = ph.hash(password)
+        usuario = {
+            'email': email,
+            'password': hash_pw,
+            'nombre': nombre,
+            'apellido': apellido,
+            'telefono': telefono,
+            'rut': rut.upper(),
+            'direccion': direccion,
+            'ciudad': ciudad,
+            'tipo_usuario': tipo_usuario,  # Ya no hasheamos el tipo_usuario
+            'fecha_registro': datetime.utcnow().isoformat() + 'Z'
+        }
+        usuario_creado = crear_usuario(usuario)
+        usuario_sin_password = usuario_creado.copy()
+        usuario_sin_password.pop('password', None)
+        return jsonify({"message": "Usuario registrado con éxito.", "user": usuario_sin_password})
+    except Exception as e:
+        return jsonify({"error": f"Error al crear usuario: {str(e)}"}), 500
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -298,46 +303,40 @@ def login():
     password = data.get('password', '').strip()
     tipo_enviado = (data.get('tipo_usuario') or '').strip().lower()
 
+    # Obtener usuario desde Supabase
     user = obtener_usuario_por_email(email)
     if not user:
         return jsonify({"error": "Correo no encontrado."}), 400
 
+    # Verificar contraseña usando Argon2
     try:
         ph.verify(user['password'], password)
     except Exception:
         return jsonify({"error": "Contraseña incorrecta."}), 400
 
-    stored_tipo = (user.get('tipo_usuario') or '').strip()
-    possible_types = ['admin', 'administrador', 'vendedor', 'comprador']
+    # Obtener tipo de usuario (ya no está hasheado)
+    stored_tipo = (user.get('tipo_usuario') or '').strip().lower()
     matched_tipo = None
 
-    if stored_tipo.startswith('$argon2'):
-        if tipo_enviado:
-            try:
-                if ph.verify(stored_tipo, tipo_enviado):
-                    matched_tipo = tipo_enviado
-            except Exception:
-                matched_tipo = None
-        if not matched_tipo:
-            for t in possible_types:
-                try:
-                    if ph.verify(stored_tipo, t):
-                        matched_tipo = t
-                        break
-                except Exception:
-                    continue
-    else:
-        matched_tipo = None
+    # Verificar si el tipo enviado coincide con el almacenado
+    if tipo_enviado and tipo_enviado == stored_tipo:
+        matched_tipo = tipo_enviado
+    elif not tipo_enviado:
+        # Si no se especifica tipo, usar el almacenado
+        matched_tipo = stored_tipo
 
-    if not matched_tipo:
+    # Validar que el tipo sea válido
+    if not matched_tipo or matched_tipo not in ['admin', 'administrador', 'vendedor', 'comprador']:
         return jsonify({"error": "Tipo de usuario incorrecto."}), 400
 
+    # Configurar sesión
     session.clear()
     session['user_id'] = user.get('id')
     session['user_role'] = matched_tipo
     session['user_email'] = user.get('email')
     session.permanent = True
 
+    # Preparar respuesta del usuario
     usuario_respuesta = user.copy()
     usuario_respuesta.pop('password', None)
     usuario_respuesta.setdefault('nombre', '')
@@ -346,9 +345,10 @@ def login():
     usuario_respuesta.setdefault('rut', '')
     usuario_respuesta.setdefault('direccion', '')
     usuario_respuesta.setdefault('ciudad', '')
-    usuario_respuesta.setdefault('tipo_usuario', '')
+    usuario_respuesta.setdefault('tipo_usuario', matched_tipo)
     usuario_respuesta.setdefault('fecha_registro', '')
 
+    # Determinar URL de redirección
     if matched_tipo in ('admin', 'administrador'):
         redirect_url = url_for('admin_dashboard_view')
     elif matched_tipo == 'vendedor':
@@ -476,65 +476,96 @@ def actualizar_usuario(user_id):
     if not usuario:
         return jsonify({"error": "Usuario no encontrado."}), 404
 
-    cambios = {}
-    email = data.get("email")
-    if email is not None:
-        email = email.strip()
-        if not validar_email(email):
-            return jsonify({"error": "Correo inválido (mínimo 2 caracteres antes del @)."}), 400
-        email_normalizado = email.lower()
-        existente = obtener_usuario_por_email(email_normalizado)
-        if existente and existente.get("id") != user_id:
-            return jsonify({"error": "El correo ya está registrado."}), 400
-        cambios["email"] = email
+    try:
+        cambios = {}
+        
+        # Validar email
+        email = data.get("email")
+        if email is not None:
+            email = email.strip()
+            if not validar_email(email):
+                return jsonify({"error": "Correo inválido (mínimo 2 caracteres antes del @)."}), 400
+            email_normalizado = email.lower()
+            existente = obtener_usuario_por_email(email_normalizado)
+            if existente and existente.get("id") != user_id:
+                return jsonify({"error": "El correo ya está registrado."}), 400
+            cambios["email"] = email
 
-    campos_texto = {
-        "nombre": lambda v: v.strip(),
-        "apellido": lambda v: v.strip(),
-        "telefono": lambda v: v.strip(),
-        "rut": lambda v: v.strip().upper(),
-        "direccion": lambda v: v.strip(),
-        "ciudad": lambda v: v.strip(),
-    }
+        # Validar campos de texto
+        campos_texto = {
+            "nombre": lambda v: v.strip() if len(v.strip()) >= 2 else None,
+            "apellido": lambda v: v.strip() if len(v.strip()) >= 2 else None,
+            "telefono": lambda v: v.strip(),
+            "rut": lambda v: v.strip().upper(),
+            "direccion": lambda v: v.strip() if len(v.strip()) >= 5 else None,
+            "ciudad": lambda v: v.strip() if len(v.strip()) >= 2 else None,
+        }
 
-    for campo, normalizador in campos_texto.items():
-        if campo in data and data[campo] is not None:
-            valor = str(data[campo])
-            cambios[campo] = normalizador(valor)
+        for campo, normalizador in campos_texto.items():
+            if campo in data and data[campo] is not None:
+                valor = str(data[campo])
+                valor_normalizado = normalizador(valor)
+                if valor_normalizado is None:
+                    return jsonify({"error": f"El campo '{campo}' no cumple con los requisitos mínimos."}), 400
+                cambios[campo] = valor_normalizado
 
-    tipo_usuario_enviado = data.get("tipo_usuario")
-    if tipo_usuario_enviado is not None:
-        tipo_normalizado = str(tipo_usuario_enviado).strip().lower()
-        tipo_canonico = TIPOS_USUARIO_PERMITIDOS.get(tipo_normalizado)
-        if not tipo_canonico:
-            return jsonify({"error": "Tipo de usuario inválido."}), 400
-        cambios["tipo_usuario"] = ph.hash(tipo_canonico)
+        # Validar tipo de usuario
+        tipo_usuario_enviado = data.get("tipo_usuario")
+        if tipo_usuario_enviado is not None:
+            tipo_normalizado = str(tipo_usuario_enviado).strip().lower()
+            tipo_canonico = TIPOS_USUARIO_PERMITIDOS.get(tipo_normalizado)
+            if not tipo_canonico:
+                return jsonify({"error": "Tipo de usuario inválido."}), 400
+            cambios["tipo_usuario"] = tipo_canonico
 
-    if cambios:
-        usuario_actualizado = actualizar_usuario_db(user_id, cambios)
-    else:
-        usuario_actualizado = usuario
+        if cambios:
+            usuario_actualizado = actualizar_usuario_db(user_id, cambios)
+        else:
+            usuario_actualizado = usuario
 
-    if not usuario_actualizado:
-        return jsonify({"error": "Usuario no encontrado."}), 404
+        if not usuario_actualizado:
+            return jsonify({"error": "Usuario no encontrado."}), 404
 
-    usuario_sin_password = usuario_actualizado.copy()
-    usuario_sin_password.pop("password", None)
-    usuario_sin_password["rol_legible"] = rol_legible(usuario_actualizado.get("tipo_usuario"))
-    return jsonify({"message": "Usuario actualizado correctamente.", "user": usuario_sin_password}), 200
+        usuario_sin_password = usuario_actualizado.copy()
+        usuario_sin_password.pop("password", None)
+        usuario_sin_password["rol_legible"] = rol_legible(usuario_actualizado.get("tipo_usuario"))
+        return jsonify({"message": "Usuario actualizado correctamente.", "user": usuario_sin_password}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Error al actualizar usuario: {str(e)}"}), 500
 
 @app.route("/api/usuarios/<int:user_id>", methods=["DELETE"])
 @login_required('admin', 'administrador')
 def eliminar_usuario(user_id):
+    # Verificar que no se intente eliminar al propio usuario
+    current_user_id = session.get('user_id')
+    if current_user_id == user_id:
+        return jsonify({"error": "No puedes eliminar tu propia cuenta."}), 400
+
     usuario = obtener_usuario_por_id(user_id)
     if not usuario:
         return jsonify({"error": "Usuario no encontrado."}), 404
 
-    eliminado = eliminar_usuario_db(user_id)
-    if not eliminado:
-        return jsonify({"error": "Usuario no encontrado."}), 404
+    try:
+        # Verificar si el usuario tiene propiedades asociadas
+        propiedades = leer_propiedades()
+        propiedades_usuario = [p for p in propiedades if p.get('propietario') == user_id]
+        
+        if propiedades_usuario:
+            return jsonify({
+                "error": f"No se puede eliminar el usuario porque tiene {len(propiedades_usuario)} propiedades asociadas. "
+                        "Primero elimine o transfiera las propiedades."
+            }), 400
 
-    return jsonify({"message": f"Usuario {usuario.get('nombre', '')} eliminado correctamente."}), 200
+        eliminado = eliminar_usuario_db(user_id)
+        if not eliminado:
+            return jsonify({"error": "Usuario no encontrado."}), 404
+
+        return jsonify({
+            "message": f"Usuario {usuario.get('nombre', '')} {usuario.get('apellido', '')} eliminado correctamente."
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al eliminar usuario: {str(e)}"}), 500
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():
     propiedades = leer_propiedades()
@@ -557,26 +588,31 @@ def editar_propiedad(propiedad_id):
     if not propiedad:
         return jsonify({"error": "Propiedad no encontrada."}), 404
 
-    cambios = {
-        "nombre": data.get("nombre", propiedad["nombre"]),
-        "precio": data.get("precio", propiedad["precio"]),
-        "localizacion": data.get("localizacion", propiedad["localizacion"]),
-        "tipo": data.get("tipo", propiedad["tipo"]),
-        "estado": data.get("estado", propiedad["estado"]),
-        "dormitorios": data.get("dormitorios", propiedad["dormitorios"]),
-        "baños": data.get("baños", propiedad["baños"]),
-        "area": data.get("area", propiedad["area"]),
-        "descripcion": data.get("descripcion", propiedad["descripcion"]),
-        "coordenadas": data.get("coordenadas", propiedad["coordenadas"]),
-        "activo": data.get("activo", propiedad["activo"]),
-        "img": data.get("img", propiedad.get("img")),
-    }
+    # Verificar permisos (solo admin puede editar cualquier propiedad, vendedores solo las suyas)
+    user_id = session.get('user_id')
+    user_role = session.get('user_role')
+    if not _es_admin(user_role) and propiedad.get('propietario') != user_id:
+        return jsonify({"error": "No tienes permiso para editar esta propiedad."}), 403
+
+    try:
+        # Usar validación completa para la edición
+        cambios = _validar_y_normalizar_propiedad(
+            data,
+            parcial=True,  # Permitir edición parcial
+            propiedades_existentes=leer_propiedades(),
+            propiedad_actual=propiedad
+        )
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+
+    if not cambios:
+        return jsonify({"error": "No se proporcionaron campos para actualizar."}), 400
 
     actualizada = actualizar_propiedad_db(propiedad_id, cambios)
     if not actualizada:
         return jsonify({"error": "Propiedad no encontrada."}), 404
 
-    return jsonify({"message": "Propiedad actualizada con éxito."}), 200
+    return jsonify({"message": "Propiedad actualizada con éxito.", "propiedad": actualizada}), 200
 
 @app.route('/api/propiedades/eliminar/<int:propiedad_id>', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
@@ -585,11 +621,19 @@ def eliminar_propiedad(propiedad_id):
     if not propiedad:
         return jsonify({"error": "Propiedad no encontrada."}), 404
 
-    eliminado = eliminar_propiedad_db(propiedad_id)
-    if not eliminado:
-        return jsonify({"error": "Propiedad no encontrada."}), 404
+    # Verificar permisos (solo admin puede eliminar cualquier propiedad, vendedores solo las suyas)
+    user_id = session.get('user_id')
+    user_role = session.get('user_role')
+    if not _es_admin(user_role) and propiedad.get('propietario') != user_id:
+        return jsonify({"error": "No tienes permiso para eliminar esta propiedad."}), 403
 
-    return jsonify({"message": "Propiedad eliminada correctamente."}), 200
+    try:
+        eliminado = eliminar_propiedad_db(propiedad_id)
+        if not eliminado:
+            return jsonify({"error": "Propiedad no encontrada."}), 404
+        return jsonify({"message": "Propiedad eliminada correctamente."}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al eliminar propiedad: {str(e)}"}), 500
 
 @app.route('/api/propiedades', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
@@ -693,16 +737,13 @@ def not_found_error(error):
 def convertir_a_base64(ruta_imagen):
     with open(ruta_imagen, "rb") as img:
         return base64.b64encode(img.read()).decode("utf-8")
-def rol_legible(hash_guardado):
-    if not hash_guardado:
+def rol_legible(tipo_usuario):
+    if not tipo_usuario:
         return "desconocido"
-    for rol, canonico in TIPOS_USUARIO_PERMITIDOS.items():
-        try:
-            if ph.verify(hash_guardado, rol):
-                return canonico
-        except Exception:
-            continue
-    return "desconocido"
+    
+    # Si el tipo_usuario ya no está hasheado, devolver directamente
+    tipo_limpio = str(tipo_usuario).strip().lower()
+    return TIPOS_USUARIO_PERMITIDOS.get(tipo_limpio, tipo_limpio)
 
 
 if __name__ == '__main__':

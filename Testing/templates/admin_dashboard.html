@@ -46,8 +46,8 @@
               <td>{{ p["localizacion"] }}</td>
               <td>{{ p["propietario_nombre"] }}</td>
               <td>
-                <button class="btn btn-edit-prop" data-id="{{ p['id'] }}">✏️ Editar</button>
-                <button class="btn btn-delete-prop" data-id="{{ p['id'] }}">🗑️ Eliminar</button>
+                <button class="btn btn-edit-prop" data-id="{{ p['id'] }}">Editar</button>
+                <button class="btn btn-delete-prop" data-id="{{ p['id'] }}">Eliminar</button>
               </td>
             </tr>
             {% endfor %}
@@ -78,8 +78,8 @@
               <td>{{ u["email"] }}</td>
               <td>{{ u["rol_legible"] }}</td>
               <td>
-                <button class="btn btn-edit-user" data-id="{{ u['id'] }}">✏️ Editar</button>
-                <button class="btn btn-delete-user" data-id="{{ u['id'] }}">🗑️ Eliminar</button>
+                <button class="btn btn-edit-user" data-id="{{ u['id'] }}">Editar</button>
+                <button class="btn btn-delete-user" data-id="{{ u['id'] }}">Eliminar</button>
               </td>
             </tr>
             {% endfor %}
@@ -326,86 +326,93 @@ if (searchPropInput) {
   const closeUserModalBtn = document.getElementById("closeUserModalBtn");
   const userMessage = document.getElementById("userMessage");
   let editandoUsuarioId = null;
-  const searchUserInput = document.getElementById("searchUser");
-  const userRows = Array.from(document.querySelectorAll("#userTableBody tr"));
 
   closeUserModalBtn.addEventListener("click", () => userFormPanel.classList.add("hidden"));
 
-document.querySelectorAll("button.btn-edit-user").forEach(btn => {
-  btn.addEventListener("click", async () => {
-    const id = btn.dataset.id;
-    const res = await fetch("/api/usuarios");
-    const usuarios = await res.json();
-    const user = usuarios.find(u => u.id == id);
-    if (!user) return;
-    editandoUsuarioId = user.id;
+  // Función para agregar event listeners a los botones de editar usuarios
+  function addEditUserListeners() {
+    document.querySelectorAll("button.btn-edit-user").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        try {
+          const res = await fetch("/api/usuarios");
+          const usuarios = await res.json();
+          const user = usuarios.find(u => u.id == id);
+          if (!user) return;
+          editandoUsuarioId = user.id;
 
-    document.getElementById("userId").value = user.id;
-    document.getElementById("userNombre").value = user.nombre || "";
-    document.getElementById("userApellido").value = user.apellido || "";
-    document.getElementById("userEmail").value = user.email || "";
-    document.getElementById("userTelefono").value = user.telefono || "";
-    document.getElementById("userRut").value = user.rut || "";
-    document.getElementById("userDireccion").value = user.direccion || "";
-    document.getElementById("userCiudad").value = user.ciudad || "";
-    const tipoSeleccionado = (user.rol_legible || "").toLowerCase();
-    document.getElementById("userTipo").value = tipoSeleccionado;
+          document.getElementById("userId").value = user.id;
+          document.getElementById("userNombre").value = user.nombre || "";
+          document.getElementById("userApellido").value = user.apellido || "";
+          document.getElementById("userEmail").value = user.email || "";
+          document.getElementById("userTelefono").value = user.telefono || "";
+          document.getElementById("userRut").value = user.rut || "";
+          document.getElementById("userDireccion").value = user.direccion || "";
+          document.getElementById("userCiudad").value = user.ciudad || "";
+          const tipoSeleccionado = (user.rol_legible || "").toLowerCase();
+          document.getElementById("userTipo").value = tipoSeleccionado;
 
-    userFormPanel.classList.remove("hidden");
-  });
-});
+          userFormPanel.classList.remove("hidden");
+        } catch (error) {
+          console.error("Error al cargar usuario:", error);
+          alert("Error al cargar los datos del usuario");
+        }
+      });
+    });
+  }
 
+  // Función para agregar event listeners a los botones de eliminar usuarios
+  function addDeleteUserListeners() {
+    document.querySelectorAll(".btn-delete-user").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        if (confirm("¿Eliminar usuario?")) {
+          try {
+            const res = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
+            const data = await res.json();
+            alert(data.message || data.error || "Usuario eliminado");
+            if (res.ok) location.reload();
+          } catch (error) {
+            console.error("Error al eliminar usuario:", error);
+            alert("Error al eliminar el usuario");
+          }
+        }
+      });
+    });
+  }
+
+  // Agregar listeners al cargar la página
+  addEditUserListeners();
+  addDeleteUserListeners();
 
   userForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-const payload = {
-  nombre: document.getElementById("userNombre").value,
-  apellido: document.getElementById("userApellido").value,
-  email: document.getElementById("userEmail").value,
-  telefono: document.getElementById("userTelefono")?.value || "",
-  rut: document.getElementById("userRut")?.value || "",
-  direccion: document.getElementById("userDireccion")?.value || "",
-  ciudad: document.getElementById("userCiudad")?.value || "",
-  tipo_usuario: document.getElementById("userTipo").value,
-};
+    const payload = {
+      nombre: document.getElementById("userNombre").value,
+      apellido: document.getElementById("userApellido").value,
+      email: document.getElementById("userEmail").value,
+      telefono: document.getElementById("userTelefono")?.value || "",
+      rut: document.getElementById("userRut")?.value || "",
+      direccion: document.getElementById("userDireccion")?.value || "",
+      ciudad: document.getElementById("userCiudad")?.value || "",
+      tipo_usuario: document.getElementById("userTipo").value,
+    };
 
-    const res = await fetch(`/api/usuarios/${editandoUsuarioId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    }); 
+    try {
+      const res = await fetch(`/api/usuarios/${editandoUsuarioId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }); 
 
-    const data = await res.json();
-    userMessage.textContent = data.message || data.error || "Error";
-    if (res.ok) location.reload();
-  });
-});
-document.querySelectorAll(".btn-delete-user").forEach(btn => {
-  btn.addEventListener("click", async () => {
-    const id = btn.dataset.id;
-    if (confirm("¿Eliminar usuario?")) {
-      const res = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
       const data = await res.json();
-      alert(data.message || "Usuario eliminado");
+      userMessage.textContent = data.message || data.error || "Error";
       if (res.ok) location.reload();
+    } catch (error) {
+      console.error("Error al actualizar usuario:", error);
+      userMessage.textContent = "Error al actualizar el usuario";
     }
   });
-});
-
-function filtrarUsuarios() {
-  if (!searchUserInput) return;
-  const query = (searchUserInput.value || "").trim().toLowerCase();
-  userRows.forEach(row => {
-    const idText = (row.children[0]?.textContent || "").trim();
-    const emailText = (row.children[2]?.textContent || "").trim().toLowerCase();
-    const coincide = !query || idText.includes(query) || emailText.includes(query);
-    row.style.display = coincide ? "" : "none";
-  });
-}
-
-if (searchUserInput) {
-  searchUserInput.addEventListener("input", filtrarUsuarios);
-}
 
 });
 </script>
