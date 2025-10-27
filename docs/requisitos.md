@@ -39,7 +39,7 @@
 ## 3) activar el entorno virtual mediante la terminal con; .\venv\Scripts\activate ; si la activación fue exitosa veras algo asi:
 <img width="835" height="70" alt="image" src="https://github.com/user-attachments/assets/9102c8e3-fca2-4846-a7ac-4a829663aca2" />
 
-## 4) se debe escoger el entorno virtual creado, para lo cual iremos al botón de búsqueda de visual studio y colocaremos “Python: Select Interpreter” esto arrojará opciones y debemos escoger la siguiente: .\venv\Scripts\python.exe
+## 4) se debe escoger el entorno virtual creado, para lo cual presionaremos "ctrl+shift+p" y colocaremos “Python: Select Interpreter” esto arrojará opciones y debemos escoger la siguiente: .\venv\Scripts\python.exe
 
 ## 5) ahora, en caso de no poseer pip, instalar extension pip con ; python -m ensurepip --default-pip ;
 
@@ -47,14 +47,7 @@
 
 ## 6) en la terminal ejecutar ; pip install -r requirements.txt ; lo cual instalara todas las dependencias necesarias para la ejecucion correcta.
 
-## 7) Ya como uno de los ultimos paso, es crear el .env manualmente con los siguientes valores:
-
-SUPABASE_URL=https://tu-proyecto.supabase.co
-SUPABASE_SERVICE_KEY=tu-clave-service-role
-SECRET_KEY=clave-secreta-para-flask
-FLASK_ENV=development
-SUPABASE_USERS_TABLE=users
-SUPABASE_PROPIEDADES_TABLE=propiedades
+## 7) Ya como uno de los ultimos paso, es crear el .env manualmente con los valores que estan en el .env.example
 
 ## 8) verificar donde se creó el archivo ; .env ; el cual debe estar acá:
 <img width="372" height="242" alt="image" src="https://github.com/user-attachments/assets/8ed918b3-3103-42b8-8c21-5571281d277d" />
@@ -62,6 +55,7 @@ SUPABASE_PROPIEDADES_TABLE=propiedades
 Debe estar dentro de la raíz del proyecto, fuera de las subcarpetas.
 
 ## 9) Finalmente ejecutar y abrir el puerto local que tiene la aplicación.
+
 
 
 
