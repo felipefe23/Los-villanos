@@ -51,12 +51,10 @@
 
 ## 8) verificar donde se creó el archivo ; .env ; el cual debe estar acá, dentro de la carpeta testing:
 
-<img width="298" height="589" alt="image" src="https://github.com/user-attachments/assets/9647c279-b5cd-4a52-942d-01b3d5192274" />
-
-
-Debe estar dentro de la raíz del proyecto, fuera de las subcarpetas.
+<img width="300" height="502" alt="image" src="https://github.com/user-attachments/assets/c6637046-5d63-40c0-9234-6189e7e3f91d" />
 
 ## 9) Finalmente ejecutar y abrir el puerto local que tiene la aplicación.
+
 
 
 
