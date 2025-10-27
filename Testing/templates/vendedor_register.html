@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Vendedor</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor_login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 </head>
 <body>
+
+{% include '_loader.html' %}
 
 <div class="login-page">
     <div class="login-card">
@@ -71,6 +74,7 @@
     </div>
 </div>
 
+<script src="{{ url_for('static', filename='js/loader.js') }}"></script>
 <script>
 function validarEmail(email) {
     return /^[^@]{2,}@[^@]+\.[^@]+$/.test(email);
@@ -159,12 +163,15 @@ async function registrarUsuario() {
     errorDiv.textContent = 'Registrando usuario...';
 
     try {
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
-        });
-        const result = await response.json();
+        const { response, result } = await Loader.wrap(async () => {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+            const result = await response.json();
+            return { response, result };
+        }, 'Registrando vendedor...');
 
         if (!response.ok) {
             errorDiv.style.color = '#ef4444';
@@ -177,6 +184,7 @@ async function registrarUsuario() {
         limpiarFormulario();
 
         setTimeout(() => {
+            Loader.show('Redirigiendo a tu acceso...');
             window.location.href = '/vendedor/login';
         }, 1200);
     } catch (error) {

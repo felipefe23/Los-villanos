@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Registro Comprador</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/comprador_login.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 </head>
 <body>
+  {% include '_loader.html' %}
   <main class="login-page">
     <section class="login-card" aria-label="Registro Comprador">
       <header class="login-head">
@@ -68,6 +70,7 @@
     </section>
   </main>
 
+  <script src="{{ url_for('static', filename='js/loader.js') }}"></script>
   <script>
     const form = document.getElementById('registerForm');
     const mensaje = document.getElementById('registroMsg');
@@ -161,12 +164,15 @@
       mensaje.textContent = 'Creando tu cuenta...';
 
       try {
-        const respuesta = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datos)
-        });
-        const resultado = await respuesta.json();
+        const { respuesta, resultado } = await Loader.wrap(async () => {
+          const respuesta = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+          });
+          const resultado = await respuesta.json();
+          return { respuesta, resultado };
+        }, 'Creando tu cuenta...');
 
         if (!respuesta.ok) {
           mensaje.style.color = '#ef4444';
@@ -179,6 +185,7 @@
         limpiarCampos();
 
         setTimeout(() => {
+          Loader.show('Redirigiendo a tu panel de acceso...');
           window.location.href = '{{ url_for('comprador_login_view') }}';
         }, 1200);
       } catch (error) {

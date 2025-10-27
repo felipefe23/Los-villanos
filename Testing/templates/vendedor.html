@@ -7,8 +7,10 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/vendedor.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 </head>
 <body>
+  {% include '_loader.html' %}
   <header class="modern-header">
   <div class="header-left">
     <h1>Panel del Vendedor</h1>
@@ -141,6 +143,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="{{ url_for('static', filename='js/loader.js') }}"></script>
   <script>
   const propForm = document.getElementById('propForm');
   const propMessage = document.getElementById('propMessage');
@@ -225,13 +228,20 @@
 
   async function obtenerUsuarioActual() {
     try {
-      const res = await fetch('/api/me', { credentials: 'include' });
-      if (res.ok) {
-        const usuario = await res.json();
-        try { localStorage.setItem('usuarioActual', JSON.stringify(usuario)); } catch (e) { /* ignore */ }
+      const usuario = await Loader.wrap(async () => {
+        const res = await fetch('/api/me', { credentials: 'include' });
+        if (!res.ok) {
+          return null;
+        }
+        const data = await res.json();
+        try { localStorage.setItem('usuarioActual', JSON.stringify(data)); } catch (e) { /* ignore */ }
+        return data;
+      }, 'Sincronizando tu perfil...');
+      if (usuario) {
         return usuario;
       }
     } catch (e) {
+      console.warn('No fue posible obtener la sesión activa', e);
     }
 
     try {
@@ -396,11 +406,14 @@
     }
 
     try {
-      const respuesta = await fetch(`/api/propiedades/${propiedadId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const resultado = await respuesta.json().catch(() => ({}));
+      const { respuesta, resultado } = await Loader.wrap(async () => {
+        const respuesta = await fetch(`/api/propiedades/${propiedadId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const resultado = await respuesta.json().catch(() => ({}));
+        return { respuesta, resultado };
+      }, 'Eliminando propiedad...');
       if (!respuesta.ok) {
         throw new Error(resultado.error || 'No se pudo eliminar la propiedad.');
       }
@@ -423,31 +436,33 @@
 
   async function cargarPropiedades() {
     try {
-      propiedadesLayer.clearLayers();
-      propList.innerHTML = '<li>Cargando propiedades...</li>';
-      const response = await fetch('/api/propiedades');
-      if (!response.ok) throw new Error('No fue posible obtener propiedades');
-      const propiedades = await response.json();
-      let usuarioId = null;
-      try {
-        const meRes = await fetch('/api/me', { credentials: 'include' });
-        if (meRes.ok) {
-          const me = await meRes.json();
-          usuarioId = me.id;
-        }
-      } catch (e) {
+      await Loader.wrap(async () => {
+        propiedadesLayer.clearLayers();
+        propList.innerHTML = '<li>Cargando propiedades...</li>';
+        const response = await fetch('/api/propiedades');
+        if (!response.ok) throw new Error('No fue posible obtener propiedades');
+        const propiedades = await response.json();
+        let usuarioId = null;
         try {
-          const guardado = localStorage.getItem('usuarioActual');
-          if (guardado) usuarioId = JSON.parse(guardado).id;
-        } catch (_) {}
-      }
+          const meRes = await fetch('/api/me', { credentials: 'include' });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            usuarioId = me.id;
+          }
+        } catch (e) {
+          try {
+            const guardado = localStorage.getItem('usuarioActual');
+            if (guardado) usuarioId = JSON.parse(guardado).id;
+          } catch (_) {}
+        }
 
-      const propiedadesFiltradas = usuarioId == null
-        ? propiedades
-        : propiedades.filter((p) => p.propietario == usuarioId || String(p.propietario) === String(usuarioId));
+        const propiedadesFiltradas = usuarioId == null
+          ? propiedades
+          : propiedades.filter((p) => p.propietario == usuarioId || String(p.propietario) === String(usuarioId));
 
-      propiedadesCargadas = propiedadesFiltradas.map((p) => ({ ...p }));
-      dibujarPropiedades(propiedadesCargadas);
+        propiedadesCargadas = propiedadesFiltradas.map((p) => ({ ...p }));
+        dibujarPropiedades(propiedadesCargadas);
+      }, 'Actualizando tus propiedades...');
     } catch (error) {
       console.error(error);
       propList.innerHTML = '<li>Error al cargar propiedades.</li>';
@@ -576,12 +591,15 @@
       const method = esEdicion ? 'PUT' : 'POST';
 
       propSubmit.disabled = true;
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const resultado = await response.json();
+      const { response, resultado } = await Loader.wrap(async () => {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const resultado = await response.json().catch(() => ({}));
+        return { response, resultado };
+      }, esEdicion ? 'Actualizando propiedad...' : 'Creando propiedad...');
       if (!response.ok) throw new Error(resultado.error || 'No se pudo guardar la propiedad');
 
       const mensajeExito = resultado.message || (esEdicion ? 'Propiedad actualizada correctamente.' : 'Propiedad agregada correctamente.');

@@ -6,8 +6,10 @@
     <title>Panel del Comprador</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/comprador_dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 </head>
 <body>
+    {% include '_loader.html' %}
     <header class="encabezado">
         <div class="contenedor">
             <div class="barra-superior">
@@ -89,6 +91,7 @@
     </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="{{ url_for('static', filename='js/loader.js') }}"></script>
     <script>
         const widget = document.getElementById('userWidget');
         const trigger = document.getElementById('userTrigger');
@@ -107,14 +110,20 @@
 // Error de archivos locales
         async function obtenerUsuarioActual() {
             try {
-                const res = await fetch('/api/me', { credentials: 'include' });
-                if (res.ok) {
-                    const usuario = await res.json();
-                    try { localStorage.setItem('usuarioActual', JSON.stringify(usuario)); } catch (e) { /* ignore */ }
+                const usuario = await Loader.wrap(async () => {
+                    const res = await fetch('/api/me', { credentials: 'include' });
+                    if (!res.ok) {
+                        return null;
+                    }
+                    const data = await res.json();
+                    try { localStorage.setItem('usuarioActual', JSON.stringify(data)); } catch (e) { /* ignore */ }
+                    return data;
+                }, 'Recuperando tu perfil...');
+                if (usuario) {
                     return usuario;
                 }
             } catch (e) {
-                // si no resulta, caer en localstorage
+                console.warn('No fue posible obtener el usuario desde la sesión', e);
             }
 
             try {

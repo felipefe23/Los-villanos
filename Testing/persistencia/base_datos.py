@@ -17,13 +17,6 @@ else:
     print("No se encontró el archivo .env en la carpeta padre.")
 
 
-# Carga directa desde la raíz del proyecto
-load_dotenv(dotenv_path=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '.env')))
-
-print("SUPABASE_URL =", os.getenv("SUPABASE_URL"))
-print("SUPABASE_SERVICE_KEY =", os.getenv("SUPABASE_SERVICE_KEY"))
-
-
 # IMPORTACIÓN DE SUPABASE
 
 try:

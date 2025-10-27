@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ViviendaDigital · Iniciar Sesión</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 </head>
 <body>
+  {% include '_loader.html' %}
   <main class="login-only" aria-label="Formulario de inicio de sesión">
     <div class="brand-pill">
       <span class="brand-icon">🏠</span>
@@ -48,6 +50,7 @@
     </section>
   </main>
 
+<script src="{{ url_for('static', filename='js/loader.js') }}"></script>
 <script>
     // Limpiar usuarioActual al cargar la pagina en secion
   try { localStorage.removeItem('usuarioActual'); } catch (e) { /* ignore */ }
@@ -93,14 +96,16 @@
       };
 
       try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
+        const { res, data } = await Loader.wrap(async () => {
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          return { res, data };
+        }, 'Validando tus credenciales...');
 
         if (res.ok) {
                                             // Error de archivos locales
@@ -114,9 +119,10 @@
 
           if (data.redirect) {
             try {
-              await fetch('/api/me', { credentials: 'include' });
+              await Loader.wrap(() => fetch('/api/me', { credentials: 'include' }), 'Sincronizando tu cuenta...');
             } catch (e) {
             }
+            Loader.show('Redirigiendo a tu panel...');
             window.location.href = data.redirect;
             return;
           }

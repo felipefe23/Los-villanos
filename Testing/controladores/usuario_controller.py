@@ -122,3 +122,6 @@ def eliminar_usuario(user_id):
         }), 200
     except Exception as e:
         return jsonify({"error": f"Error al eliminar usuario: {str(e)}"}), 500
+
+from app import app  # noqa: E402
+app.register_blueprint(usuario_bp)

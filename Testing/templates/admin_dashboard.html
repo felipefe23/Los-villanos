@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Administración</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 </head>
 <body>
+  {% include '_loader.html' %}
   <header class="topbar">
     <div class="brand">
       <span class="logo">🛠️</span>
@@ -204,7 +206,19 @@
   </div>
 </div>
 
+<div id="confirmModal" class="confirm-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalMessage" tabindex="-1">
+  <div class="confirm-modal__panel" role="document">
+    <span class="confirm-modal__icon" id="confirmModalIcon" aria-hidden="true">❔</span>
+    <h2 class="confirm-modal__title" id="confirmModalTitle">¿Estás seguro?</h2>
+    <p class="confirm-modal__message" id="confirmModalMessage">Confirma la acción solicitada.</p>
+    <div class="confirm-modal__actions">
+      <button type="button" class="btn ghost confirm-modal__cancel" id="confirmModalCancel">Cancelar</button>
+      <button type="button" class="btn danger confirm-modal__accept" id="confirmModalAccept">Aceptar</button>
+    </div>
+  </div>
+</div>
 
+<script src="{{ url_for('static', filename='js/loader.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 // ======== PROPIEDADES ======== //
@@ -218,6 +232,101 @@ const imagenActualInfo = document.getElementById("imagenActualInfo");
 let imagenBase64Temporal = null;
 const searchPropInput = document.getElementById("searchId");
 const propRows = Array.from(document.querySelectorAll("#propTableBody tr"));
+const confirmModal = document.getElementById("confirmModal");
+const confirmTitle = document.getElementById("confirmModalTitle");
+const confirmMessage = document.getElementById("confirmModalMessage");
+const confirmAccept = document.getElementById("confirmModalAccept");
+const confirmCancel = document.getElementById("confirmModalCancel");
+const confirmIcon = document.getElementById("confirmModalIcon");
+const hasCustomConfirm = Boolean(
+  confirmModal &&
+  confirmTitle &&
+  confirmMessage &&
+  confirmAccept &&
+  confirmCancel &&
+  confirmIcon
+);
+let confirmResolver = null;
+let lastFocusedElement = null;
+const FEEDBACK_CLASSES = ["is-error", "is-success"];
+
+function setFeedback(node, message, type) {
+  if (!node) return;
+  node.textContent = message || "";
+  FEEDBACK_CLASSES.forEach(cls => node.classList.remove(cls));
+  if (!message) return;
+  if (type === "success") node.classList.add("is-success");
+  if (type === "error") node.classList.add("is-error");
+}
+
+function closeConfirm(result) {
+  if (!hasCustomConfirm) {
+    const resolver = confirmResolver;
+    confirmResolver = null;
+    if (resolver) resolver(result);
+    return;
+  }
+  confirmModal.classList.remove("is-visible");
+  confirmModal.setAttribute("aria-hidden", "true");
+  confirmModal.removeAttribute("data-tone");
+  const resolver = confirmResolver;
+  confirmResolver = null;
+  if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+    lastFocusedElement.focus({ preventScroll: true });
+  }
+  lastFocusedElement = null;
+  if (resolver) resolver(result);
+}
+
+function confirmAction(options = {}) {
+  if (!hasCustomConfirm) {
+    confirmResolver = null;
+    return Promise.resolve(window.confirm(options.message || "¿Estás seguro?"));
+  }
+  const {
+    title = "¿Estás seguro?",
+    message = "Confirma la acción solicitada.",
+    confirmLabel = "Aceptar",
+    cancelLabel = "Cancelar",
+    tone = "info",
+    icon = "❔"
+  } = options;
+
+  confirmTitle.textContent = title;
+  confirmMessage.textContent = message;
+  confirmAccept.textContent = confirmLabel;
+  confirmCancel.textContent = cancelLabel;
+  confirmIcon.textContent = icon || "❔";
+  confirmAccept.classList.toggle("danger", tone === "danger");
+  confirmModal.dataset.tone = tone;
+  confirmModal.setAttribute("aria-hidden", "false");
+  confirmModal.classList.add("is-visible");
+  lastFocusedElement = document.activeElement;
+  window.setTimeout(() => {
+    confirmAccept.focus({ preventScroll: true });
+  }, 50);
+
+  return new Promise(resolve => {
+    confirmResolver = resolve;
+  });
+}
+
+if (hasCustomConfirm) {
+  confirmAccept.addEventListener("click", () => closeConfirm(true));
+  confirmCancel.addEventListener("click", () => closeConfirm(false));
+  confirmModal.addEventListener("click", (event) => {
+    if (event.target === confirmModal) {
+      closeConfirm(false);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && confirmModal.classList.contains("is-visible")) {
+      event.preventDefault();
+      closeConfirm(false);
+    }
+  });
+}
 
 closeModalBtn.addEventListener("click", () => formPanel.classList.add("hidden"));
 
@@ -233,30 +342,41 @@ function convertirArchivoABase64(file) {
 document.querySelectorAll(".btn-edit-prop").forEach(btn => {
   btn.addEventListener("click", async () => {
     const id = btn.dataset.id;
-    const res = await fetch(`/api/propiedades`);
-    const propiedades = await res.json();
-    const prop = propiedades.find(p => p.id == id);
-    if (!prop) return;
+    try {
+      const propiedades = await Loader.wrap(async () => {
+        const res = await fetch(`/api/propiedades`);
+        if (!res.ok) {
+          throw new Error("No se pudo obtener propiedades");
+        }
+        return res.json();
+      }, "Cargando propiedades...");
 
-    propId.value = prop.id;
-    document.getElementById("nombre").value = prop.nombre;
-    document.getElementById("precio").value = prop.precio;
-    document.getElementById("localizacion").value = prop.localizacion;
-    document.getElementById("tipo").value = prop.tipo;
-    document.getElementById("estado").value = prop.estado;
-    document.getElementById("dormitorios").value = prop.dormitorios;
-    document.getElementById("baños").value = prop["baños"] || prop.banos;
-    document.getElementById("area").value = prop.area;
-    document.getElementById("descripcion").value = prop.descripcion;
-    document.getElementById("coordenadas").value = prop.coordenadas;
-    document.getElementById("activo").value = prop.activo ? "true" : "false";
+      const prop = propiedades.find(p => p.id == id);
+      if (!prop) return;
 
-    imagenBase64Temporal = prop.img || null;
-    imagenActualInfo.textContent = imagenBase64Temporal
-      ? "Se conservará la imagen actual a menos que subas una nueva."
-      : "No hay imagen guardada. Debes subir una nueva.";
+      propId.value = prop.id;
+      document.getElementById("nombre").value = prop.nombre;
+      document.getElementById("precio").value = prop.precio;
+      document.getElementById("localizacion").value = prop.localizacion;
+      document.getElementById("tipo").value = prop.tipo;
+      document.getElementById("estado").value = prop.estado;
+      document.getElementById("dormitorios").value = prop.dormitorios;
+      document.getElementById("baños").value = prop["baños"] || prop.banos;
+      document.getElementById("area").value = prop.area;
+      document.getElementById("descripcion").value = prop.descripcion;
+      document.getElementById("coordenadas").value = prop.coordenadas;
+      document.getElementById("activo").value = prop.activo ? "true" : "false";
 
-    formPanel.classList.remove("hidden");
+      imagenBase64Temporal = prop.img || null;
+      imagenActualInfo.textContent = imagenBase64Temporal
+        ? "Se conservará la imagen actual a menos que subas una nueva."
+        : "No hay imagen guardada. Debes subir una nueva.";
+
+      formPanel.classList.remove("hidden");
+    } catch (error) {
+      console.error("Error al cargar propiedad:", error);
+      alert("No fue posible cargar la propiedad seleccionada.");
+    }
   });
 });
 
@@ -281,26 +401,52 @@ propForm.addEventListener("submit", async (e) => {
     img: imagenBase64Temporal
   };
 
-  const res = await fetch(`/api/propiedades/editar/${propId.value}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  try {
+    const { res, data } = await Loader.wrap(async () => {
+      const res = await fetch(`/api/propiedades/editar/${propId.value}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    }, "Guardando cambios de la propiedad...");
 
-  const data = await res.json();
-  propMessage.textContent = data.message || data.error || "Error";
-  if (res.ok) location.reload();
+    const message = data.message || data.error || "Error";
+    setFeedback(propMessage, message, res.ok ? "success" : "error");
+    if (res.ok) location.reload();
+  } catch (error) {
+    console.error("Error al actualizar propiedad:", error);
+    setFeedback(propMessage, "Error al actualizar la propiedad.", "error");
+  }
 });
 
 
 document.querySelectorAll(".btn-delete-prop").forEach(btn => {
   btn.addEventListener("click", async () => {
     const id = btn.dataset.id;
-    if (confirm("¿Eliminar propiedad?")) {
-      const res = await fetch(`/api/propiedades/eliminar/${id}`, { method: "POST" });
-      const data = await res.json();
-      alert(data.message || "Propiedad eliminada");
+    const accepted = await confirmAction({
+      title: "Eliminar propiedad",
+      message: "¿Quieres eliminar esta propiedad? Esta acción no se puede deshacer.",
+      confirmLabel: "Eliminar",
+      cancelLabel: "Cancelar",
+      tone: "danger",
+      icon: "🗑️"
+    });
+    if (!accepted) return;
+    try {
+      const { res, data } = await Loader.wrap(async () => {
+        const res = await fetch(`/api/propiedades/eliminar/${id}`, { method: "POST" });
+        const data = await res.json().catch(() => ({}));
+        return { res, data };
+      }, "Eliminando propiedad seleccionada...");
+
+      const message = data.message || data.error || "Propiedad eliminada";
+      setFeedback(propMessage, message, res.ok ? "success" : "error");
       if (res.ok) location.reload();
+    } catch (error) {
+      console.error("Error al eliminar propiedad:", error);
+      setFeedback(propMessage, "No fue posible eliminar la propiedad.", "error");
     }
   });
 });
@@ -335,8 +481,13 @@ if (searchPropInput) {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
         try {
-          const res = await fetch("/api/usuarios");
-          const usuarios = await res.json();
+          const usuarios = await Loader.wrap(async () => {
+            const res = await fetch("/api/usuarios");
+            if (!res.ok) {
+              throw new Error("No se pudo obtener usuarios");
+            }
+            return res.json();
+          }, "Cargando información del usuario...");
           const user = usuarios.find(u => u.id == id);
           if (!user) return;
           editandoUsuarioId = user.id;
@@ -366,16 +517,27 @@ if (searchPropInput) {
     document.querySelectorAll(".btn-delete-user").forEach(btn => {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
-        if (confirm("¿Eliminar usuario?")) {
-          try {
+        const accepted = await confirmAction({
+          title: "Eliminar usuario",
+          message: "¿Quieres eliminar este usuario? Si tiene propiedades asociadas no se podrá eliminar.",
+          confirmLabel: "Eliminar",
+          cancelLabel: "Cancelar",
+          tone: "danger",
+          icon: "⚠️"
+        });
+        if (!accepted) return;
+        try {
+          const { res, data } = await Loader.wrap(async () => {
             const res = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
-            const data = await res.json();
-            alert(data.message || data.error || "Usuario eliminado");
-            if (res.ok) location.reload();
-          } catch (error) {
-            console.error("Error al eliminar usuario:", error);
-            alert("Error al eliminar el usuario");
-          }
+            const data = await res.json().catch(() => ({}));
+            return { res, data };
+          }, "Eliminando usuario...");
+          const message = data.message || data.error || "Usuario eliminado";
+          setFeedback(userMessage, message, res.ok ? "success" : "error");
+          if (res.ok) location.reload();
+        } catch (error) {
+          console.error("Error al eliminar usuario:", error);
+          setFeedback(userMessage, "Error al eliminar el usuario.", "error");
         }
       });
     });
@@ -398,21 +560,25 @@ if (searchPropInput) {
       tipo_usuario: document.getElementById("userTipo").value,
     };
 
-    try {
+  try {
+    const { res, data } = await Loader.wrap(async () => {
       const res = await fetch(`/api/usuarios/${editandoUsuarioId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
-      }); 
+      });
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    }, "Guardando cambios del usuario...");
 
-      const data = await res.json();
-      userMessage.textContent = data.message || data.error || "Error";
-      if (res.ok) location.reload();
-    } catch (error) {
-      console.error("Error al actualizar usuario:", error);
-      userMessage.textContent = "Error al actualizar el usuario";
-    }
-  });
+    const message = data.message || data.error || "Error";
+    setFeedback(userMessage, message, res.ok ? "success" : "error");
+    if (res.ok) location.reload();
+  } catch (error) {
+    console.error("Error al actualizar usuario:", error);
+    setFeedback(userMessage, "Error al actualizar el usuario", "error");
+  }
+});
 
 });
 </script>
