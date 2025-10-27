@@ -49,12 +49,15 @@
 
 ## 7) Ya como uno de los ultimos paso, es crear el .env manualmente con los valores que estan en el .env.example
 
-## 8) verificar donde se creó el archivo ; .env ; el cual debe estar acá:
-<img width="372" height="242" alt="image" src="https://github.com/user-attachments/assets/8ed918b3-3103-42b8-8c21-5571281d277d" />
+## 8) verificar donde se creó el archivo ; .env ; el cual debe estar acá, dentro de la carpeta testing:
+
+<img width="298" height="589" alt="image" src="https://github.com/user-attachments/assets/9647c279-b5cd-4a52-942d-01b3d5192274" />
+
 
 Debe estar dentro de la raíz del proyecto, fuera de las subcarpetas.
 
 ## 9) Finalmente ejecutar y abrir el puerto local que tiene la aplicación.
+
 
 
 
