@@ -9,6 +9,7 @@ from persistencia.base_datos import (
 from datetime import datetime
 import re
 
+# Ruta para el registro de usuario
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json(silent=True) or {}
@@ -23,7 +24,7 @@ def register():
     ciudad = data.get('ciudad', '').strip()
     tipo_usuario = data.get('tipo_usuario', '').strip().lower()
 
-    # Validaciones
+    # Validaciones para el registro
     if not validar_email(email_original):
         return jsonify({"error": "Correo inválido (mínimo 2 caracteres antes del @)."}), 400
     if not validar_password(password):
@@ -76,6 +77,7 @@ def register():
     except Exception as e:
         return jsonify({"error": f"Error al crear usuario: {str(e)}"}), 500
 
+# Ruta para el login de usuario
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json(silent=True) or {}
@@ -138,7 +140,7 @@ def login():
 
     return jsonify({"message": "Login exitoso.", "user": usuario_respuesta, "redirect": redirect_url})
 
-
+# Ruta que hace logout y sesionclear para cerrar sesion correctamente
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.clear()

@@ -1,5 +1,7 @@
 from persistencia.base_datos import obtener_propiedades
 
+# Funciones que se utilizan en la ruta de las propiedades
+
 def leer_propiedades():
     return obtener_propiedades()
 

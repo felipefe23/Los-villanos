@@ -11,6 +11,7 @@ from servicios.propiedad_service import (
 )
 from servicios.usuario_service import leer_usuarios
 
+# Ruta para obtener las propiedades 
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():
     propiedades = leer_propiedades()
@@ -25,6 +26,7 @@ def get_propiedades():
         propiedades_enriquecidas.append(copia)
     return jsonify(propiedades_enriquecidas)
 
+# Ruta para editar propiedades
 @app.route('/api/propiedades/editar/<int:propiedad_id>', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
 def editar_propiedad(propiedad_id):
@@ -59,6 +61,7 @@ def editar_propiedad(propiedad_id):
 
     return jsonify({"message": "Propiedad actualizada con éxito.", "propiedad": actualizada}), 200
 
+# Ruta para agregar propiedades al mapa, ya sea para el que la publica o un administrador
 @app.route('/api/propiedades', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
 def add_propiedad():
@@ -77,7 +80,7 @@ def add_propiedad():
         return jsonify({"error": "Autenticación requerida para crear propiedades."}), 401
 
     campos['propietario'] = user_id
-    nueva = crear_propiedad(campos)
+    nueva = crear_propiedad(campos) # envia los campos a base_datos.py para crear la propiedad
     propiedades = leer_propiedades()
     return jsonify({
         "message": "Propiedad ingresada con éxito.",
@@ -85,6 +88,8 @@ def add_propiedad():
         "propiedades": propiedades
     }), 201
 
+
+# Ruta que permite la modificacion de una propiedad, ya sea para el que la publica o un administrador
 @app.route('/api/propiedades/<int:propiedad_id>', methods=['PUT', 'PATCH'])
 @login_required('vendedor', 'administrador', 'admin')
 def update_propiedad(propiedad_id):
@@ -118,6 +123,7 @@ def update_propiedad(propiedad_id):
 
     return jsonify({"message": "Propiedad actualizada con éxito.", "propiedad": propiedad_actualizada})
 
+# Ruta que permite la modificacion de una propiedad (necesaria para que el vendedor pueda modificar, no funciona con la otra solamente)
 @app.route('/api/propiedades/<int:propiedad_id>', methods=['DELETE'])
 @login_required('vendedor', 'administrador', 'admin')
 def delete_propiedad(propiedad_id):

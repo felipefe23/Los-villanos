@@ -99,7 +99,7 @@ def init_db(seed_from_files: bool = True) -> None:
     except Exception as e:
         print(f"Error en la migración: {e}")
 
-# CRUD DE USUARIOS (Crear, Leer, Actualizar, Eliminar)
+# CRUD DE USUARIOS (Crear, Obtener, Actualizar, Eliminar)
 
 def crear_usuario(usuario: Dict[str, Any]) -> Dict[str, Any]:
     client = _get_client()
@@ -165,7 +165,7 @@ def eliminar_usuario(user_id: int) -> bool:
     _handle_response(response)
     return True
 
-# CRUD DE PROPIEDADES (Crear, Leer, Actualizar, Eliminar)
+# CRUD DE PROPIEDADES (Crear, Obtener, Actualizar, Eliminar)
 
 def crear_propiedad(propiedad: Dict[str, Any]) -> Dict[str, Any]:
     client = _get_client()

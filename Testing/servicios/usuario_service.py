@@ -1,6 +1,8 @@
 import re
 from persistencia.base_datos import obtener_usuarios
 
+# Funciones que se utilizan en la ruta de los usuarios
+
 TIPOS_USUARIO_PERMITIDOS = {
     "admin": "admin",
     "administrador": "admin",
