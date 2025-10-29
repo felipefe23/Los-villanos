@@ -56,7 +56,7 @@ LOS-VILLANOS/
 | **Controladores** | `controladores/*.py` | Manejan las rutas Flask y reciben las peticiones HTTP. |
 | **Servicios** | `servicios/*.py` | Contienen la lógica de negocio (validaciones, procesamiento, etc.). |
 | **Persistencia** | `persistencia/*.py` | Acceden a la base de datos (Supabase en este caso). |
-| **Utils** | `utils/*.py` | Contienen decoradores, helpers y funciones reutilizables. |
+| **Utils** | `utils/*.py` | Contienen decoradores (filtros de seguridad), helpers(funciones de apoyo) y funciones reutilizables. |
 
 **Motivo:**  
 Permitir que cada módulo tenga una única responsabilidad, siguiendo el principio *Single Responsibility Principle (SRP)*.
