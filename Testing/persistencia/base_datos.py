@@ -82,6 +82,9 @@ def _cargar_json(ruta: Path) -> List[Dict[str, Any]]:
 
 # MIGRACIÓN DE DATOS
 
+# Funcionamiento: Inicializa la base de datos (seeding).
+# Si 'seed_from_files' es True, lee los archivos locales 'users.json' y 'propiedades.json'.
+# Sube (upsert) esos datos a las tablas de Supabase para poblar la base de datos.
 def init_db(seed_from_files: bool = True) -> None:
     client = _get_client()
     if not seed_from_files:
@@ -101,6 +104,9 @@ def init_db(seed_from_files: bool = True) -> None:
 
 # CRUD DE USUARIOS (Crear, Obtener, Actualizar, Eliminar)
 
+# Funcionamiento: Recibe un diccionario (usuario).
+# Inserta ese diccionario como un nuevo registro en la tabla de usuarios de Supabase.
+# Retorna el objeto del usuario recién creado.
 def crear_usuario(usuario: Dict[str, Any]) -> Dict[str, Any]:
     client = _get_client()
     payload = usuario.copy()
@@ -109,12 +115,16 @@ def crear_usuario(usuario: Dict[str, Any]) -> Dict[str, Any]:
     return data[0] if data else payload
 
 
+# Funcionamiento: Realiza un 'SELECT *' a la tabla de usuarios en Supabase.
+# Retorna una lista con todos los usuarios, ordenados por su ID.
 def obtener_usuarios() -> List[Dict[str, Any]]:
     client = _get_client()
     response = client.table(USERS_TABLE).select("*").order("id").execute()
     return _handle_response(response)
 
 
+# Funcionamiento: Busca en Supabase un usuario donde el 'id' coincida con el 'user_id' recibido.
+# Retorna el diccionario del usuario si lo encuentra, o None si no existe.
 def obtener_usuario_por_id(user_id: int) -> Optional[Dict[str, Any]]:
     client = _get_client()
     response = (
@@ -128,6 +138,9 @@ def obtener_usuario_por_id(user_id: int) -> Optional[Dict[str, Any]]:
     return data[0] if data else None
 
 
+# Funcionamiento: Normaliza el email (minúsculas, sin espacios).
+# Busca en Supabase un usuario donde el 'email' coincida.
+# Retorna el diccionario del usuario si lo encuentra, o None si no existe.
 def obtener_usuario_por_email(email: str) -> Optional[Dict[str, Any]]:
     email = (email or "").strip().lower()
     if not email:
@@ -144,6 +157,9 @@ def obtener_usuario_por_email(email: str) -> Optional[Dict[str, Any]]:
     return data[0] if data else None
 
 
+# Funcionamiento: Recibe el 'user_id' y un diccionario con los 'cambios' a aplicar.
+# Ejecuta un 'update' en Supabase para actualizar solo esos campos en el usuario correspondiente.
+# Retorna el objeto del usuario ya actualizado.
 def actualizar_usuario(user_id: int, cambios: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     client = _get_client()
     if not cambios:
@@ -159,6 +175,8 @@ def actualizar_usuario(user_id: int, cambios: Dict[str, Any]) -> Optional[Dict[s
     return data[0] if data else obtener_usuario_por_id(user_id)
 
 
+# Funcionamiento: Ejecuta un 'delete' en Supabase para eliminar al usuario que coincida con el 'user_id' especificado.
+# Retorna True si la operación se completó.
 def eliminar_usuario(user_id: int) -> bool: 
     client = _get_client()
     response = client.table(USERS_TABLE).delete().eq("id", user_id).execute()
@@ -167,6 +185,9 @@ def eliminar_usuario(user_id: int) -> bool:
 
 # CRUD DE PROPIEDADES (Crear, Obtener, Actualizar, Eliminar)
 
+# Funcionamiento: Recibe un diccionario (propiedad).
+# Inserta ese diccionario como un nuevo registro en la tabla de propiedades de Supabase.
+# Retorna el objeto de la propiedad recién creada.
 def crear_propiedad(propiedad: Dict[str, Any]) -> Dict[str, Any]:
     client = _get_client()
     payload = propiedad.copy()
@@ -175,12 +196,16 @@ def crear_propiedad(propiedad: Dict[str, Any]) -> Dict[str, Any]:
     return data[0] if data else payload
 
 
+# Funcionamiento: Realiza un 'SELECT *' a la tabla de propiedades en Supabase.
+# Retorna una lista con todas las propiedades, ordenadas por su ID.
 def obtener_propiedades() -> List[Dict[str, Any]]:
     client = _get_client()
     response = client.table(PROPIEDADES_TABLE).select("*").order("id").execute()
     return _handle_response(response)
 
 
+# Funcionamiento: Busca en Supabase una propiedad donde el 'id' coincida con el 'propiedad_id' recibido.
+# Retorna el diccionario de la propiedad si la encuentra, o None si no existe.
 def obtener_propiedad_por_id(propiedad_id: int) -> Optional[Dict[str, Any]]:
     client = _get_client()
     response = (
@@ -194,6 +219,9 @@ def obtener_propiedad_por_id(propiedad_id: int) -> Optional[Dict[str, Any]]:
     return data[0] if data else None
 
 
+# Funcionamiento: Recibe el 'propiedad_id' y un diccionario con los 'cambios' a aplicar.
+# Ejecuta un 'update' en Supabase para actualizar solo esos campos en la propiedad correspondiente.
+# Retorna el objeto de la propiedad ya actualizada.
 def actualizar_propiedad(propiedad_id: int, cambios: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     client = _get_client()
     if not cambios:
@@ -209,6 +237,8 @@ def actualizar_propiedad(propiedad_id: int, cambios: Dict[str, Any]) -> Optional
     return data[0] if data else obtener_propiedad_por_id(propiedad_id)
 
 
+# Funcionamiento: Ejecuta un 'delete' en Supabase para eliminar la propiedad que coincida con el 'propiedad_id' especificado.
+# Retorna True si la operación se completó.
 def eliminar_propiedad(propiedad_id: int) -> bool:
     client = _get_client()
     response = client.table(PROPIEDADES_TABLE).delete().eq("id", propiedad_id).execute()
@@ -217,6 +247,9 @@ def eliminar_propiedad(propiedad_id: int) -> bool:
 
 # NORMALIZAR VALORES BOOLEANOS (para el campo "activo")
 
+# Funcionamiento: Función interna (helper).
+# Convierte cualquier tipo de valor (string, int, bool) a un valor booleano (True/False) estandarizado.
+# Ej: "si", "1", "true" se convierten en True.
 def _normalizar_activo(valor: Any) -> bool:
     if isinstance(valor, bool):
         return valor
@@ -230,6 +263,9 @@ def _normalizar_activo(valor: Any) -> bool:
         return bool(valor)
     return True 
 
+# Funcionamiento: Función interna (helper).
+# Prepara el diccionario de la propiedad antes de enviarlo a Supabase (aunque no se usa actualmente).
+# Mapea claves (ej. 'baños' a 'banos'), limpia valores nulos y usa '_normalizar_activo'.
 def _prepare_propiedad_payload(propiedad: Dict[str, Any]) -> Dict[str, Any]:
     mapping = {
         "id": "id",

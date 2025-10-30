@@ -11,7 +11,10 @@ from servicios.propiedad_service import (
 )
 from servicios.usuario_service import leer_usuarios
 
-# Ruta para obtener las propiedades 
+# Funcionamiento: Obtiene todas las propiedades y usuarios.
+# Crea un mapa de IDs de usuario a nombres completos.
+# "Enriquece" cada propiedad agregando el nombre del propietario ('propietario_nombre').
+# Retorna la lista de propiedades enriquecidas en JSON.
 @app.route('/api/propiedades', methods=['GET'])
 def get_propiedades():
     propiedades = leer_propiedades()
@@ -26,7 +29,12 @@ def get_propiedades():
         propiedades_enriquecidas.append(copia)
     return jsonify(propiedades_enriquecidas)
 
-# Ruta para editar propiedades
+
+# Funcionamiento: Ruta POST para editar (no estándar REST).
+# Verifica que la propiedad exista.
+# Verifica permisos (solo Admin o el propietario).
+# Valida los campos del JSON (permite edición parcial).
+# Llama a la BD para actualizar y retorna la propiedad.
 @app.route('/api/propiedades/editar/<int:propiedad_id>', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
 def editar_propiedad(propiedad_id):
@@ -61,7 +69,13 @@ def editar_propiedad(propiedad_id):
 
     return jsonify({"message": "Propiedad actualizada con éxito.", "propiedad": actualizada}), 200
 
-# Ruta para agregar propiedades al mapa, ya sea para el que la publica o un administrador
+
+# Funcionamiento: Protegido (vendedor/admin).
+# Valida los datos del JSON (requiere todos los campos).
+# Si la validación falla, retorna 400.
+# Asigna el 'propietario' usando el ID de la sesión.
+# Llama a la BD para crear la propiedad.
+# Retorna la propiedad nueva y la lista actualizada.
 @app.route('/api/propiedades', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
 def add_propiedad():
@@ -89,7 +103,12 @@ def add_propiedad():
     }), 201
 
 
-# Ruta que permite la modificacion de una propiedad, ya sea para el que la publica o un administrador
+# Funcionamiento: Ruta estándar REST (PUT/PATCH) para actualizar.
+# Verifica que la propiedad exista.
+# Verifica permisos (solo Admin o el propietario).
+# Detecta si es PATCH (parcial, es decir, reemplaza solo lo especifico) o PUT (completo).
+# Valida los campos según el método (parcial o no).
+# Llama a la BD para actualizar y retorna la propiedad.
 @app.route('/api/propiedades/<int:propiedad_id>', methods=['PUT', 'PATCH'])
 @login_required('vendedor', 'administrador', 'admin')
 def update_propiedad(propiedad_id):
@@ -123,7 +142,12 @@ def update_propiedad(propiedad_id):
 
     return jsonify({"message": "Propiedad actualizada con éxito.", "propiedad": propiedad_actualizada})
 
-# Ruta que permite la modificacion de una propiedad (necesaria para que el vendedor pueda modificar, no funciona con la otra solamente)
+
+# Funcionamiento: Ruta estándar REST (DELETE) para eliminar.
+# Verifica que la propiedad exista.
+# Verifica permisos (solo Admin o el propietario).
+# Llama a la BD para eliminar la propiedad.
+# Retorna un mensaje de éxito en JSON.
 @app.route('/api/propiedades/<int:propiedad_id>', methods=['DELETE'])
 @login_required('vendedor', 'administrador', 'admin')
 def delete_propiedad(propiedad_id):
@@ -142,6 +166,12 @@ def delete_propiedad(propiedad_id):
 
     return jsonify({"message": "Propiedad eliminada con éxito."})
 
+
+# Funcionamiento: Ruta POST para eliminar (alternativa a DELETE).
+# Verifica que la propiedad exista.
+# Verifica permisos (solo Admin o el propietario).
+# Llama a la BD para eliminar la propiedad.
+# Retorna un mensaje de éxito en JSON.
 @app.route('/api/propiedades/eliminar/<int:propiedad_id>', methods=['POST'])
 @login_required('vendedor', 'administrador', 'admin')
 def eliminar_propiedad(propiedad_id):

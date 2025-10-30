@@ -9,7 +9,12 @@ from persistencia.base_datos import (
 from datetime import datetime
 import re
 
-# Ruta para el registro de usuario
+# Funcionamiento: Recibe los datos del JSON (email, pass, nombre, etc.).
+# Valida todos los campos (formato de email, RUT, largo de pass).
+# Si una validación falla, retorna un error 400.
+# Verifica que el email no esté ya registrado en la BD.
+# Hashea la contraseña (con Argon2) y guarda el usuario.
+# Retorna el usuario creado (sin password) en JSON.
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json(silent=True) or {}
@@ -77,7 +82,13 @@ def register():
     except Exception as e:
         return jsonify({"error": f"Error al crear usuario: {str(e)}"}), 500
 
-# Ruta para el login de usuario
+
+# Funcionamiento: Recibe email y password del JSON.
+# Busca al usuario en la BD por el email.
+# Verifica la contraseña hasheada (con Argon2).
+# Si el email o pass fallan, retorna error 400.
+# Si es exitoso, limpia la sesión y crea una nueva (guardando 'user_id' y 'user_role').
+# Retorna un JSON con el usuario y la URL de redirección (ej. '/admin' o '/comprador').
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json(silent=True) or {}
@@ -140,7 +151,11 @@ def login():
 
     return jsonify({"message": "Login exitoso.", "user": usuario_respuesta, "redirect": redirect_url})
 
-# Ruta que hace logout y sesionclear para cerrar sesion correctamente
+
+# Funcionamiento: Cierra la sesión del usuario.
+# Llama a 'session.clear()' para borrar todos los datos.
+# Si fue una llamada de API (POST), retorna un JSON.
+# Si fue una llamada de navegador (GET), redirige a la página de login.
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.clear()

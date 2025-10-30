@@ -2,6 +2,14 @@ from functools import wraps
 from flask import session, jsonify, redirect, url_for
 from utils.helpers import _prefers_json
 
+
+# Funcionamiento: Decorador para proteger rutas de Flask.
+# Se usa encima de una ruta (ej. @login_required('admin')).
+# Primero, revisa si 'user_id' existe en la sesión.
+# Si no hay sesión, redirige al login (o da error 401 JSON).
+# Segundo, revisa si el rol del usuario (ej. 'vendedor') iene permiso, basado en los roles pasados al decorador.
+# Si no tiene permiso, lo redirige (o da error 403 JSON).
+# Excepción: Un rol 'admin' o 'administrador' siempre tiene acceso, sin importar los roles que pida el decorador.
 def login_required(*roles):
     roles_normalizados = {r.lower() for r in roles if isinstance(r, str)} if roles else set()
     

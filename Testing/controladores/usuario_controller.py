@@ -13,6 +13,9 @@ from utils.helpers import _prefers_json
 
 usuario_bp = Blueprint('usuario', __name__)
 
+# Funcionamiento: Obtiene todos los usuarios de la BD. 
+# Por seguridad, quita la contraseña de cada uno 
+# Añade el 'rol_legible' y retorna la lista completa en JSON.
 @usuario_bp.get("/api/usuarios")
 @login_required('admin', 'administrador')
 def api_usuarios():
@@ -29,6 +32,9 @@ def api_usuarios():
         return jsonify({"error": str(e)}), 500
 
 
+# Funcionamiento: Busca al usuario por ID. Valida y normaliza los datos del JSON (ej. email único, nombre con largo mínimo). 
+# Si alguna validación falla, retorna error 400. 
+# Si todo OK, actualiza la BD y retorna el usuario (sin password).
 @usuario_bp.route("/api/usuarios/<int:user_id>", methods=["PUT"])
 @login_required('admin', 'administrador')
 def actualizar_usuario(user_id):
@@ -93,6 +99,11 @@ def actualizar_usuario(user_id):
         return jsonify({"error": f"Error al actualizar usuario: {str(e)}"}), 500
 
 
+# Funcionamiento:
+# Busca al usuario por ID. 
+# Valida que el admin no se borre a sí mismo y (muy importante) que el usuario no tenga propiedades asociadas. 
+# Si no pasa las validaciones, retorna 400. 
+# Si las pasa, lo elimina de la BD.
 @usuario_bp.route("/api/usuarios/<int:user_id>", methods=["DELETE"])
 @login_required('admin', 'administrador')
 def eliminar_usuario(user_id):

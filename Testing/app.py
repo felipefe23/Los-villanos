@@ -1,4 +1,11 @@
-# app.py
+# Funcionamiento: El archivo principal de la aplicación.
+# 1. Crea la instancia de la aplicación Flask ('app').
+# 2. Configura claves secretas y la seguridad de las cookies.
+# 3. Establece cabeceras (headers) para evitar la caché.
+# 4. Llama a init_db() para conectar (y poblar) la BD.
+# 5. Importa todos los controladores (vistas/APIs) para que sus rutas queden registradas en la app.
+# 6. Corre el servidor en modo 'debug' si se ejecuta este archivo directamente.
+
 import os
 from flask import Flask
 from persistencia.base_datos import init_db

@@ -2,12 +2,21 @@ from persistencia.base_datos import obtener_propiedades
 
 # Funciones que se utilizan en la ruta de las propiedades
 
+# Funcionamiento: Abstracción simple para leer propiedades.
+# Llama a 'obtener_propiedades' de la capa de persistencia (base_datos.py) y retorna los resultados.
 def leer_propiedades():
     return obtener_propiedades()
 
+
+# Funcionamiento: Función interna de ayuda (helper).
+# Verifica si un rol de usuario (ej. 'admin') es considerado administrador, manejando mayúsculas o valores nulos (None).
 def _es_admin(role):
     return (role or '').lower() in {'admin', 'administrador'}
 
+
+# Funcionamiento: Función interna de ayuda (helper).
+# Convierte un valor (string, bool) a un booleano estricto.
+# Acepta "si", "true", "1" (para True) y "no", "false", "0" (para False). Falla (ValueError) si no es reconocible.
 def _normalizar_bool(valor, campo):
     if isinstance(valor, bool):
         return valor
@@ -19,6 +28,16 @@ def _normalizar_bool(valor, campo):
             return False
     raise ValueError(f"El campo '{campo}' debe ser booleano.")
 
+
+# Funcionamiento: El motor de validación para propiedades.
+# Recibe datos (data) y un flag 'parcial' (para PATCH/PUT).
+# 1. Valida campos obligatorios (texto y numéricos).
+# 2. Normaliza valores (ej. '  Nombre ' -> 'Nombre').
+# 3. Valida reglas de negocio (ej. 'precio' > 0).
+# 4. Asegura que 'coordenadas' sean únicas en la BD.
+# 5. Falla (ValueError) si algún campo es inválido.
+# 6. Retorna un diccionario 'resultado' con datos limpios.
+# 7. el "parcial=True" permite a la funcion determinar solo los campos que consideras en el diccionario.
 def _validar_y_normalizar_propiedad(data, parcial, propiedades_existentes, propiedad_actual=None):
     if not isinstance(data, dict):
         raise ValueError("Formato de datos inválido para la propiedad.")
