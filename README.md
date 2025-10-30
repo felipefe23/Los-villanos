@@ -141,6 +141,6 @@ Este es el menu de edicion de cada tabla, si presionamos el engranaje de un valo
 
 Para ir finalizando, el crud esta completamente funcional para el panel de administracion, crear publicaciones de casas y usuarios nuevos, por lo cual la migracion no presento drama alguno mas alla de tiempos de carga sobre el promedio.
 
-
-
+# Detalles de avance - Semana 9:
+Para esta semana completamos migraciones a supabase de ambos CRUD que tenemos implementados (usuarios y propiedades). Los cuales están completamente funcionales sin problema alguno. Esto ya estaba implementado en la semana 8, por lo que no fue complejo el avance y nos centramos en ordenarnos para la semana 10. Como extra, QA y documentación se encargó de crear un requeriments.txt para hacer más amigable la instalación del proyecto, todo este paso a paso quedó registrado en /docs/requisitos.md
 
