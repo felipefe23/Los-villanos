@@ -64,7 +64,9 @@ def _get_client() -> "Client":
 
 def _handle_response(response: Any) -> List[Dict[str, Any]]:
     if hasattr(response, "error") and response.error:
-        raise RuntimeError(f"Error de Supabase: {response.error}")
+        # Evita mostrar mensajes en la consola
+        # raise RuntimeError(f"Error de Supabase: {response.error}")
+        return [] 
     if hasattr(response, "data"):
         return response.data or []
     return []

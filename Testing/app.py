@@ -15,7 +15,6 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key')
 app.config.setdefault('SESSION_COOKIE_HTTPONLY', True)
 app.config.setdefault('SESSION_COOKIE_SAMESITE', 'Lax')
 
-# Cache headers (déjalo aquí tal cual)
 @app.after_request
 def harden_cache_headers(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -31,8 +30,6 @@ from controladores import (
     propiedad_controller,
     vista_controller
 )
-
-print(app.url_map)
 
 if __name__ == '__main__':
     app.run(debug=True)
