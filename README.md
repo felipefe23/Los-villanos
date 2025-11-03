@@ -152,8 +152,12 @@ Durante esta semana el backend se encargo de definir los endpoints y documentarl
 No fue una tarea compleja de realizar debido a que ya teniamos avances gracias a nuestra integracion temprana de la API de leaflet.
 
 # Detalles de avance - Semana 11:
-Bien, primero partir mencionando que backend decidio implementar la herramienta de "postman" para nuestro proyecto, facilitando el testeo y su velocidad, ya que por lo general en las presentaciones siempre tenemos un tiempo de respuesta alto debido a la conexion de la universidad. Esta herramienta aun la estamos descubriendo, por lo que a veces podemos presentar dificultades en ciertas acciones o tareas, pero nada que el tiempo no mejore.
+Bien, primero partir mencionando que backend decidio implementar la herramienta de "postman" para nuestro proyecto, facilitando el testeo y su velocidad, ya que por lo general en las presentaciones siempre tenemos un tiempo de respuesta alto debido a la conexion de la universidad. Esta herramienta aun la estamos descubriendo, por lo que a veces podemos presentar dificultades en ciertas acciones o tareas, pero nada que el tiempo no mejore. Por otro lado, se comento todo el codigo de backend, para ser precisos y tener un buen manejo de las funciones, endpoints y elementos claves del proyecto.
 
 Ahora centrandonos en el avance principal, se integro ya la API en el backend, con el siguiente manejo de errores y timeouts
 
-Y pasando a la muestra de datos reales en pantalla a traves de la API, estos ya estaban implementados desde la semana 2 con los puntos de interes y las casas asociadas a estos mismos, con sus datos, imagenes y coordenadas exactas.
+Y pasando a la muestra de datos reales en pantalla a traves de la API, estos ya estaban implementados desde la semana 2 con los puntos de interes y las casas asociadas a estos mismos, con sus datos, imagenes y coordenadas exactas. Adjunto imagen de la interfaz de la API actualmente y con datos reales:
+
+<img width="1911" height="936" alt="image" src="https://github.com/user-attachments/assets/176759ef-0dfe-43ff-990b-70fd418639b1" />
+
+
