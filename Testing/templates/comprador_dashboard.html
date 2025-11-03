@@ -60,10 +60,18 @@
                             </div>
                             <div class="contenido">
                                 <h2>{{ propiedad.get('nombre', 'Propiedad sin nombre') }}</h2>
+                                
                                 <p class="precio">
                                     ${{ '{:,}'.format(precio|int).replace(',', '.') }}
                                     {% if propiedad.get('estado') == 'arriendo' %} /mes{% endif %}
                                 </p>
+                                
+                                {% if valor_uf > 0 and precio > 0 %}
+                                <p class="precio-uf">
+                                    <strong>(Aprox. {{ (precio / valor_uf) | round(1) }} UF)</strong>
+                                </p>
+                                {% endif %}
+                                
                                 <p class="descripcion">{{ propiedad.get('descripcion', 'Sin descripción disponible') }}</p>
                                 <ul class="detalles">
                                     <li><span>Ubicación:</span> {{ propiedad.get('localizacion', 'No indicada') }}</li>
@@ -235,6 +243,7 @@
 
         let mapaInicializado = false;
         const propiedadesVenta = {{ propiedades | tojson }};
+        const valorUF = {{ valor_uf | tojson }};
 
         function activarVista(nombreVista) {
             Object.keys(vistas).forEach(vista => {
@@ -283,11 +292,17 @@
                     const marker = L.marker(partes).addTo(grupo);
                     const precio = Number(propiedad.precio) || 0;
                     const esArriendo = (propiedad.estado || '').toLowerCase() === 'arriendo';
+                    let precioUF = 0;
+                    if (valorUF > 0 && precio > 0) {
+                        // Usamos toFixed(1) para redondear a 1 decimal
+                        precioUF = (precio / valorUF).toFixed(1);
+                    }
                     const propietarioNombre = propiedad.propietario_nombre || null;
                     const propietarioId = propiedad.propietario || 'N/D';
                     marker.bindPopup(`
                         <strong>${propiedad.nombre || 'Propiedad sin nombre'}</strong><br>
                         Precio: $${precio.toLocaleString('es-CL')}${esArriendo ? ' /mes' : ''}<br>
+                        ${precioUF > 0 ? `<strong>(Aprox. ${precioUF} UF)</strong><br>` : ''}
                         Ubicación: ${propiedad.localizacion || 'No indicada'}<br>
                         Propietario: ${propietarioNombre || propietarioId}<br>
                         ${propiedad.img ? `<img src="data:image/jpeg;base64,${propiedad.img}" 

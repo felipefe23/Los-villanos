@@ -5,10 +5,8 @@ from utils.decoradores import login_required
 from persistencia.base_datos import obtener_usuario_por_id
 from servicios.usuario_service import leer_usuarios, rol_legible
 from servicios.propiedad_service import leer_propiedades
-
-# NUEVO: Import para manejar la excepción de Timeout
 from httpx import TimeoutException
-
+from utils.helpers import obtener_valor_uf_actual
 
 ## TESTING DE MANEJO DE ERRORES !
 
@@ -105,6 +103,7 @@ def comprador_dashboard_view():
     
     # NUEVO: Inicio del bloque try para capturar errores
     try:
+        valor_uf_actual = obtener_valor_uf_actual()
         propiedades = leer_propiedades()
         usuarios = leer_usuarios()
         nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
@@ -116,7 +115,7 @@ def comprador_dashboard_view():
             prop_id = copia.get('propietario')
             copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
             propiedades_filtradas.append(copia)
-        return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas)
+        return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas, valor_uf=valor_uf_actual)
     
     # NUEVO: Bloque para capturar el Timeout (devuelve HTML)
     except TimeoutException:
@@ -138,6 +137,7 @@ def admin_dashboard_view():
     
     # NUEVO: Inicio del bloque try para capturar errores
     try:
+        valor_uf_actual = obtener_valor_uf_actual()
         propiedades = leer_propiedades()
         usuarios = leer_usuarios()
         nombres = {
@@ -155,7 +155,8 @@ def admin_dashboard_view():
         return render_template(
             "admin_dashboard.html",
             propiedades=propiedades_total,
-            usuarios=usuarios
+            usuarios=usuarios,
+            valor_uf=valor_uf_actual
         )
         
     # NUEVO: Bloque para capturar el Timeout (devuelve HTML)
@@ -221,9 +222,10 @@ def ventas_view():
     
     # NUEVO: Inicio del bloque try para capturar errores
     try:
+        valor_uf_actual = obtener_valor_uf_actual()
         propiedades = leer_propiedades()
         propiedades_venta = [p for p in propiedades if p.get("estado", "").lower() == "venta"]
-        return render_template("ventas.html", propiedades=propiedades_venta)
+        return render_template("ventas.html", propiedades=propiedades_venta, valor_uf=valor_uf_actual)
         
     # NUEVO: Bloque para capturar el Timeout (devuelve HTML)
     except TimeoutException:

@@ -21,6 +21,7 @@ usuario_bp = Blueprint('usuario', __name__)
 @login_required('admin', 'administrador')
 def api_usuarios():
     try:
+        #raise TimeoutException("Simulando un timeout para testear")
         usuarios = obtener_usuarios()
         respuesta = []
         for usuario in usuarios:
