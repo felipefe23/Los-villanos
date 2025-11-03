@@ -144,3 +144,9 @@ Para ir finalizando, el crud esta completamente funcional para el panel de admin
 # Detalles de avance - Semana 9:
 Para esta semana completamos migraciones a supabase de ambos CRUD que tenemos implementados (usuarios y propiedades). Los cuales están completamente funcionales sin problema alguno. Esto ya estaba implementado en la semana 8, por lo que no fue complejo el avance y nos centramos en ordenarnos para la semana 10. Como extra, QA y documentación se encargó de crear un requeriments.txt para hacer más amigable la instalación del proyecto, todo este paso a paso quedó registrado en /docs/requisitos.md
 
+# Detalles de avance - Semana 10:
+Durante esta semana el backend se encargo de definir los endpoints y documentarlos respectivamente, los cuales estan en el archivo endpoints.md en la carpeta de /docs. El cual considera errores, pruebas, tipos de endpoints y sus explicaciones, etc.
+
+<img width="294" height="427" alt="image" src="https://github.com/user-attachments/assets/40cebb0a-05b3-4dc3-8e76-ea6bedb91f8a" />
+
+No fue una tarea compleja de realizar debido a que ya teniamos avances gracias a nuestra integracion temprana de la API de leaflet.
