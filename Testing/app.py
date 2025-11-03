@@ -9,11 +9,13 @@
 import os
 from flask import Flask
 from persistencia.base_datos import init_db
+from controladores.map_controller import map_bp
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key')
 app.config.setdefault('SESSION_COOKIE_HTTPONLY', True)
 app.config.setdefault('SESSION_COOKIE_SAMESITE', 'Lax')
+app.register_blueprint(map_bp) 
 
 @app.after_request
 def harden_cache_headers(response):

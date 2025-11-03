@@ -151,14 +151,22 @@ Durante esta semana el backend se encargo de definir los endpoints y documentarl
 
 No fue una tarea compleja de realizar debido a que ya teniamos avances gracias a nuestra integracion temprana de la API de leaflet.
 
-# Detalles de avance - Semana 11:
+
+#  Detalles de avance - Semana 11
 Bien, primero partir mencionando que backend decidio implementar la herramienta de "postman" para nuestro proyecto, facilitando el testeo y su velocidad, ya que por lo general en las presentaciones siempre tenemos un tiempo de respuesta alto debido a la conexion de la universidad. Esta herramienta aun la estamos descubriendo, por lo que a veces podemos presentar dificultades en ciertas acciones o tareas, pero nada que el tiempo no mejore. Por otro lado, se comento todo el codigo de backend, para ser precisos y tener un buen manejo de las funciones, endpoints y elementos claves del proyecto.
 
-Ahora centrandonos en el avance principal, se integro ya la API en el backend, con el siguiente manejo de errores y timeouts
+Ahora centrandonos en el avance principal, se integro ya la API 
+**OpenStreetMap (Nominatim)** para obtener información geográfica a partir de coordenadas, conectando así el mapa del proyecto con datos reales.
 
-Y pasando a la muestra de datos reales en pantalla a traves de la API, estos ya estaban implementados desde la semana 4 con los puntos de interes y las casas asociadas a estos mismos, con sus datos, imagenes y coordenadas exactas. Adjunto imagen de la interfaz de la API actualmente y con datos reales:
+Se añadió una validación de coordenadas dentro de un radio máximo de **10 km alrededor de Curicó** y se implementó **manejo de errores** y **timeout** en caso de lentitud o desconexión de la API.
 
-<img width="1911" height="936" alt="image" src="https://github.com/user-attachments/assets/176759ef-0dfe-43ff-990b-70fd418639b1" />
+Se utilizó la API **Nominatim** de **OpenStreetMap** en el **backend Flask** para integrar una **API externa con manejo de errores y timeout**.
 
+Aunque **Leaflet** ya estaba implementado, este solo funciona como **librería de frontend** para mostrar mapas, sin realizar peticiones desde el servidor ni manejar validaciones o respuestas externas.
 
+La API Nominatim permite:
+- Obtener **datos geográficos reales** (ciudad, región, país) a partir de coordenadas.
+- Controlar **errores**, **timeout** y **coordenadas fuera de rango**.
+- Cumplir el criterio de una integración **real en el backend**, manteniendo a Leaflet solo como herramienta visual.
 
+**En resumen:** Leaflet muestra los mapas; Nominatim entrega los datos reales procesados y validados desde el servidor.
