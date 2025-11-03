@@ -8,6 +8,7 @@ from persistencia.base_datos import (
 )
 from datetime import datetime
 import re
+from httpx import TimeoutException
 
 # Funcionamiento: Recibe los datos del JSON (email, pass, nombre, etc.).
 # Valida todos los campos (formato de email, RUT, largo de pass).
@@ -79,6 +80,12 @@ def register():
         usuario_sin_password = usuario_creado.copy()
         usuario_sin_password.pop('password', None)
         return jsonify({"message": "Usuario registrado con éxito.", "user": usuario_sin_password})
+        # Captura el error de Timeout ANTES del 'Exception' genérico.
+    except TimeoutException:
+        # Imprime un log para ti en el servidor
+        print(f"ERROR: Timeout en la ruta {request.path}")
+        # Envía una respuesta clara al cliente (frontend)
+        return jsonify({"error": "La base de datos tardó demasiado en responder (Timeout)."}), 504 # 504 Gateway Timeout
     except Exception as e:
         return jsonify({"error": f"Error al crear usuario: {str(e)}"}), 500
 

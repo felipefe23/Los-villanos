@@ -10,6 +10,7 @@ from servicios.usuario_service import validar_email, TIPOS_USUARIO_PERMITIDOS, r
 from servicios.propiedad_service import _validar_y_normalizar_propiedad
 from utils.decoradores import login_required
 from utils.helpers import _prefers_json
+from httpx import TimeoutException
 
 usuario_bp = Blueprint('usuario', __name__)
 
@@ -28,6 +29,12 @@ def api_usuarios():
             usuario_copy["rol_legible"] = rol_legible(usuario.get("tipo_usuario"))
             respuesta.append(usuario_copy)
         return jsonify(respuesta)
+    # Captura el error de Timeout ANTES del 'Exception' genérico.
+    except TimeoutException:
+        # Imprime un log para ti en el servidor
+        print(f"ERROR: Timeout en la ruta {request.path}")
+        # Envía una respuesta clara al cliente (frontend)
+        return jsonify({"error": "La base de datos tardó demasiado en responder (Timeout)."}), 504 # 504 Gateway Timeout
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

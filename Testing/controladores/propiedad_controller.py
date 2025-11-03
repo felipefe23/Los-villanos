@@ -10,6 +10,7 @@ from servicios.propiedad_service import (
     leer_propiedades, _validar_y_normalizar_propiedad, _es_admin
 )
 from servicios.usuario_service import leer_usuarios
+from httpx import TimeoutException
 
 # Funcionamiento: Obtiene todas las propiedades y usuarios.
 # Crea un mapa de IDs de usuario a nombres completos.
@@ -190,6 +191,12 @@ def eliminar_propiedad(propiedad_id):
         if not eliminado:
             return jsonify({"error": "Propiedad no encontrada."}), 404
         return jsonify({"message": "Propiedad eliminada correctamente."}), 200
+        # Captura el error de Timeout ANTES del 'Exception' genérico.
+    except TimeoutException:
+        # Imprime un log para ti en el servidor
+        print(f"ERROR: Timeout en la ruta {request.path}")
+        # Envía una respuesta clara al cliente (frontend)
+        return jsonify({"error": "La base de datos tardó demasiado en responder (Timeout)."}), 504 # 504 Gateway Timeout
     except Exception as e:
         return jsonify({"error": f"Error al eliminar propiedad: {str(e)}"}), 500
 
