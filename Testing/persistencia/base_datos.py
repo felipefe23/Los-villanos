@@ -58,15 +58,10 @@ def _get_client() -> "Client":
         print("Conectando con Supabase")
         _client = create_client(SUPABASE_URL, SUPABASE_KEY)
         
-        # --- INICIO DE LA MODIFICACIÓN ---
-        
-        # Establecemos un timeout global de 10 segundos para todas las consultas.
-        # Si Supabase tarda más de 10s, lanzará una excepción.
-        _client.postgrest.timeout = 10.0
+        # Establecemos un timeout global de 20 segundos para todas las consultas.
+        # Si Supabase tarda más de 20s, lanzará una excepción.
+        _client.postgrest.timeout = 20.0
         print(f"Conectado a Supabase. Timeout configurado a {_client.postgrest.timeout}s.")
-
-        # --- FIN DE LA MODIFICACIÓN ---
-        
     return _client
 
 # UTILIDADES INTERNAS

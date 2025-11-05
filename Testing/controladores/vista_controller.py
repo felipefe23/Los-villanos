@@ -45,62 +45,66 @@ def test_error_400():
 
 
 
-
+# Funcionamiento: Es la página de inicio (y login).
+# Limpia cualquier sesión existente (cierra sesión).
+# Muestra un mensaje de error si fue redirigido (ej. login fallido).
+# Renderiza la plantilla principal 'landing.html'.
 @app.route('/')
 def landing():
-    # Funcionamiento: Es la página de inicio (y login).
-    # Limpia cualquier sesión existente (cierra sesión).
-    # Muestra un mensaje de error si fue redirigido (ej. login fallido).
-    # Renderiza la plantilla principal 'landing.html'.
     mensaje_error = session.pop('error_message', '')
     session.clear()
     return render_template('landing.html', error_message=mensaje_error)
 
+
+# Funcionamiento: Alias de la ruta principal ('/').
+# Limpia la sesión y muestra la página de login.
+# Útil si el usuario intenta acceder a /login directamente.
 @app.get('/login')
 def login_view():
-    # Funcionamiento: Alias de la ruta principal ('/').
-    # Limpia la sesión y muestra la página de login.
-    # Útil si el usuario intenta acceder a /login directamente.
     mensaje_error = session.pop('error_message', '')
     session.clear()
     return render_template('landing.html', error_message=mensaje_error)
 
+
+# Funcionamiento: Redirige cualquier intento de login
+# por roles (ej. /admin/login) a la página
+# de login principal ('landing').
 @app.get("/admin/login")
 def admin_login_view():
-    # Funcionamiento: Redirige cualquier intento de login
-    # por roles (ej. /admin/login) a la página
-    # de login principal ('landing').
     return redirect(url_for('landing'))
 
+
+# Funcionamiento: Redirige cualquier intento de login
+# por roles (ej. /admin/login) a la página
+# de login principal ('landing').
 @app.get("/vendedor/login")
 def vendedor_login_view():
-    # Funcionamiento: Redirige cualquier intento de login
-    # por roles (ej. /admin/login) a la página
-    # de login principal ('landing').
     return redirect(url_for('landing'))
 
+
+# Funcionamiento: Redirige cualquier intento de login
+# por roles (ej. /admin/login) a la página
+# de login principal ('landing').
 @app.get("/comprador/login")
 def comprador_login_view():
-    # Funcionamiento: Redirige cualquier intento de login
-    # por roles (ej. /admin/login) a la página
-    # de login principal ('landing').
     return redirect(url_for('landing'))
 
+
+# Funcionamiento: Muestra la página de registro
+# específica para nuevos compradores.
 @app.get("/comprador/register")
 def comprador_register_view():
-    # Funcionamiento: Muestra la página de registro
-    # específica para nuevos compradores.
     return render_template("comprador_register.html")
 
+
+# Funcionamiento: Protegido por login (comprador/admin).
+# Obtiene todas las propiedades y usuarios.
+# Filtra las propiedades para mostrar solo las 'activas'.
+# Asocia el nombre del propietario a cada propiedad.
+# Renderiza el panel del comprador con la lista filtrada.
 @app.get("/comprador")
 @login_required('comprador', 'administrador', 'admin')
-def comprador_dashboard_view():
-    # Funcionamiento: Protegido por login (comprador/admin).
-    # Obtiene todas las propiedades y usuarios.
-    # Filtra las propiedades para mostrar solo las 'activas'.
-    # Asocia el nombre del propietario a cada propiedad.
-    # Renderiza el panel del comprador con la lista filtrada.
-    
+def comprador_dashboard_view():  
     # NUEVO: Inicio del bloque try para capturar errores
     try:
         valor_uf_actual = obtener_valor_uf_actual()
@@ -126,18 +130,19 @@ def comprador_dashboard_view():
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
 
+
+# Funcionamiento: Protegido por login (solo admin).
+# Obtiene TODAS las propiedades y TODOS los usuarios.
+# Asocia nombres de propietario a propiedades y roles legibles a usuarios.
+# A diferencia del comprador, muestra propiedades activas e inactivas.
+# Renderiza el panel de admin con ambas listas completas.
 @app.get("/admin")
 @login_required('admin', 'administrador')
 def admin_dashboard_view():
-    # Funcionamiento: Protegido por login (solo admin).
-    # Obtiene TODAS las propiedades y TODOS los usuarios.
-    # Asocia nombres de propietario a propiedades y roles legibles a usuarios.
-    # A diferencia del comprador, muestra propiedades activas e inactivas.
-    # Renderiza el panel de admin con ambas listas completas.
-    
     # NUEVO: Inicio del bloque try para capturar errores
     try:
         valor_uf_actual = obtener_valor_uf_actual()
+        #raise TimeoutException("Forzando demo de Timeout")
         propiedades = leer_propiedades()
         usuarios = leer_usuarios()
         nombres = {
@@ -168,27 +173,29 @@ def admin_dashboard_view():
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
 
+
+#Funcionamiento: Protegido por login (vendedor/admin).
+# Muestra la página principal o panel del vendedor.
 @app.get("/vendedor")
 @login_required('vendedor', 'administrador', 'admin')
 def vendedor_view():
-    # Funcionamiento: Protegido por login (vendedor/admin).
-    # Muestra la página principal o panel del vendedor.
     return render_template("vendedor.html")
 
+
+# Funcionamiento: Muestra la página de registro
+# específica para nuevos vendedores.
 @app.get("/vendedor/register")
 def vendedor_register_view():
-    # Funcionamiento: Muestra la página de registro
-    # específica para nuevos vendedores.
     return render_template("vendedor_register.html")
 
+
+# Funcionamiento: Endpoint de API (para el frontend).
+# Revisa la sesión para ver quién está logueado.
+# Obtiene los datos de ese usuario desde la BD.
+# Quita el password por seguridad y retorna el
+# objeto del usuario actual en formato JSON.
 @app.route('/api/me', methods=['GET'])
 def api_me():
-    # Funcionamiento: Endpoint de API (para el frontend).
-    # Revisa la sesión para ver quién está logueado.
-    # Obtiene los datos de ese usuario desde la BD.
-    # Quita el password por seguridad y retorna el
-    # objeto del usuario actual en formato JSON.
-    
     # NUEVO: Inicio del bloque try para capturar errores
     try:
         user_id = session.get('user_id')
@@ -212,14 +219,14 @@ def api_me():
         print(f"ERROR: Error general en {request.path}: {e}")
         return jsonify({"error": f"Ocurrió un error inesperado: {e}"}), 500
 
+
+# Funcionamiento: Página pública.
+# Obtiene todas las propiedades del sistema.
+# Filtra la lista para incluir solo aquellas
+# cuyo estado es 'venta'.
+# Renderiza la plantilla 'ventas.html' con esa lista.
 @app.get("/ventas")
 def ventas_view():
-    # Funcionamiento: Página pública.
-    # Obtiene todas las propiedades del sistema.
-    # Filtra la lista para incluir solo aquellas
-    # cuyo estado es 'venta'.
-    # Renderiza la plantilla 'ventas.html' con esa lista.
-    
     # NUEVO: Inicio del bloque try para capturar errores
     try:
         valor_uf_actual = obtener_valor_uf_actual()
@@ -236,20 +243,22 @@ def ventas_view():
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
 
+
+# Funcionamiento: Manejador de errores global.
+# Se activa automáticamente cuando Flask no
+# encuentra una ruta (error 404).
+# Muestra la plantilla 'error.html' personalizada.
 @app.errorhandler(404)
 def not_found_error(error):
-    # Funcionamiento: Manejador de errores global.
-    # Se activa automáticamente cuando Flask no
-    # encuentra una ruta (error 404).
-    # Muestra la plantilla 'error.html' personalizada.
     return render_template("error.html", message="La página que buscas no existe (Error 404)."), 404
+
 
 # Funcionamiento: Manejador de errores global para 500.
 # Se activa si hay un error de programación o un fallo inesperado en el servidor.
 @app.errorhandler(500)
 def internal_server_error(error):
-    # (Opcional) Aquí podrías agregar un log para registrar el 'error'
     return render_template("error.html", message="Ha ocurrido un error inesperado en el servidor (Error 500)."), 500
+
 
 # Funcionamiento: Manejador de errores global para 403.
 # Se activa cuando un usuario autenticado no tiene los permisos para acceder a una página.
@@ -257,21 +266,23 @@ def internal_server_error(error):
 def forbidden_error(error):
     return render_template("error.html", message="No tienes permiso para acceder a esta página (Error 403)."), 403
 
+
 # Funcionamiento: Manejador de errores global para 401.
 # Se activa si se requiere autenticación pero el usuario no ha iniciado sesión.
 @app.errorhandler(401)
 def unauthorized_error(error):
-    # Tu decorador login_required ya maneja esto redirigiendo al login,
+    # El decorador login_required ya maneja esto redirigiendo al login,
     # pero este es un "seguro" en caso de que se llame a la API sin sesión.
     if _prefers_json(): # Función que ya tienes en utils/helpers.py
         return jsonify({"error": "Autenticación requerida."}), 401
     return render_template("error.html", message="Necesitas iniciar sesión para ver esta página (Error 401)."), 401
 
+
 # Funcionamiento: Manejador de errores global para 400.
 # Se activa si el navegador envía una petición mal formada.
 @app.errorhandler(400)
 def bad_request_error(error):
-    # Generalmente, tus APIs manejan esto con JSON, pero esto capturaría el resto.
+    # Generalmente, las APIs manejan esto con JSON, pero esto capturaría el resto.
     if _prefers_json(): # Función que ya tienes en utils/helpers.py
         return jsonify({"error": "Petición incorrecta."}), 400
     return render_template("error.html", message="La petición que enviaste es incorrecta (Error 400)."), 400

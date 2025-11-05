@@ -84,7 +84,6 @@ def register():
     except TimeoutException:
         # Imprime un log para ti en el servidor
         print(f"ERROR: Timeout en la ruta {request.path}")
-        # Envía una respuesta clara al cliente (frontend)
         return jsonify({"error": "La base de datos tardó demasiado en responder (Timeout)."}), 504 # 504 Gateway Timeout
     except Exception as e:
         return jsonify({"error": f"Error al crear usuario: {str(e)}"}), 500

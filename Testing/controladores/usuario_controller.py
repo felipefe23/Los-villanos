@@ -21,7 +21,6 @@ usuario_bp = Blueprint('usuario', __name__)
 @login_required('admin', 'administrador')
 def api_usuarios():
     try:
-        #raise TimeoutException("Simulando un timeout para testear")
         usuarios = obtener_usuarios()
         respuesta = []
         for usuario in usuarios:
@@ -34,7 +33,6 @@ def api_usuarios():
     except TimeoutException:
         # Imprime un log para ti en el servidor
         print(f"ERROR: Timeout en la ruta {request.path}")
-        # Envía una respuesta clara al cliente (frontend)
         return jsonify({"error": "La base de datos tardó demasiado en responder (Timeout)."}), 504 # 504 Gateway Timeout
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -50,7 +48,6 @@ def actualizar_usuario(user_id):
     usuario = obtener_usuario_por_id(user_id)
     if not usuario:
         return jsonify({"error": "Usuario no encontrado."}), 404
-
     try:
         cambios = {}
 
