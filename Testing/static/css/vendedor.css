@@ -12,13 +12,16 @@ body {
   display: none !important;
 }
 
+/* Header con espaciado fluido para desktop y móvil */
 .modern-header {
   background: linear-gradient(180deg, #1e293b, #0f172a);
   color: #fff;
-  padding: 40px 60px;
+  padding: clamp(24px, 4vw, 40px) clamp(16px, 5vw, 60px);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
@@ -29,20 +32,22 @@ body {
 
 .header-left h1 {
   margin: 0;
-  font-size: 34px;
+  font-size: clamp(26px, 3vw, 34px);
   font-weight: 700;
 }
 
 .header-left .subtitle {
   margin: 8px 0 0;
-  font-size: 18px;
+  font-size: clamp(14px, 2.3vw, 18px);
   color: #cbd5e1;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 14px; 
+  justify-content: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 .user-widget[hidden] {
@@ -175,12 +180,13 @@ body {
   background: #dc2626;
 }
 
+/* Layout con padding adaptable para que la vista respire en móviles */
 main {
   flex: 1;
   display: grid;
   grid-template-columns: 380px 1fr;
   gap: 20px;
-  padding: 20px;
+  padding: clamp(16px, 4vw, 24px);
   align-items: stretch;
 }
 
@@ -381,9 +387,10 @@ ul#propList li strong {
   display: flex;
   flex-direction: column;
 }
+/* Alto mínimo flexible para que el mapa no desborde en pantallas estrechas */
 #map {
   flex: 1;
-  min-height: 520px;
+  min-height: clamp(320px, 55vh, 520px);
   width: 100%;
 }
 .map-legend {
@@ -399,12 +406,13 @@ ul#propList li strong {
 }
 
 
+/* Panel deslizante ocupa menos alto en desktop y pantalla completa en mobile */
 #formPanel {
   position: fixed;
-  top: 140px;             
+  top: 120px;
   left: 0;
-  height: 100%;        
-  width: 640px;        
+  height: calc(100% - 120px);
+  width: min(640px, 100%);
   background: #fff;
   border-right: 1px solid #e5e7eb;
   box-shadow: 4px 0 12px rgba(0,0,0,0.15);
@@ -477,13 +485,62 @@ ul#propList li strong {
 }
 
 
+/* --- Responsive: tablets y pantallas medianas --- */
 @media (max-width: 900px) {
   main { grid-template-columns: 1fr; }
   .map-wrapper { min-height: 360px; }
   #propForm { grid-template-columns: 1fr; }
+  #formPanel { width: min(520px, 100%); }
 
   .user-widget__trigger {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* --- Responsive: móviles --- */
+@media (max-width: 720px) {
+  .modern-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .side-panel,
+  .map-wrapper {
+    width: 100%;
+  }
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .logout-btn {
+    width: 100%;
+    text-align: center;
+  }
+  .map-wrapper {
+    order: 2;
+  }
+  .side-panel {
+    order: 1;
+  }
+  ul#propList li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .prop-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .user-widget__panel {
+    width: min(100%, 360px);
+  }
+  #formPanel {
+    top: 0;
+    height: 100vh;
+    border-radius: 0;
   }
 }
