@@ -44,6 +44,6 @@ def obtener_valor_uf_actual():
         
     except Exception as e:
         # Si algo falla (timeout, error 500, JSON malformado),
-        # imprimimos una advertencia en tu consola y usamos el valor de respaldo.
+        # imprimimos una advertencia en la consola y usamos el valor de respaldo.
         print(f"ADVERTENCIA: No se pudo obtener el valor de la UF. Usando valor de respaldo. Error: {e}")
         return VALOR_UF_RESPALDO

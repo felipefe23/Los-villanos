@@ -105,7 +105,7 @@ def comprador_register_view():
 @app.get("/comprador")
 @login_required('comprador', 'administrador', 'admin')
 def comprador_dashboard_view():  
-    # NUEVO: Inicio del bloque try para capturar errores
+    # Inicio del bloque try para capturar errores
     try:
         valor_uf_actual = obtener_valor_uf_actual()
         propiedades = leer_propiedades()
@@ -121,11 +121,11 @@ def comprador_dashboard_view():
             propiedades_filtradas.append(copia)
         return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas, valor_uf=valor_uf_actual)
     
-    # NUEVO: Bloque para capturar el Timeout (devuelve HTML)
+    #Bloque para capturar el Timeout (devuelve HTML)
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
         return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
-    # NUEVO: Bloque para capturar errores generales
+    #Bloque para capturar errores generales
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
@@ -139,7 +139,7 @@ def comprador_dashboard_view():
 @app.get("/admin")
 @login_required('admin', 'administrador')
 def admin_dashboard_view():
-    # NUEVO: Inicio del bloque try para capturar errores
+    # Inicio del bloque try para capturar errores
     try:
         valor_uf_actual = obtener_valor_uf_actual()
         #raise TimeoutException("Forzando demo de Timeout")
@@ -164,17 +164,17 @@ def admin_dashboard_view():
             valor_uf=valor_uf_actual
         )
         
-    # NUEVO: Bloque para capturar el Timeout (devuelve HTML)
+    # Bloque para capturar el Timeout (devuelve HTML)
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
         return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
-    # NUEVO: Bloque para capturar errores generales
+    #Bloque para capturar errores generales
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
 
 
-#Funcionamiento: Protegido por login (vendedor/admin).
+# Funcionamiento: Protegido por login (vendedor/admin).
 # Muestra la página principal o panel del vendedor.
 @app.get("/vendedor")
 @login_required('vendedor', 'administrador', 'admin')
@@ -196,7 +196,7 @@ def vendedor_register_view():
 # objeto del usuario actual en formato JSON.
 @app.route('/api/me', methods=['GET'])
 def api_me():
-    # NUEVO: Inicio del bloque try para capturar errores
+    # Inicio del bloque try para capturar errores
     try:
         user_id = session.get('user_id')
         if not user_id:
@@ -210,11 +210,11 @@ def api_me():
         user_copy.pop('password', None)
         return jsonify(user_copy)
         
-    # NUEVO: Bloque para capturar el Timeout (devuelve JSON)
+    # Bloque para capturar el Timeout (devuelve JSON)
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
         return jsonify({"error": "La base de datos tardó demasiado en responder (Timeout)."}), 504
-    # NUEVO: Bloque para capturar errores generales
+    # Bloque para capturar errores generales
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return jsonify({"error": f"Ocurrió un error inesperado: {e}"}), 500
@@ -227,18 +227,18 @@ def api_me():
 # Renderiza la plantilla 'ventas.html' con esa lista.
 @app.get("/ventas")
 def ventas_view():
-    # NUEVO: Inicio del bloque try para capturar errores
+    # Inicio del bloque try para capturar errores
     try:
         valor_uf_actual = obtener_valor_uf_actual()
         propiedades = leer_propiedades()
         propiedades_venta = [p for p in propiedades if p.get("estado", "").lower() == "venta"]
         return render_template("ventas.html", propiedades=propiedades_venta, valor_uf=valor_uf_actual)
         
-    # NUEVO: Bloque para capturar el Timeout (devuelve HTML)
+    # Bloque para capturar el Timeout (devuelve HTML)
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
         return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
-    # NUEVO: Bloque para capturar errores generales
+    # Bloque para capturar errores generales
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
