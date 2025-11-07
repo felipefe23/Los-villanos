@@ -273,7 +273,7 @@ def forbidden_error(error):
 def unauthorized_error(error):
     # El decorador login_required ya maneja esto redirigiendo al login,
     # pero este es un "seguro" en caso de que se llame a la API sin sesión.
-    if _prefers_json(): # Función que ya tienes en utils/helpers.py
+    if _prefers_json(): # Función que esta en utils/helpers.py
         return jsonify({"error": "Autenticación requerida."}), 401
     return render_template("error.html", message="Necesitas iniciar sesión para ver esta página (Error 401)."), 401
 
@@ -282,7 +282,7 @@ def unauthorized_error(error):
 # Se activa si el navegador envía una petición mal formada.
 @app.errorhandler(400)
 def bad_request_error(error):
-    # Generalmente, las APIs manejan esto con JSON, pero esto capturaría el resto.
-    if _prefers_json(): # Función que ya tienes en utils/helpers.py
+    # Generalmente las APIs manejan esto con JSON, pero esto capturaría el resto
+    if _prefers_json(): # Función que esta en utils/helpers.py
         return jsonify({"error": "Petición incorrecta."}), 400
     return render_template("error.html", message="La petición que enviaste es incorrecta (Error 400)."), 400
