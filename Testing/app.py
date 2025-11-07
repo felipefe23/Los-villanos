@@ -25,7 +25,7 @@ def harden_cache_headers(response):
     return response
 
 # Inicializa DB
-init_db()
+
 from controladores import (
     auth_controller,
     usuario_controller,
@@ -34,4 +34,5 @@ from controladores import (
 )
 
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True)

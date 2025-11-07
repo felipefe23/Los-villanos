@@ -121,11 +121,11 @@ def comprador_dashboard_view():
             propiedades_filtradas.append(copia)
         return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas, valor_uf=valor_uf_actual)
     
-    #Bloque para capturar el Timeout (devuelve HTML)
+    # Bloque para capturar el Timeout (devuelve HTML)
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
         return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
-    #Bloque para capturar errores generales
+    # Bloque para capturar errores generales
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
@@ -168,7 +168,7 @@ def admin_dashboard_view():
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
         return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
-    #Bloque para capturar errores generales
+    # Bloque para capturar errores generales
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500

@@ -31,7 +31,7 @@ def api_usuarios():
         return jsonify(respuesta)
     # Captura el error de Timeout ANTES del 'Exception' genérico.
     except TimeoutException:
-        # Imprime un log para ti en el servidor
+        # Imprime un log en el servidor
         print(f"ERROR: Timeout en la ruta {request.path}")
         return jsonify({"error": "La base de datos tardó demasiado en responder (Timeout)."}), 504 # 504 Gateway Timeout
     except Exception as e:
