@@ -153,5 +153,24 @@ No fue una tarea compleja de realizar debido a que ya teniamos avances gracias a
 
 
 #  Detalles de avance - Semana 11
+Bien, comenzando con el tema de los manejos de errores y timeout, se implementaron de las siguientes formas.
+Timeout:
+<img width="658" height="353" alt="image" src="https://github.com/user-attachments/assets/a98677e5-49a3-458f-803b-7936bbc0c73d" />
+
+Se decidio que serian 10 segundos ya que es un tiempo considerable para las peticiones, y sumado a que supabase no manejaba un tiempo de respuesta general tuvimos que decidirlo entre nosotros.
+
+Errores:
+Para los errores se implementaron pantallas, las cuales se encargan de especificar el error en concreto y retornar al inicio de sesion. Respecto a los que se implementaron fueron los siguientes:
+<img width="643" height="622" alt="image" src="https://github.com/user-attachments/assets/9306fdbc-3f01-4f02-b27e-8970213d4de6" />
+
+y asi se ve el error 403 en accion (intento de acceder /admin sin permiso):
+
+<img width="1919" height="986" alt="image" src="https://github.com/user-attachments/assets/c290e5c2-9b70-49b6-b662-a99470ff5c56" />
+
+En cuanto a la API externa, decidimos implementar una muy sencilla pero util para nuestro proyecto, la cual es la siguiente: https://mindicador.cl/api/uf
+A la cual le definimos un tiempo de respuesta de 5 segundos para rescatar el valor. Y tambien definimos un valor de respaldo en caso de que fallara la API.
+
+<img width="959" height="455" alt="image" src="https://github.com/user-attachments/assets/6557eafd-1906-4311-82eb-55160c977d1c" />
+
 
 
