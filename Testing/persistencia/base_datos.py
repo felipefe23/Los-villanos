@@ -3,8 +3,6 @@ import os
 from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from pathlib import Path
-import httpx
-from supabase import create_client, Client, ClientOptions
 
 
 # CARGA DEL ARCHIVO .env DE FORMA FIABLE
@@ -57,23 +55,14 @@ def _get_client() -> "Client":
     global _client
     if _client is None:
         print("Conectando con Supabase")
-        # Configura el cliente HTTP con el timeout, es decir python es quien mide el tiempo de respuesta, no supabase.
-        http_client = httpx.Client(
-            timeout=httpx.Timeout(10.0), # 10 segundos de timeout
-            verify=True
-        )
         
-        # Crea el objeto ClientOptions
-        options = ClientOptions(
-            http_client=http_client
-        )
+        # creación simple del cliente
+        _client = create_client(SUPABASE_URL, SUPABASE_KEY)
         
-        # Pasa el objeto options
-        _client = create_client(
-            SUPABASE_URL, 
-            SUPABASE_KEY,
-            options=options
-        )
+        # Esto causará una "DeprecationWarning" (una advertencia)
+        
+        _client.postgrest.timeout = 10.0
+
         print(f"Conectado a Supabase. Timeout configurado a 10s.")
     return _client
 
