@@ -155,12 +155,14 @@ No fue una tarea compleja de realizar debido a que ya teniamos avances gracias a
 #  Detalles de avance - Semana 11
 Bien, comenzando con el tema de los manejos de errores y timeout, se implementaron de las siguientes formas.
 # Timeout:
+
 <img width="658" height="353" alt="image" src="https://github.com/user-attachments/assets/a98677e5-49a3-458f-803b-7936bbc0c73d" />
 
 Se decidio que serian 10 segundos ya que es un tiempo considerable para las peticiones, y sumado a que supabase no manejaba un tiempo de respuesta general tuvimos que decidirlo entre nosotros.
 
 # Errores:
 Para los errores se implementaron pantallas, las cuales se encargan de especificar el error en concreto y retornar al inicio de sesion. Respecto a los que se implementaron fueron los siguientes:
+
 <img width="643" height="622" alt="image" src="https://github.com/user-attachments/assets/9306fdbc-3f01-4f02-b27e-8970213d4de6" />
 
 y asi se ve el error 403 en accion (intento de acceder /admin sin permiso):
@@ -174,5 +176,6 @@ A la cual le definimos un tiempo de respuesta de 5 segundos para rescatar el val
 <img width="959" height="455" alt="image" src="https://github.com/user-attachments/assets/6557eafd-1906-4311-82eb-55160c977d1c" />
 
 Respecto a esta misma, en su pagina se va actualizando de manera constante y en sus registros deja la fecha de la actualizacion y el valor nuevo.
+
 
 
