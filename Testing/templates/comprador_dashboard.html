@@ -80,6 +80,12 @@
                                     <li><span>Área:</span> {{ propiedad.get('area', 'N/D') }} m²</li>
                                     <li><span>Tipo:</span> {{ propiedad.get('tipo', 'No especificado') }}</li>
                                 </ul>
+                                <div class="acciones">
+                                    {% set detalle_url = propiedad.get('detalle_url') or url_for('comprador_propiedad_detalle', propiedad_id=propiedad.get('id')) %}
+                                    {% if detalle_url %}
+                                    <a class="btn-detalle" href="{{ detalle_url }}">Ver detalles completos</a>
+                                    {% endif %}
+                                </div>
                             </div>
                         </article>
                     {% endfor %}
@@ -299,6 +305,7 @@
                     }
                     const propietarioNombre = propiedad.propietario_nombre || null;
                     const propietarioId = propiedad.propietario || 'N/D';
+                    const detalleUrl = propiedad.detalle_url || null;
                     marker.bindPopup(`
                         <strong>${propiedad.nombre || 'Propiedad sin nombre'}</strong><br>
                         Precio: $${precio.toLocaleString('es-CL')}${esArriendo ? ' /mes' : ''}<br>
@@ -308,6 +315,7 @@
                         ${propiedad.img ? `<img src="data:image/jpeg;base64,${propiedad.img}" 
                             alt="Imagen de propiedad" 
                             style="max-width:150px;max-height:100px;object-fit:cover;margin-top:4px;border:1px solid #ccc;">` : ''}
+                        ${detalleUrl ? `<div style="margin-top:8px;"><a href="${detalleUrl}" style="color:#2563eb;font-weight:600;">Ver detalles</a></div>` : ''}
                     `);
                     bounds.push(partes);
                 }

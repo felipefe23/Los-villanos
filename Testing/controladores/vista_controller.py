@@ -1,12 +1,65 @@
+import json
 from flask import render_template, jsonify, session, redirect, url_for, request, abort
 from utils.helpers import _prefers_json
 from app import app
 from utils.decoradores import login_required
-from persistencia.base_datos import obtener_usuario_por_id
+from persistencia.base_datos import obtener_usuario_por_id, obtener_propiedad_por_id
 from servicios.usuario_service import leer_usuarios, rol_legible
 from servicios.propiedad_service import leer_propiedades
 from httpx import TimeoutException
 from utils.helpers import obtener_valor_uf_actual
+
+def _resolver_imagen_src(valor):
+    if not valor:
+        return None
+    dato = str(valor).strip()
+    if not dato:
+        return None
+    if dato.startswith(("http://", "https://", "data:", "/")):
+        return dato
+    return f"data:image/jpeg;base64,{dato}"
+
+
+def _galeria_para_propiedad(propiedad):
+    if not propiedad:
+        return []
+    posibles = (
+        propiedad.get("galeria")
+        or propiedad.get("fotos")
+        or propiedad.get("imagenes")
+        or propiedad.get("imagenes_urls")
+    )
+    imagenes = []
+    if isinstance(posibles, list):
+        imagenes = posibles
+    elif isinstance(posibles, dict):
+        imagenes = list(posibles.values())
+    elif isinstance(posibles, str):
+        cadena = posibles.strip()
+        if cadena:
+            try:
+                parsed = json.loads(cadena)
+                if isinstance(parsed, list):
+                    imagenes = parsed
+                elif isinstance(parsed, str):
+                    imagenes = [parsed]
+            except json.JSONDecodeError:
+                separadores = ["|", ";", ","]
+                partes = [cadena]
+                for separador in separadores:
+                    if separador in cadena:
+                        partes = [p.strip() for p in cadena.split(separador)]
+                        break
+                imagenes = [p for p in partes if p]
+    if not imagenes and propiedad.get("img"):
+        imagenes = [propiedad.get("img")]
+
+    resultado = []
+    for imagen in imagenes:
+        src = _resolver_imagen_src(imagen)
+        if src and src not in resultado:
+            resultado.append(src)
+    return resultado
 
 ## TESTING DE MANEJO DE ERRORES !
 
@@ -118,6 +171,9 @@ def comprador_dashboard_view():
             copia = p.copy()
             prop_id = copia.get('propietario')
             copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
+            propiedad_id = copia.get('id')
+            if propiedad_id is not None:
+                copia['detalle_url'] = url_for('comprador_propiedad_detalle', propiedad_id=propiedad_id)
             propiedades_filtradas.append(copia)
         return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas, valor_uf=valor_uf_actual)
     
@@ -126,6 +182,35 @@ def comprador_dashboard_view():
         print(f"ERROR: Timeout en la ruta {request.path}")
         return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
     # Bloque para capturar errores generales
+    except Exception as e:
+        print(f"ERROR: Error general en {request.path}: {e}")
+        return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
+
+
+@app.get("/comprador/propiedades/<int:propiedad_id>")
+@login_required('comprador', 'administrador', 'admin')
+def comprador_propiedad_detalle(propiedad_id):
+    try:
+        propiedad = obtener_propiedad_por_id(propiedad_id)
+        if not propiedad or not propiedad.get('activo', True):
+            return render_template("error.html", message="La propiedad no está disponible o fue inhabilitada."), 404
+
+        usuarios = leer_usuarios()
+        propietario = next((u for u in usuarios if u.get('id') == propiedad.get('propietario')), None)
+        galeria = _galeria_para_propiedad(propiedad)
+        valor_uf_actual = obtener_valor_uf_actual()
+
+        return render_template(
+            "propiedad_detalle.html",
+            propiedad=propiedad,
+            propietario=propietario,
+            galeria=galeria,
+            valor_uf=valor_uf_actual
+        )
+
+    except TimeoutException:
+        print(f"ERROR: Timeout en la ruta {request.path}")
+        return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500

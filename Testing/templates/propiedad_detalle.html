@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ propiedad.get('nombre', 'Detalle de propiedad') }} | Panel del comprador</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/propiedad_detalle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
+</head>
+<body>
+    {% include '_loader.html' %}
+    <header class="encabezado">
+        <div class="contenedor encabezado__contenido">
+            <a class="btn-volver" href="{{ url_for('comprador_dashboard_view') }}">← Volver al listado</a>
+            <div>
+                <p class="etiqueta-listado">Propiedad publicada en La Loma</p>
+                <h1>{{ propiedad.get('nombre', 'Propiedad sin nombre') }}</h1>
+                <p class="descripcion-corta">{{ propiedad.get('localizacion', 'Ubicación no disponible') }}</p>
+            </div>
+            <span class="badge-estado badge-{{ (propiedad.get('estado') or 'venta')|lower }}">
+                {{ (propiedad.get('estado') or 'Venta')|capitalize }}
+            </span>
+        </div>
+    </header>
+
+    <main class="contenedor detalle">
+        <section class="galeria">
+            <div class="galeria-principal">
+                {% if galeria %}
+                    <img id="fotoPrincipal" src="{{ galeria[0] }}" alt="Imagen principal de {{ propiedad.get('nombre', 'propiedad') }}">
+                {% else %}
+                    <div class="galeria-placeholder">
+                        <p>Esta propiedad aún no tiene fotos.</p>
+                    </div>
+                {% endif %}
+            </div>
+            {% if galeria|length > 1 %}
+            <div class="galeria-thumbs" role="list">
+                {% for imagen in galeria %}
+                <button class="thumb {% if loop.first %}activa{% endif %}" type="button" data-foto="{{ imagen }}" aria-label="Ver foto {{ loop.index }}">
+                    <img src="{{ imagen }}" alt="Miniatura {{ loop.index }} de {{ propiedad.get('nombre', 'propiedad') }}">
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="info">
+            {% set precio = propiedad.get('precio') or 0 %}
+            {% set es_arriendo = (propiedad.get('estado', '').lower() == 'arriendo') %}
+            {% set precio_uf = (precio / valor_uf)|round(1) if valor_uf and valor_uf > 0 and precio else None %}
+
+            <div class="bloque-precio">
+                <p class="precio">
+                    ${{ '{:,}'.format(precio|int).replace(',', '.') }}
+                    {% if es_arriendo %}<span>/mes</span>{% endif %}
+                </p>
+                {% if precio_uf %}
+                <p class="precio-uf">≈ {{ precio_uf }} UF</p>
+                {% endif %}
+                <p class="nota-precio">Valores referenciales actualizados con la UF vigente.</p>
+            </div>
+
+            <p class="descripcion-larga">{{ propiedad.get('descripcion', 'Sin descripción detallada disponible.') }}</p>
+
+            <div class="grid-datos">
+                <article>
+                    <h3>Dormitorios</h3>
+                    <p>{{ propiedad.get('dormitorios', 'N/D') }}</p>
+                </article>
+                <article>
+                    <h3>Baños</h3>
+                    <p>{{ propiedad.get('baños', 'N/D') }}</p>
+                </article>
+                <article>
+                    <h3>Área útil</h3>
+                    <p>{{ propiedad.get('area', 'N/D') }} m²</p>
+                </article>
+                <article>
+                    <h3>Tipo</h3>
+                    <p>{{ propiedad.get('tipo', 'Sin especificar') }}</p>
+                </article>
+            </div>
+
+            {% if propietario %}
+            <section class="propietario">
+                <h2>Propietario / Vendedor</h2>
+                <div class="propietario__contenido">
+                    <div>
+                        <p class="propietario__nombre">{{ propietario.get('nombre', '') }} {{ propietario.get('apellido', '') }}</p>
+                        <p class="propietario__dato"><span>Correo:</span> {{ propietario.get('email', 'No disponible') }}</p>
+                        <p class="propietario__dato"><span>Teléfono:</span> {{ propietario.get('telefono', 'No disponible') }}</p>
+                        <p class="propietario__dato"><span>Ciudad:</span> {{ propietario.get('ciudad', 'No disponible') }}</p>
+                    </div>
+                    <div class="propietario__contacto">
+                        <p>¿Te interesa esta propiedad?</p>
+                        {% if propietario.get('email') %}
+                        {% set asunto = 'Consulta sobre ' ~ propiedad.get('nombre', 'la propiedad') %}
+                        {% set cuerpo = (
+                            'Hola ' ~ propietario.get('nombre', 'propietario') ~ ',\n\n' ~
+                            'Estoy interesado en ' ~ propiedad.get('nombre', 'la propiedad') ~
+                            '. ¿Podríamos coordinar una visita o recibir más detalles?\n\n' ~
+                            'Saludos,\n[Tu nombre aquí]'
+                        ) %}
+                        <a class="btn-contactar"
+                           href="mailto:{{ propietario.get('email') }}?subject={{ asunto|urlencode }}&body={{ cuerpo|urlencode }}">
+                            Contactar
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            {% if propiedad.get('coordenadas') %}
+            <section class="mapa">
+                <h2>Ubicación aproximada</h2>
+                <div id="mapa-propiedad" data-coords="{{ propiedad.get('coordenadas') }}"></div>
+            </section>
+            {% endif %}
+        </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="{{ url_for('static', filename='js/loader.js') }}"></script>
+    <script>
+        const fotoPrincipal = document.getElementById('fotoPrincipal');
+        const thumbnails = document.querySelectorAll('.thumb');
+
+        thumbnails.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const nuevaFoto = btn.getAttribute('data-foto');
+                if (nuevaFoto && fotoPrincipal) {
+                    fotoPrincipal.src = nuevaFoto;
+                }
+                thumbnails.forEach(item => item.classList.remove('activa'));
+                btn.classList.add('activa');
+            });
+        });
+
+        const mapaContainer = document.getElementById('mapa-propiedad');
+        if (mapaContainer) {
+            const coords = mapaContainer.dataset.coords || '';
+            const partes = coords.split(',').map(parseFloat);
+            if (partes.length === 2 && !Number.isNaN(partes[0]) && !Number.isNaN(partes[1])) {
+                const mapa = L.map('mapa-propiedad').setView(partes, 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 20,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(mapa);
+                L.marker(partes).addTo(mapa).bindPopup({{ propiedad.get("nombre", "Propiedad") | tojson }});
+            }
+        }
+    </script>
+</body>
+</html>

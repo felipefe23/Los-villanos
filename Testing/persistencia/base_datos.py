@@ -7,13 +7,24 @@ from pathlib import Path
 
 # CARGA DEL ARCHIVO .env DE FORMA FIABLE
 
-dotenv_path = Path(__file__).resolve().parents[1] / ".env"
+_script_path = Path(__file__).resolve()
+_env_candidates = []
 
-if dotenv_path.exists():
+for idx in (1, 2):
+    try:
+        _env_candidates.append(_script_path.parents[idx] / ".env")
+    except IndexError:
+        pass
+
+_env_candidates.append(Path.cwd() / ".env")
+
+dotenv_path = next((path for path in _env_candidates if path.exists()), None)
+
+if dotenv_path:
     load_dotenv(dotenv_path=dotenv_path)
     print(f"Archivo .env cargado desde: {dotenv_path}")
 else:
-    print("No se encontró el archivo .env en la carpeta padre.")
+    print("No se encontró el archivo .env en las ubicaciones esperadas.")
 
 
 # IMPORTACIÓN DE SUPABASE

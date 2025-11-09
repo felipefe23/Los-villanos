@@ -267,6 +267,28 @@ body {
     color: #0f172a;
 }
 
+.acciones {
+    margin-top: auto;
+}
+
+.btn-detalle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: linear-gradient(120deg, #2563eb, #1d4ed8);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-detalle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+}
+
 .sin-resultados {
     text-align: center;
     background: rgba(255, 255, 255, 0.94);
