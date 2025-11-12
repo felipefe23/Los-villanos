@@ -30,13 +30,13 @@ def test_api_login_sin_datos(client):
     # Hacemos un POST a la API, pero sin enviar un body/json
     response = client.post('/api/login', json={})
     
-    # 1. Verificamos que el código sea 400 (Bad Request)
+    # Verificamos que el código sea 400 (Bad Request)
     assert response.status_code == 400
     
-    # 2. Verificamos que la respuesta sea JSON
+    # Verificamos que la respuesta sea JSON
     assert response.is_json
     
-    # 3. Verificamos que el JSON de error contenga el mensaje correcto
+    # Verificamos que el JSON de error contenga el mensaje correcto
     json_data = response.get_json()
     assert 'error' in json_data
     assert json_data['error'] == 'Correo no encontrado.'
