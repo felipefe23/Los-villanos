@@ -57,3 +57,85 @@ def test_admin_route_forbidden_for_comprador(client):
     assert response.status_code == 403
     
     assert b"No tienes permiso para acceder" in response.data
+
+
+# Prueba 5: CREATE (POST) falla si los datos son malos (400)
+def test_create_propiedad_fails_with_bad_data(client):   
+    # Prueba que POST /api/propiedades devuelva 400 si faltan campos obligatorios.
+
+    # Simular inicio de sesión como 'vendedor'
+    with client.session_transaction() as sess:
+        sess['user_id'] = 97
+        sess['user_role'] = 'vendedor'
+    
+    # Enviar datos inválidos (un JSON vacío)
+    response = client.post('/api/propiedades', json={})
+    
+    # Verificar que el código sea 400 (Bad Request)
+    assert response.status_code == 400
+    
+    # Verificar que el error sea sobre un campo obligatorio
+    json_data = response.get_json()
+    assert "error" in json_data
+    # El validador debe quejarse de 'nombre', 'localizacion' o 'tipo'
+    assert "obligatorio" in json_data["error"]
+
+# Prueba 6: DELETE (DELETE) falla si el ID no existe (404)
+def test_delete_propiedad_fails_for_nonexistent_id(client):
+    # Prueba que DELETE /api/propiedades/<id> devuelva 404 si el ID no existe.
+    
+    # Simular inicio de sesión como 'admin' (para tener permisos)
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['user_role'] = 'admin'
+        
+    # Intentar borrar un ID que es imposible que exista
+    response = client.delete('/api/propiedades/999999')
+    
+    # Verificar que el código sea 404 (Not Found)
+    assert response.status_code == 404
+    
+    # Verificar el mensaje de error
+    json_data = response.get_json()
+    assert "no encontrada" in json_data.get("error", "")
+
+# Prueba 7: READ (GET) falla si no eres admin (403)
+def test_get_usuarios_fails_if_not_admin(client):
+    # Prueba que GET /api/usuarios devuelva 403 si el rol no es admin
+    
+    # Simular inicio de sesión como 'comprador'
+    with client.session_transaction() as sess:
+        sess['user_id'] = 99
+        sess['user_role'] = 'comprador'
+    
+    # Hacemos GET a la ruta de admin
+    response = client.get('/api/usuarios', headers={"Accept": "application/json"})
+    
+    
+    # Verificar que el código sea 403 (Forbidden)
+    assert response.status_code == 403
+    
+    # Verificar que se muestre el error de permisos
+    json_data = response.get_json()
+    assert "Permisos insuficientes" in json_data.get("error", "")
+
+
+# Prueba 8: UPDATE (PUT) falla si no eres admin (403)
+def test_update_usuario_fails_if_not_admin(client):
+    # Prueba que PUT /api/usuarios/<id> devuelva 403 si el rol no es admin
+    
+    # Simular inicio de sesión como 'vendedor'
+    with client.session_transaction() as sess:
+        sess['user_id'] = 98
+        sess['user_role'] = 'vendedor'
+        
+    # Intentar actualizar al usuario con ID 1 (cualquier ID)
+    response = client.put('/api/usuarios/1', json={"ciudad": "Test"}, headers={"Accept": "application/json"})
+    
+    
+    # Verificar que el código sea 403 (Forbidden)
+    assert response.status_code == 403
+    
+    # Verificar el mensaje de error
+    json_data = response.get_json()
+    assert "Permisos insuficientes" in json_data.get("error", "")

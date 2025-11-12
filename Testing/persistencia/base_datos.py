@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from pathlib import Path
 
-
 # CARGA DEL ARCHIVO .env DE FORMA FIABLE
 
 _script_path = Path(__file__).resolve()
@@ -67,11 +66,10 @@ def _get_client() -> "Client":
     if _client is None:
         print("Conectando con Supabase")
         
-        # creación simple del cliente
+        # Creación simple del cliente
         _client = create_client(SUPABASE_URL, SUPABASE_KEY)
         
-        # Esto causará una "DeprecationWarning" (una advertencia)
-        
+        # Retornara advertencias debido a que es un metodo "obsoleto"
         _client.postgrest.timeout = 10.0
 
         print(f"Conectado a Supabase. Timeout configurado a 10s.")
