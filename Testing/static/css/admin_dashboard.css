@@ -380,6 +380,21 @@ code {
   margin-top: 16px;
 }
 
+.card-header {
+  display: flex;                 
+  justify-content: space-between; 
+  align-items: center;           
+  margin-bottom: 20px;           
+  
+}
+
+.card-header h2 {
+  margin: 0;
+}
+.card-header .header-actions {
+  margin: 0;
+}
+
 #propMessage {
   margin-top: 10px;
   font-size: 14px;
@@ -449,6 +464,14 @@ code {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 16px;
+}
+
+#map-selector-container {
+    height: 300px;
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 8px;
+    z-index: 5000; /* Asegura que esté visible dentro del modal */
 }
 
 .btn-edit-prop, .btn-edit-user {

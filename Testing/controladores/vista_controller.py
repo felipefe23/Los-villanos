@@ -230,6 +230,7 @@ def admin_dashboard_view():
         #raise TimeoutException("Forzando demo de Timeout")
         propiedades = leer_propiedades()
         usuarios = leer_usuarios()
+        vendedores = [u for u in usuarios if str(u.get('tipo_usuario')).strip().lower() == 'vendedor']
         nombres = {
             u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip()
             for u in usuarios
@@ -246,7 +247,8 @@ def admin_dashboard_view():
             "admin_dashboard.html",
             propiedades=propiedades_total,
             usuarios=usuarios,
-            valor_uf=valor_uf_actual
+            valor_uf=valor_uf_actual,
+            vendedores=vendedores
         )
         
     # Bloque para capturar el Timeout (devuelve HTML)

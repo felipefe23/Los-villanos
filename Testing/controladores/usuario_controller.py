@@ -11,6 +11,8 @@ from servicios.propiedad_service import _validar_y_normalizar_propiedad
 from utils.decoradores import login_required
 from utils.helpers import _prefers_json
 from httpx import TimeoutException
+from servicios.auth_service import ph
+from servicios.usuario_service import validar_password
 
 usuario_bp = Blueprint('usuario', __name__)
 
@@ -86,6 +88,16 @@ def actualizar_usuario(user_id):
             if not tipo_canonico:
                 return jsonify({"error": "Tipo de usuario inválido."}), 400
             cambios["tipo_usuario"] = tipo_canonico
+        
+        if "password" in data and data["password"]:
+            password_nuevo = str(data["password"])
+            
+            # Validacion en codigo
+            if not validar_password(password_nuevo):
+                return jsonify({"error": "La nueva contraseña debe tener al menos 8 caracteres y 1 número."}), 400
+                
+            # ¡Hashear antes de guardar!
+            cambios["password"] = ph.hash(password_nuevo)
 
         if cambios:
             usuario_actualizado = actualizar_usuario_db(user_id, cambios)

@@ -6,6 +6,8 @@
   <title>Panel de Administración</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
   {% include '_loader.html' %}
@@ -24,9 +26,14 @@
 
   <main class="dashboard">
     <section class="card">
+    <div class="card-header">
       <h2>Gestión de propiedades</h2>
-      
-
+      <div class="header-actions">
+        <button id="btn-crear-propiedad" class="btn btn-crear">
+          &#43; Crear Nueva Propiedad
+        </button>
+      </div>
+    </div>
       <div class="table-wrapper">
         <table class="crud-table">
           <thead>
@@ -58,9 +65,9 @@
       </div>
     </section>
     <section class="card">
-      <h2>Gestión de usuarios</h2>
-     
-
+      <div class="card-header">
+        <h2>Gestión de usuarios</h2>
+        </div>
       <div class="table-wrapper">
         <table class="crud-table">
           <thead>
@@ -135,16 +142,29 @@
           <input type="file" id="imagenFile" accept="image/jpeg,image/jpg">
           <small id="imagenActualInfo"></small>
         </label>
-        <label>Coordenadas
-          <input type="text" id="coordenadas" required>
+        <label>Coordenadas (haz clic en el mapa para seleccionar)
+          <input type="text" id="coordenadas" required readonly>
         </label>
+        <div id="map-selector-container"></div>
         <label>Activo
           <select id="activo">
             <option value="true">Sí</option>
             <option value="false">No</option>
           </select>
         </label>
+      </label>
 
+      <label>Propietario (Vendedor)
+        <select id="propietario">
+          <option value="">(Asignar a mí, el Admin)</option>
+          {% for v in vendedores %}
+            <option value="{{ v.get('id') }}">
+              {{ v.get('nombre') }} {{ v.get('apellido') }}
+            </option>
+          {% endfor %}
+        </select>
+        <small>Selecciona a qué vendedor asignar esta propiedad.</small>
+      </label>
         <div class="form-actions">
           <button type="submit" class="btn">💾 Guardar cambios</button>
           <button type="button" id="closeModalBtn" class="btn ghost">Cerrar</button>
@@ -196,6 +216,11 @@
     </select>
   </label>
 
+  <label>Nueva Contraseña (Opcional)
+    <input type="password" id="userPassword" placeholder="Dejar en blanco para no cambiar">
+    <small>Si se ingresa, debe tener al menos 8 caracteres y 1 número.</small>
+  </label>
+
   <div class="form-actions">
     <button type="submit" class="btn">💾 Guardar cambios</button>
     <button type="button" id="closeUserModalBtn" class="btn ghost">Cerrar</button>
@@ -227,6 +252,10 @@ const closeModalBtn = document.getElementById("closeModalBtn");
 const propForm = document.getElementById("propForm");
 const propId = document.getElementById("propId");
 const propMessage = document.getElementById("propMessage");
+const btnCrearPropiedad = document.getElementById("btn-crear-propiedad");
+let mapSelector = null;
+let mapMarker = null; 
+const formTitle = document.getElementById("formTitle");
 const imagenInput = document.getElementById("imagenFile");
 const imagenActualInfo = document.getElementById("imagenActualInfo");
 let imagenBase64Temporal = null;
@@ -249,6 +278,17 @@ const hasCustomConfirm = Boolean(
 let confirmResolver = null;
 let lastFocusedElement = null;
 const FEEDBACK_CLASSES = ["is-error", "is-success"];
+
+btnCrearPropiedad.addEventListener("click", () => {
+    propForm.reset();
+    propId.value = ""; 
+    formTitle.textContent = "Crear Nueva Propiedad";
+    setFeedback(propMessage, "", ""); 
+    imagenBase64Temporal = null;
+    imagenActualInfo.textContent = "Sube una imagen para la propiedad.";
+    formPanel.classList.remove("hidden");
+    setupMapModal();
+});
 
 function setFeedback(node, message, type) {
   if (!node) return;
@@ -339,6 +379,39 @@ function convertirArchivoABase64(file) {
   });
 }
 
+function setupMapModal(initialCoords = [-34.9844, -71.2394]) {
+    const mapDiv = document.getElementById("map-selector-container");
+    const coordsInput = document.getElementById("coordenadas");
+    if (!mapSelector) {
+        mapSelector = L.map(mapDiv).setView(initialCoords, 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(mapSelector);
+      
+        mapMarker = L.marker(initialCoords, { draggable: true }).addTo(mapSelector);
+
+        mapSelector.on('click', (e) => {
+            const lat = e.latlng.lat.toFixed(6);
+            const lng = e.latlng.lng.toFixed(6);
+            coordsInput.value = `${lat},${lng}`;
+            mapMarker.setLatLng(e.latlng);
+        });
+        
+        mapMarker.on('dragend', (e) => {
+            const lat = e.target.getLatLng().lat.toFixed(6);
+            const lng = e.target.getLatLng().lng.toFixed(6);
+            coordsInput.value = `${lat},${lng}`;
+        });
+
+    } else {
+        mapSelector.setView(initialCoords, 14);
+        mapMarker.setLatLng(initialCoords);
+    }
+    setTimeout(() => {
+        mapSelector.invalidateSize();
+    }, 100); // 100ms de espera
+}
+
 document.querySelectorAll(".btn-edit-prop").forEach(btn => {
   btn.addEventListener("click", async () => {
     const id = btn.dataset.id;
@@ -366,6 +439,16 @@ document.querySelectorAll(".btn-edit-prop").forEach(btn => {
       document.getElementById("descripcion").value = prop.descripcion;
       document.getElementById("coordenadas").value = prop.coordenadas;
       document.getElementById("activo").value = prop.activo ? "true" : "false";
+      document.getElementById("propietario").value = prop.propietario || "";
+
+      let startCoords = [-34.9844, -71.2394];
+        if (prop.coordenadas) {
+            const parts = prop.coordenadas.split(',').map(Number);
+            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                startCoords = [parts[0], parts[1]];
+            }
+        }
+        setupMapModal(startCoords);
 
       imagenBase64Temporal = prop.img || null;
       imagenActualInfo.textContent = imagenBase64Temporal
@@ -382,43 +465,69 @@ document.querySelectorAll(".btn-edit-prop").forEach(btn => {
 
 
 propForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (imagenInput.files.length > 0)
-    imagenBase64Temporal = await convertirArchivoABase64(imagenInput.files[0]);
+    e.preventDefault();
+    if (imagenInput.files.length > 0) {
+        try {
+            imagenBase64Temporal = await convertirArchivoABase64(imagenInput.files[0]);
+        } catch (imgError) {
+            console.error("Error al convertir imagen:", imgError);
+            setFeedback(propMessage, "Error al procesar la imagen.", "error");
+            return;
+        }
+    }
+    const payload = {
+        nombre: document.getElementById("nombre").value,
+        precio: Number(document.getElementById("precio").value),
+        localizacion: document.getElementById("localizacion").value,
+        tipo: document.getElementById("tipo").value,
+        estado: document.getElementById("estado").value,
+        dormitorios: Number(document.getElementById("dormitorios").value),
+        baños: Number(document.getElementById("baños").value),
+        area: Number(document.getElementById("area").value),
+        descripcion: document.getElementById("descripcion").value,
+        coordenadas: document.getElementById("coordenadas").value,
+        activo: document.getElementById("activo").value === "true",
+        img: imagenBase64Temporal,
+        propietario: document.getElementById("propietario").value || null
+    };
 
-  const payload = {
-    nombre: document.getElementById("nombre").value,
-    precio: Number(document.getElementById("precio").value),
-    localizacion: document.getElementById("localizacion").value,
-    tipo: document.getElementById("tipo").value,
-    estado: document.getElementById("estado").value,
-    dormitorios: Number(document.getElementById("dormitorios").value),
-    baños: Number(document.getElementById("baños").value),
-    area: Number(document.getElementById("area").value),
-    descripcion: document.getElementById("descripcion").value,
-    coordenadas: document.getElementById("coordenadas").value,
-    activo: document.getElementById("activo").value === "true",
-    img: imagenBase64Temporal
-  };
+    const esModoCreacion = !propId.value; 
 
-  try {
-    const { res, data } = await Loader.wrap(async () => {
-      const res = await fetch(`/api/propiedades/editar/${propId.value}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json().catch(() => ({}));
-      return { res, data };
-    }, "Guardando cambios de la propiedad...");
+    
+    let apiUrl = esModoCreacion 
+        ? `/api/propiedades` // Ruta de CREACIÓN (POST)
+        : `/api/propiedades/${propId.value}`; // Ruta de ACTUALIZACIÓN (PUT)
+        
+    let apiMethod = esModoCreacion ? "POST" : "PUT";
+    
+    let loaderMessage = esModoCreacion 
+        ? "Creando nueva propiedad..." 
+        : "Guardando cambios de la propiedad...";
+    try {
+        const { res, data } = await Loader.wrap(async () => {
+            // Usamos las variables 'apiMethod' y 'apiUrl'
+            const res = await fetch(apiUrl, {
+                method: apiMethod, 
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await res.json().catch(() => ({}));
+            return { res, data };
+        }, loaderMessage);
 
-    const message = data.message || data.error || "Error";
-    setFeedback(propMessage, message, res.ok ? "success" : "error");
-    if (res.ok) location.reload();
-  } catch (error) {
-    console.error("Error al actualizar propiedad:", error);
-    setFeedback(propMessage, "Error al actualizar la propiedad.", "error");
-  }
+        const message = data.message || data.error || "Error";
+        setFeedback(propMessage, message, res.ok ? "success" : "error");
+        if (res.ok) {
+            // Espera 1 segundo para que el usuario lea el mensaje
+            setTimeout(() => {
+                location.reload(); 
+            }, 1000);
+        }
+    } catch (error) {
+        console.error("Error al guardar propiedad:", error);
+        setFeedback(propMessage, "Error fatal al guardar la propiedad.", "error");
+    }
 });
 
 
@@ -558,6 +667,7 @@ if (searchPropInput) {
       direccion: document.getElementById("userDireccion")?.value || "",
       ciudad: document.getElementById("userCiudad")?.value || "",
       tipo_usuario: document.getElementById("userTipo").value,
+      password: document.getElementById("userPassword").value || null
     };
 
   try {

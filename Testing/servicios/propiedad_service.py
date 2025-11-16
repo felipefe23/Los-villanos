@@ -47,7 +47,7 @@ def _validar_y_normalizar_propiedad(data, parcial, propiedades_existentes, propi
     campos_numericos = ['precio', 'dormitorios', 'baños', 'area']
     campos_permitidos = {
         'nombre', 'descripcion', 'precio', 'localizacion', 'dormitorios', 'baños',
-        'area', 'tipo', 'estado', 'activo', 'img', 'coordenadas'
+        'area', 'tipo', 'estado', 'activo', 'img', 'coordenadas', 'propietario'
     }
 
     for campo in campos_texto_obligatorios:
