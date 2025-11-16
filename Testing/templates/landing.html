@@ -1,147 +1,50 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ViviendaDigital · Iniciar Sesión</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViviendaDigital · Encuentra tu hogar en Curicó</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 </head>
 <body>
-  {% include '_loader.html' %}
-  <main class="login-only" aria-label="Formulario de inicio de sesión">
-    <div class="brand-pill">
-      <span class="brand-icon">🏠</span>
-      <span>ViviendaDigital</span>
-    </div>
+    {% include '_loader.html' %}
 
-    <section class="form-card">
-      <h1>Inicia sesión</h1>
-      <p class="subtitle">Accede con tu correo y contraseña registrados.</p>
+    <header class="main-header container">
+        <a href="{{ url_for('landing') }}" class="brand-pill">
+            <span class="brand-icon">🏠</span>
+            <span>ViviendaDigital</span>
+        </a>
+        <nav class="main-nav">
+            <a href="{{ url_for('login_view') }}" class="btn-primary">
+                Iniciar sesión
+            </a>
+        </nav>
+    </header>
 
-      <form id="loginForm" novalidate>
-        <label class="field">
-          <span>Correo electrónico</span>
-          <input type="email" name="email" placeholder="ejemplo@correo.com" autocomplete="email" required>
-        </label>
+    <main class="hero-section">
+        <div class="hero-content container">
+            <h1>Encuentra tu próximo hogar en Curicó</h1>
+            <p class="subtitle">
+                La plataforma digital para comprar y vender propiedades en la Región del Maule.
+                Explora el catálogo o publica tu propiedad hoy.
+            </p>
+            
+            <div class="hero-cta">
+                <a href="{{ url_for('ventas_view') }}" class="btn-primary">
+                    Ver Propiedades en Venta
+                </a>
+                <a href="{{ url_for('vendedor_register_view') }}" class="btn-secondary">
+                    Soy Vendedor, quiero publicar
+                </a>
+            </div>
+        </div>
+    </main>
 
-        <label class="field">
-          <span>Contraseña</span>
-          <div class="password-field">
-            <input type="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
-            <button type="button" class="toggle-pass" aria-label="Mostrar u ocultar contraseña">
-              <span id="eye-icon">👁️</span>
-            </button>
-          </div>
-        </label>
+    <footer class="main-footer container">
+        <p>&copy; 2025 ViviendaDigital. Todos los derechos reservados.</p>
+    </footer>
 
-        <button type="submit" class="btn-primary">
-          <span class="btn-label">Ingresar</span>
-          <span class="btn-spinner" aria-hidden="true"></span>
-        </button>
-      </form>
-
-      <p id="formMessage" class="form-message" role="alert" aria-live="polite"></p>
-
-      <div class="helper-links">
-        <a href="{{ url_for('comprador_register_view') }}">Crear cuenta de comprador</a>
-        <a href="{{ url_for('vendedor_register_view') }}">Crear cuenta de vendedor</a>
-      </div>
-    </section>
-  </main>
-
-<script src="{{ url_for('static', filename='js/loader.js') }}"></script>
-<script>
-    // Limpiar usuarioActual al cargar la pagina en secion
-  try { localStorage.removeItem('usuarioActual'); } catch (e) { /* ignore */ }
-    const form = document.getElementById('loginForm');
-    const messageEl = document.getElementById('formMessage');
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const togglePassBtn = form.querySelector('.toggle-pass');
-    const passwordInput = form.querySelector('input[name="password"]');
-    const eyeIcon = document.getElementById('eye-icon');
-    const serverErrorMessage = {{ (error_message or '') | tojson | safe }};
-
-    if (serverErrorMessage) {
-      messageEl.textContent = serverErrorMessage;
-      messageEl.classList.add('error');
-    }
-
-    const redirectByRole = {
-      admin: '/admin',
-      administrador: '/admin',
-      vendedor: '/vendedor',
-      comprador: '/comprador'
-    };
-
-    togglePassBtn.addEventListener('click', () => {
-      const isPassword = passwordInput.type === 'password';
-      passwordInput.type = isPassword ? 'text' : 'password';
-      eyeIcon.textContent = isPassword ? '🙈' : '👁️';
-      passwordInput.focus();
-    });
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      // 🔹 Activar ruedita de carga
-      submitBtn.classList.add('is-loading');
-      submitBtn.setAttribute('disabled', true);
-
-      const formData = Object.fromEntries(new FormData(form).entries());
-      const payload = {
-        email: (formData.email || '').trim().toLowerCase(),
-        password: (formData.password || '').trim(),
-        tipo_usuario: (formData.tipo_usuario || '').trim().toLowerCase()
-      };
-
-      try {
-        const { res, data } = await Loader.wrap(async () => {
-          const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          return { res, data };
-        }, 'Validando tus credenciales...');
-
-        if (res.ok) {
-                                            // Error de archivos locales
-          try {
-            if (data.user) {
-              localStorage.setItem('usuarioActual', JSON.stringify(data.user));
-            }
-          } catch (e) {
-            console.warn('No se pudo guardar usuario en localStorage', e);
-          }
-
-          if (data.redirect) {
-            try {
-              await Loader.wrap(() => fetch('/api/me', { credentials: 'include' }), 'Sincronizando tu cuenta...');
-            } catch (e) {
-            }
-            Loader.show('Redirigiendo a tu panel...');
-            window.location.href = data.redirect;
-            return;
-          }
-          messageEl.textContent = data.message || 'Login exitoso.';
-          messageEl.classList.remove('error');
-        } else {
-          messageEl.textContent = data.error || 'Error en el login.';
-          messageEl.classList.add('error');
-        }
-      } catch (err) {
-        messageEl.textContent = 'Error de red. Inténtalo nuevamente.';
-        messageEl.classList.add('error');
-      } finally {
-        // 🔹 Desactivar ruedita de carga
-        submitBtn.classList.remove('is-loading');
-        submitBtn.removeAttribute('disabled');
-      }
-    });
-</script>
-
+    <script src="{{ url_for('static', filename='js/loader.js') }}"></script>
 </body>
 </html>

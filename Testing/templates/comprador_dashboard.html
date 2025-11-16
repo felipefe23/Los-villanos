@@ -13,7 +13,7 @@
     <header class="encabezado">
         <div class="contenedor">
             <div class="barra-superior">
-                <a class="btn-volver" href="{{ url_for('landing') }}">← Cerrar sesión</a>
+                <a class="btn-volver" id="main-nav-link" href="{{ url_for('landing') }}">← Cerrar sesión</a>
                 <div class="user-widget" id="userWidget" hidden>
                     <button class="user-widget__trigger" id="userTrigger" aria-label="Mostrar datos del usuario" aria-expanded="false">
                         <span class="user-widget__initials" id="userInitials">US</span>
@@ -209,12 +209,24 @@
                 return;
             }
             obtenerUsuarioActual().then(usuario => {
-                if (!usuario) {
-                    if (widget) widget.hidden = true;
-                    return;
-                }
+                const navLink = document.getElementById('main-nav-link');
 
-                poblarWidget(usuario);
+                if (!usuario) {
+                    // MODO PÚBLICO (/ventas)
+                    if (widget) widget.hidden = true;
+                    if (navLink) {
+                        navLink.textContent = "Iniciar sesión →";
+                        navLink.href = "{{ url_for('login_view') }}";
+                    }
+                    return;
+                }
+
+                // MODO PRIVADO (/comprador)
+                if (navLink) {
+                    navLink.textContent = "← Cerrar sesión";
+                    navLink.href = "{{ url_for('logout') }}"; 
+                }
+                poblarWidget(usuario)
 
                 trigger.addEventListener('click', () => {
                     const abierta = widget.classList.toggle('user-widget--abierta');

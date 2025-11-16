@@ -170,4 +170,4 @@ def logout():
     session.clear()
     if request.method == 'POST' or _prefers_json():
         return jsonify({"message": "Sesión cerrada."})
-    return redirect(url_for('login_view'))
+    return redirect(url_for('landing'))
