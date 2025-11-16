@@ -139,3 +139,37 @@ def test_update_usuario_fails_if_not_admin(client):
     # Verificar el mensaje de error
     json_data = response.get_json()
     assert "Permisos insuficientes" in json_data.get("error", "")
+
+
+# Prueba 9: (Registro) Falla si el email ya existe (400)
+def test_register_fails_if_email_exists(client, monkeypatch):
+    # Prueba que POST /api/register devuelva 400 si el email ya está en uso.
+    # Esto prueba la validación en código (no solo la de Supabase).
+    
+    # Simular la BD (monkeypatch) simulando un correo que "existe"
+    monkeypatch.setattr(
+        "controladores.auth_controller.obtener_usuario_por_email",
+        lambda email: {"id": 1, "email": "existente@correo.com"}
+    )
+    
+    # Datos de registro válidos (pero con el email que "ya existe")
+    registro_data = {
+        "email": "existente@correo.com",
+        "password": "Password123",
+        "nombre": "Usuario",
+        "apellido": "Duplicado",
+        "telefono": "912345678",
+        "rut": "11111111-1",
+        "direccion": "Calle Falsa 123",
+        "ciudad": "Curicó",
+        "tipo_usuario": "comprador"
+    }
+    
+    # Llamar a la API
+    response = client.post('/api/register', json=registro_data)
+    
+    # Verificar
+    assert response.status_code == 400
+    assert response.is_json
+    json_data = response.get_json()
+    assert "El correo ya está registrado" in json_data.get("error", "")

@@ -56,10 +56,13 @@ def register():
     if tipo_usuario not in {"vendedor", "comprador"}:
         return jsonify({"error": "El tipo de usuario debe ser 'vendedor' o 'comprador'."}), 400
 
-    # Verificar si el usuario ya existe en Supabase
-    existente = obtener_usuario_por_email(email)
-    if existente:
-        return jsonify({"error": "El correo ya está registrado."}), 400
+    try:
+        existente = obtener_usuario_por_email(email)
+        if existente:
+            return jsonify({"error": "El correo ya está registrado."}), 400
+    except Exception as e:
+        # (Si falla la BD, no dejamos registrar)
+        return jsonify({"error": f"Error al verificar el correo: {str(e)}"}), 500
 
     try:
         # Crear usuario en Supabase con contraseña hasheada usando Argon2
