@@ -8,7 +8,7 @@ La metodología utilizada en las primeras fases del proyecto se distinguió por 
 
 Desde el comienzo del proyecto se estableció una estructura de trabajo colaborativa que permitió distribuir responsabilidades y mantener un avance constante. Para ello, se realizó:
 
-- **Asignación de roles:** cada integrante asumió un rol concreto (backend, frontend, documentación, QA, líder de integración), lo que facilitó la especialización y la coordinación.
+- **Asignación de roles:** cada integrante asumió un rol concreto (backend, frontend, documentación/QA y líder tecnico), lo que facilitó la especialización y la coordinación.
 - **Uso de Trello como tablero Kanban:** la planificación y el seguimiento de tareas se realizaron mediante listas de “To do”, “In progress” y “Done”. Esto permitió visualizar el estado del proyecto, registrar avances y mantener una comunicación clara.
 - **División del proyecto en hitos:** el desarrollo fue organizado por etapas, permitiendo establecer prioridades y objetivos específicos para cada una. 
 
