@@ -113,13 +113,15 @@
             </section>
             {% endif %}
 
-            {% if propiedad.get('coordenadas') %}
-            <section class="mapa">
-                <h2>Ubicación aproximada</h2>
-                <div id="mapa-propiedad" data-coords="{{ propiedad.get('coordenadas') }}"></div>
-            </section>
-            {% endif %}
         </section>
+
+        {% if propiedad.get('coordenadas') %}
+        <section class="mapa-card">
+            <h2>Ubicación aproximada</h2>
+            <p class="mapa-card__nota">El pin marca la zona referencial dentro de la ciudad.</p>
+            <div id="mapa-propiedad" data-coords="{{ propiedad.get('coordenadas') }}"></div>
+        </section>
+        {% endif %}
     </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>

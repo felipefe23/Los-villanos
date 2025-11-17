@@ -52,7 +52,10 @@
                         {% set precio = propiedad.get('precio') or 0 %}
                         <article class="tarjeta">
                             <div class="imagen" aria-hidden="true">
-                                {% if propiedad.get('img') %}
+                                {% set portada = propiedad.get('imagen_portada') %}
+                                {% if portada %}
+                                    <img src="{{ portada }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
+                                {% elif propiedad.get('img') %}
                                     <img src="data:image/jpeg;base64,{{ propiedad.get('img') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
                                 {% else %}
                                     <div class="imagen-placeholder">Sin imagen</div>
@@ -305,6 +308,7 @@
             const bounds = [];
             propiedadesVenta.forEach(propiedad => {
                 const coords = propiedad.coordenadas || '';
+                const portada = propiedad.imagen_portada || (propiedad.img ? `data:image/jpeg;base64,${propiedad.img}` : null);
                 const partes = coords.split(',').map(parseFloat);
                 if (partes.length === 2 && !Number.isNaN(partes[0]) && !Number.isNaN(partes[1])) {
                     const marker = L.marker(partes).addTo(grupo);
@@ -324,7 +328,7 @@
                         ${precioUF > 0 ? `<strong>(Aprox. ${precioUF} UF)</strong><br>` : ''}
                         Ubicación: ${propiedad.localizacion || 'No indicada'}<br>
                         Propietario: ${propietarioNombre || propietarioId}<br>
-                        ${propiedad.img ? `<img src="data:image/jpeg;base64,${propiedad.img}" 
+                        ${portada ? `<img src="${portada}" 
                             alt="Imagen de propiedad" 
                             style="max-width:150px;max-height:100px;object-fit:cover;margin-top:4px;border:1px solid #ccc;">` : ''}
                         ${detalleUrl ? `<div style="margin-top:8px;"><a href="${detalleUrl}" style="color:#2563eb;font-weight:600;">Ver detalles</a></div>` : ''}

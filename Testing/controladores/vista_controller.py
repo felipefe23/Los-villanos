@@ -9,6 +9,23 @@ from servicios.propiedad_service import leer_propiedades
 from httpx import TimeoutException
 from utils.helpers import obtener_valor_uf_actual
 
+IMAGENES_ESPECIALES = {
+    1: "https://www.imsa-adportas.cl/web/wp-content/uploads/2021/05/cord3-ch2f.jpg",
+    2: "https://images.homify.com/image/upload/a_0/v1483627329/p/photo/image/1759556/3339.jpg",
+    3: "https://www.imsa-adportas.cl/web/wp-content/uploads/2021/05/cord3-ch1f.jpg",
+    4: "https://dbtotl1p8f93r.cloudfront.net//content/uploads/2021/04/AH_dest_945x650.jpg",
+    7: "https://resources.estateathome.com/toctoc/resources/img/1587994/d1cfu8v5n1wsm.cloudfront.net-toctoc-fotos-20201016-1587994-n_wm_engel_volkers_propiedades_249071_b8062746a1ca9b4dd35e3f05ae66a24fc0fddc39.jpg",
+    8: "https://resources.estateathome.com/toctoc/resources/img/1553603/d1cfu8v5n1wsm.cloudfront.net-toctoc-fotos-20200905-1553603-n_wm_engel_volkers_propiedades_253157_a30308fca6ef64ecdc0c4926a43d672b226468ef.jpg",
+}
+
+
+def _imagen_especial(propiedad):
+    try:
+        prop_id = int(propiedad.get("id"))
+    except (TypeError, ValueError):
+        return None
+    return IMAGENES_ESPECIALES.get(prop_id)
+
 def _resolver_imagen_src(valor):
     if not valor:
         return None
@@ -59,7 +76,15 @@ def _galeria_para_propiedad(propiedad):
         src = _resolver_imagen_src(imagen)
         if src and src not in resultado:
             resultado.append(src)
+    especial = _imagen_especial(propiedad)
+    if especial:
+        resultado = [especial] + [img for img in resultado if img != especial]
     return resultado
+
+
+def _imagen_portada(propiedad):
+    galeria = _galeria_para_propiedad(propiedad)
+    return galeria[0] if galeria else None
 
 ## TESTING DE MANEJO DE ERRORES !
 
@@ -171,6 +196,7 @@ def comprador_dashboard_view():
             copia = p.copy()
             prop_id = copia.get('propietario')
             copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
+            copia['imagen_portada'] = _imagen_portada(copia)
             propiedad_id = copia.get('id')
             if propiedad_id is not None:
                 copia['detalle_url'] = url_for('comprador_propiedad_detalle', propiedad_id=propiedad_id)
@@ -334,6 +360,7 @@ def ventas_view():
             copia = p.copy()
             prop_id = copia.get('propietario')
             copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
+            copia['imagen_portada'] = _imagen_portada(copia)
             
             # Añadimos la URL de detalle para los popups del mapa
             copia['detalle_url'] = url_for('comprador_propiedad_detalle', propiedad_id=copia.get('id'))
