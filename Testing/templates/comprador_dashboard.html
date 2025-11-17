@@ -126,13 +126,23 @@
             try {
                 const usuario = await Loader.wrap(async () => {
                     const res = await fetch('/api/me', { credentials: 'include' });
+                    
+                    if (res.status === 401 || res.status === 403) {
+                        // Si el servidor dice "No autorizado", BORRAMOS la memoria local
+                        localStorage.removeItem('usuarioActual');
+                        return null;
+                    }
+                    
+
                     if (!res.ok) {
                         return null;
                     }
                     const data = await res.json();
+                    // Guardamos la sesion valida
                     try { localStorage.setItem('usuarioActual', JSON.stringify(data)); } catch (e) { /* ignore */ }
                     return data;
                 }, 'Recuperando tu perfil...');
+                
                 if (usuario) {
                     return usuario;
                 }
@@ -140,6 +150,7 @@
                 console.warn('No fue posible obtener el usuario desde la sesión', e);
             }
 
+            // Solo usamos el localStorage si NO hubo un error 401 explícito antes
             try {
                 const guardado = localStorage.getItem('usuarioActual');
                 if (!guardado) return null;
@@ -211,22 +222,22 @@
             obtenerUsuarioActual().then(usuario => {
                 const navLink = document.getElementById('main-nav-link');
 
-                if (!usuario) {
+                if (!usuario) {
                     // MODO PÚBLICO (/ventas)
-                    if (widget) widget.hidden = true;
+                if (widget) widget.hidden = true;
                     if (navLink) {
                         navLink.textContent = "Iniciar sesión →";
                         navLink.href = "{{ url_for('login_view') }}";
                     }
-                    return;
-                }
+                    return;
+                }
 
                 // MODO PRIVADO (/comprador)
                 if (navLink) {
                     navLink.textContent = "← Cerrar sesión";
                     navLink.href = "{{ url_for('logout') }}"; 
                 }
-                poblarWidget(usuario)
+                    poblarWidget(usuario)
 
                 trigger.addEventListener('click', () => {
                     const abierta = widget.classList.toggle('user-widget--abierta');

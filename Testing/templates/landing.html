@@ -23,21 +23,27 @@
     </header>
 
     <main class="hero-section">
-        <div class="hero-content container">
-            <h1>Encuentra tu próximo hogar en Curicó</h1>
-            <p class="subtitle">
-                La plataforma digital para comprar y vender propiedades en la Región del Maule.
-                Explora el catálogo o publica tu propiedad hoy.
-            </p>
-            
-            <div class="hero-cta">
-                <a href="{{ url_for('ventas_view') }}" class="btn-primary">
-                    Ver Propiedades en Venta
-                </a>
-                <a href="{{ url_for('vendedor_register_view') }}" class="btn-secondary">
-                    Soy Vendedor, quiero publicar
-                </a>
+        <div class="hero-grid container"> <div class="hero-text">
+                <h1>Encuentra tu próximo hogar en Curicó</h1>
+                <p class="subtitle">
+                    La plataforma digital para comprar y vender propiedades en la Región del Maule.
+                    Explora el catálogo o publica tu propiedad hoy.
+                </p>
+                
+                <div class="hero-cta">
+                    <a href="{{ url_for('ventas_view') }}" class="btn-primary">
+                        Ver Propiedades en Venta
+                    </a>
+                    <a href="{{ url_for('vendedor_register_view') }}" class="btn-secondary">
+                        Soy Vendedor, quiero publicar
+                    </a>
+                </div>
             </div>
+
+            <div class="hero-image">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Grande ViviendaDigital">
+            </div>
+            
         </div>
     </main>
 

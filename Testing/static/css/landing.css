@@ -94,91 +94,153 @@ body::after {
     box-shadow: 0 20px 32px rgba(37, 99, 235, 0.3);
 }
 
-
+/* --- Sección "Hero" --- */
 .hero-section {
-    padding: 120px 0;
-    text-align: center;
+    /* Hacemos que ocupe casi toda la pantalla para centrarlo bien */
+    min-height: 80vh; 
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    padding: 40px 0;
 }
 
-.hero-content {
+/* El contenedor principal ahora es un Grid */
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+    gap: 40px;
+    align-items: center;
+    
+    /* Estilo de tarjeta "Glass" (Mantenemos tu estilo) */
     background: rgba(248, 250, 252, 0.85);
     backdrop-filter: blur(22px);
-    border-radius: 22px;
-    padding: clamp(28px, 5vw, 40px);
-    display: grid;
-    gap: 20px;
-    box-shadow:
+    padding: 48px;
+    border-radius: 24px;
+    box-shadow: 
         0 25px 60px rgba(15, 23, 42, 0.35),
-        0 1px 0 rgba(255, 255, 255, 0.25) inset,
-        0 -1px 0 rgba(15, 23, 42, 0.1) inset;
+        0 1px 0 rgba(255, 255, 255, 0.25) inset;
+    border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-.hero-content h1 {
-    font-size: clamp(36px, 5vw, 56px);
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: 16px;
-    max-width: 700px;
-}
-
-.hero-content .subtitle {
-    font-size: clamp(18px, 2vw, 22px);
-    color: var(--text-subtle);
-    max-width: 600px;
-    margin-bottom: 40px;
-}
-
-.hero-cta {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.hero-cta .btn-primary {
+.hero-cta a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 16px 32px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    border: none;
-    border-radius: 14px;
-    color: var(--light-text);
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 16px;
     font-weight: 600;
-    font-size: 18px;
-    cursor: pointer;
     text-decoration: none;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+
+.hero-cta .btn-primary {
+    background: var(--primary); 
+    color: #ffffff; 
+    border: none;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
 .hero-cta .btn-primary:hover {
+    background: var(--primary-dark);
     transform: translateY(-3px);
-    box-shadow: 0 20px 32px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
 }
 
 
 .hero-cta .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px 32px;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     color: var(--text);
-    text-decoration: none;
-    border-radius: 14px;
-    font-size: 18px;
-    font-weight: 600;
-    transition: all 0.2s ease;
     border: 1px solid rgba(0, 0, 0, 0.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+
 .hero-cta .btn-secondary:hover {
-    background: #fff;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
     transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
+
+.hero-text {
+    text-align: left;
+}
+
+.hero-text h1 {
+    font-size: clamp(36px, 4vw, 52px); 
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.1;
+}
+
+.hero-text .subtitle {
+    font-size: 18px;
+    color: var(--text-subtle);
+    margin-bottom: 32px;
+    max-width: 500px;
+}
+
+
+.hero-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-image img {
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Animación de flotación suave */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+
+.hero-cta {
+    display: flex;
+    gap: 16px;
+}
+
+
+@media (max-width: 900px) {
+    .hero-grid {
+        grid-template-columns: 1fr; 
+        text-align: center;
+        gap: 32px;
+        padding: 32px;
+    }
+
+    .hero-text {
+        text-align: center;
+        order: 2; 
+    }
+    
+    .hero-text .subtitle {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-image {
+        order: 1; 
+    }
+    
+    .hero-image img {
+        max-width: 200px; 
+    }
+
+    .hero-cta {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
 
 .main-footer {
     text-align: center;
