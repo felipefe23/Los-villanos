@@ -21,7 +21,9 @@
                 {% for propiedad in propiedades %}
                     <article class="tarjeta">
                         <div class="imagen" aria-hidden="true">
-                            {% if propiedad.get('img') %}
+                            {% if propiedad.get('imagen_portada') %}
+                                <img src="{{ propiedad.get('imagen_portada') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
+                            {% elif propiedad.get('img') %}
                                 <img src="{{ propiedad.get('img') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
                             {% else %}
                                 <div class="imagen-placeholder">Sin imagen</div>

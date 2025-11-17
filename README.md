@@ -178,4 +178,35 @@ A la cual le definimos un tiempo de respuesta de 5 segundos para rescatar el val
 Respecto a esta misma, en su pagina se va actualizando de manera constante y en sus registros deja la fecha de la actualizacion y el valor nuevo.
 
 
+# Detalles de avance - Semana 12:
+En los avances de esta semana, avanzamos con lo propuesto e implementamos algo más que aporta una navegación más fluida e interesante para nuestros usuarios.
 
+# Validación para el Email
+Validación para el **email** por Base de Datos como por **Backend** y así mejorar el "Manejo de Errores" de nuestro proyecto.
+
+<img width="1510" height="333" alt="image" src="https://github.com/user-attachments/assets/e64a0f0a-e64a-449b-b9f4-4f7519a37a8d" />
+
+# Pruebas Unitarias
+
+Implementamos la carpeta /tests que tiene en su interior 9 pruebas unitarias con variadas llamadas.
+En esta entran errores 400, 403, 404, etc.
+
+<img width="2880" height="1800" alt="image" src="https://github.com/user-attachments/assets/ab354a4e-79db-4f08-ab76-ea9a1749a91e" />
+<img width="2880" height="1800" alt="image" src="https://github.com/user-attachments/assets/9b4da800-516f-4fa9-a1f4-dc461c53efde" />
+
+
+# FLAKE8 (Linter)
+Implementamos el linter de **Flake8** para nuestro proyecto:
+
+<img width="2880" height="1800" alt="image" src="https://github.com/user-attachments/assets/ff41403d-8e3a-4d27-8151-ad9818fe22ca" />
+
+
+
+# Actualización de Endpoints
+
+Los **Endpoints** se han actualizado y testeado. Se actualizó y cambió a rutas **públicas** las ventanas de **Comprador** para mejorar y facilitar el ingreso a los usuarios a nuestra **página web**. No los sobrecargamos con la creación de una cuenta antes de ver nuestras propiedades publicadas, solo se **pedirá** una cuenta al momento de querer interactuar más allá de solo ver los detalles de la propiedad.
+Se han creado rutas de prueba para el testeo de los **códigos** de errores, como los 404, 400, 403, 500, etc.
+
+<img width="2880" height="1800" alt="image" src="https://github.com/user-attachments/assets/c235f204-ca9c-49a0-bf40-a538619f11c6" />
+Nuevo landing con las rutas **públicas** :
+<img width="2839" height="1555" alt="image" src="https://github.com/user-attachments/assets/37a0d1fd-1d18-4416-87a2-a54aefcf271a" />
