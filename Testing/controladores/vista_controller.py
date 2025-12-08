@@ -176,17 +176,18 @@ def comprador_register_view():
 
 
 # Funcionamiento: Protegido por login (comprador/admin).
-# Obtiene todas las propiedades y usuarios.
-# Filtra las propiedades para mostrar solo las 'activas'.
-# Asocia el nombre del propietario a cada propiedad.
-# Renderiza el panel del comprador con la lista filtrada.
+# Captura los filtros de la URL (request.args).
+# Llama a 'leer_propiedades' pasando esos filtros para obtener la lista reducida.
+# Filtra adicionalmente para asegurar que solo se vean propiedades 'activas'.
+# Asocia el nombre del propietario y renderiza el panel.
 @app.get("/comprador")
 @login_required('comprador', 'administrador', 'admin')
 def comprador_dashboard_view():  
-    # Inicio del bloque try para capturar errores
     try:
         valor_uf_actual = obtener_valor_uf_actual()
-        propiedades = leer_propiedades()
+    
+        propiedades = leer_propiedades(filtros=request.args)
+
         usuarios = leer_usuarios()
         nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
         propiedades_filtradas = []
@@ -203,11 +204,9 @@ def comprador_dashboard_view():
             propiedades_filtradas.append(copia)
         return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas, valor_uf=valor_uf_actual)
     
-    # Bloque para capturar el Timeout (devuelve HTML)
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
         return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
-    # Bloque para capturar errores generales
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
@@ -336,24 +335,23 @@ def api_me():
         return jsonify({"error": f"Ocurrió un error inesperado: {e}"}), 500
 
 
-# Funcionamiento: Ruta pública (sin login) para ver propiedades.
-# Obtiene el valor de la UF, todos los usuarios y todas las propiedades.
-# Filtra la lista de propiedades para mostrar solo las 'activas' Y 'en venta'.
-# Renderiza la plantilla 'comprador_dashboard.html' (reutilizándola).
-# El JavaScript de la plantilla se encarga de ocultar las funciones de usuario.
+# Funcionamiento: Ruta pública (sin login) para el catálogo de ventas.
+# Obtiene el valor UF y las propiedades (aplicando filtros de búsqueda desde la URL).
+# Filtra la lista para asegurar que solo se muestren propiedades 'activas' y en estado 'venta'.
+# Renderiza el template 'comprador_dashboard.html' (reutilizando la vista del comprador).
+# Maneja errores de Timeout (504) y excepciones generales (500).
 @app.get("/ventas")
 def ventas_view():
     try:
         valor_uf_actual = obtener_valor_uf_actual()
-        propiedades = leer_propiedades()
-        usuarios = leer_usuarios() # Necesario para los nombres
+        propiedades = leer_propiedades(filtros=request.args) # ¡Mantiene la búsqueda!
+        usuarios = leer_usuarios() 
         
-        # (Esto asegura que los datos sean los mismos que en el dashboard)
         nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
         
         propiedades_venta = []
         for p in propiedades:
-            # Filtramos por 'activo' Y 'venta'
+            # Filtramos solo activas y en venta
             if not p.get('activo', True) or p.get("estado", "").lower() != "venta":
                 continue
             
@@ -361,17 +359,15 @@ def ventas_view():
             prop_id = copia.get('propietario')
             copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
             copia['imagen_portada'] = _imagen_portada(copia)
-            
-            # Añadimos la URL de detalle para los popups del mapa
             copia['detalle_url'] = url_for('comprador_propiedad_detalle', propiedad_id=copia.get('id'))
             
             propiedades_venta.append(copia)
 
+        
         return render_template(
-            "comprador_dashboard.html", 
+            "comprador_dashboard.html",
             propiedades=propiedades_venta,
             valor_uf=valor_uf_actual
-            # No pasamos 'usuario', el JS se encargara
         )
     
     except TimeoutException:
@@ -380,8 +376,8 @@ def ventas_view():
     except Exception as e:
         print(f"ERROR: Error general en {request.path}: {e}")
         return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
-
-
+    
+    
 # Funcionamiento: Manejador de errores global.
 # Se activa automáticamente cuando Flask no
 # encuentra una ruta (error 404).

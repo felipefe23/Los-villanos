@@ -1,11 +1,62 @@
 from persistencia.base_datos import obtener_propiedades
 
-# Funciones que se utilizan en la ruta de las propiedades
+# Funcionamiento: Lee las propiedades de la BD y aplica filtros si se envían.
+# Argumentos opcionales:
+# - filtros (dict): Diccionario con claves 'q', 'tipo', 'estado', 'min_precio', 'max_precio'.
+# Lógica:
+# 1. Obtiene todas las propiedades.
+# 2. Si hay 'q' (texto), busca coincidencias en nombre, descripción o localización (insensible a mayúsculas).
+# 3. Si hay 'tipo' o 'estado', filtra por coincidencia exacta.
+# 4. Si hay rango de precios, filtra los valores numéricos.
+def leer_propiedades(filtros=None):
+    propiedades = obtener_propiedades()
+    
+    if not filtros:
+        return propiedades
 
-# Funcionamiento: Abstracción simple para leer propiedades.
-# Llama a 'obtener_propiedades' de la capa de persistencia (base_datos.py) y retorna los resultados.
-def leer_propiedades():
-    return obtener_propiedades()
+    resultado = []
+    
+    q = (filtros.get('q') or '').strip().lower()
+    tipo = (filtros.get('tipo') or '').strip().lower()
+    estado = (filtros.get('estado') or '').strip().lower()
+    
+    try:
+        min_precio = int(filtros.get('min_precio') or 0)
+    except ValueError:
+        min_precio = 0
+        
+    try:
+        max_precio = int(filtros.get('max_precio') or 0)
+    except ValueError:
+        max_precio = 0
+
+    for p in propiedades:
+        # Filtro de Texto
+        if q:
+            # Buscamos en nombre, ubicación y descripción
+            texto_propiedad = f"{p.get('nombre','')} {p.get('localizacion','')} {p.get('descripcion','')}".lower()
+            if q not in texto_propiedad:
+                continue # Si no encuentra el texto, salta a la siguiente propiedad
+
+        # Filtro Tipo 
+        if tipo and str(p.get('tipo', '')).lower() != tipo:
+            continue
+
+        # Filtro Estado 
+        if estado and str(p.get('estado', '')).lower() != estado:
+            continue
+
+        # Filtro Precio
+        precio = int(p.get('precio') or 0)
+        if min_precio > 0 and precio < min_precio:
+            continue
+        if max_precio > 0 and precio > max_precio:
+            continue
+
+        # Si pasa todos los filtros, se agrega
+        resultado.append(p)
+
+    return resultado
 
 
 # Funcionamiento: Función interna de ayuda (helper).

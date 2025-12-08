@@ -39,12 +39,41 @@
         </div>
     </header>
 
-    <main class="contenedor principal">
-        <div class="selector-vistas" role="tablist" aria-label="Selector de vista">
-            <button class="btn-opcion activa" data-target="mosaico" role="tab" aria-selected="true">Ver mosaico</button>
-            <button class="btn-opcion" data-target="mapa" role="tab" aria-selected="false">Ver mapa</button>
-        </div>
+    <main class="contenedor principal">   
+        </section>
+        <div class="barra-herramientas">
+            <div class="selector-vistas" role="tablist" aria-label="Selector de vista">
+                <button class="btn-opcion activa" data-target="mosaico" role="tab" aria-selected="true">Ver mosaico</button>
+                <button class="btn-opcion" data-target="mapa" role="tab" aria-selected="false">Ver mapa</button>
+            </div>
+            <form action="" method="GET" class="form-busqueda-inline">
+                <input type="text" name="q" placeholder="Buscar..." value="{{ request.args.get('q', '') }}">
+        
+                <select name="tipo">
+                    <option value="">Tipo</option>
+                    <option value="Casa" {% if request.args.get('tipo') == 'Casa' %}selected{% endif %}>Casa</option>
+                    <option value="Departamento" {% if request.args.get('tipo') == 'Departamento' %}selected{% endif %}>Depto</option>
+                    <option value="Terreno" {% if request.args.get('tipo') == 'Terreno' %}selected{% endif %}>Terreno</option>
+                </select>
 
+                <select name="estado">
+                    <option value="">Estado</option>
+                    <option value="venta" {% if request.args.get('estado') == 'venta' %}selected{% endif %}>Venta</option>
+                    <option value="arriendo" {% if request.args.get('estado') == 'arriendo' %}selected{% endif %}>Arriendo</option>
+                </select>
+        
+                <div class="grupo-precio">
+                    <input type="number" name="min_precio" placeholder="Min" value="{{ request.args.get('min_precio', '') }}">
+                    <span>-</span>
+                    <input type="number" name="max_precio" placeholder="Max" value="{{ request.args.get('max_precio', '') }}">
+                </div>
+
+                <button type="submit" class="btn-buscar">🔍</button>
+                {% if request.args %}
+                    <a href="{{ request.path }}" class="btn-reset" title="Limpiar">×</a>
+                {% endif %}
+            </form>
+        </div>
         <section id="vista-mosaico" class="vista activa" role="tabpanel" aria-label="Mosaico de propiedades">
             {% if propiedades %}
                 <div class="mosaico">
