@@ -1,4 +1,5 @@
 import json
+import re
 from flask import render_template, jsonify, session, redirect, url_for, request, abort
 from utils.helpers import _prefers_json
 from app import app
@@ -10,12 +11,12 @@ from httpx import TimeoutException
 from utils.helpers import obtener_valor_uf_actual
 
 IMAGENES_ESPECIALES = {
-    1: "https://www.imsa-adportas.cl/web/wp-content/uploads/2021/05/cord3-ch2f.jpg",
+    1: "https://images.homify.com/v1492435533/p/photo/image/1958308/_FV_0284.jpg",
     2: "https://images.homify.com/image/upload/a_0/v1483627329/p/photo/image/1759556/3339.jpg",
     3: "https://www.imsa-adportas.cl/web/wp-content/uploads/2021/05/cord3-ch1f.jpg",
     4: "https://dbtotl1p8f93r.cloudfront.net//content/uploads/2021/04/AH_dest_945x650.jpg",
-    7: "https://resources.estateathome.com/toctoc/resources/img/1587994/d1cfu8v5n1wsm.cloudfront.net-toctoc-fotos-20201016-1587994-n_wm_engel_volkers_propiedades_249071_b8062746a1ca9b4dd35e3f05ae66a24fc0fddc39.jpg",
-    8: "https://resources.estateathome.com/toctoc/resources/img/1553603/d1cfu8v5n1wsm.cloudfront.net-toctoc-fotos-20200905-1553603-n_wm_engel_volkers_propiedades_253157_a30308fca6ef64ecdc0c4926a43d672b226468ef.jpg",
+    7: "https://images.homify.com/v1492435533/p/photo/image/1958308/_FV_0284.jpg",
+    8: "https://images.adsttc.com/media/images/5a58/a7ca/f197/cc1f/8600/0182/newsletter/S3_CDS-5766.jpg?1515759553",
 }
 
 
@@ -26,14 +27,28 @@ def _imagen_especial(propiedad):
         return None
     return IMAGENES_ESPECIALES.get(prop_id)
 
+_BASE64_RE = re.compile(r'^[A-Za-z0-9+/=\n\r]+$')
+_IMAGE_PATH_RE = re.compile(r'/[^/]+\.(jpe?g|png|webp|gif)(\?.*)?$', re.IGNORECASE)
+
+def _parece_base64(cadena: str) -> bool:
+    """Heurística simple para diferenciar base64 crudo de rutas absolutas."""
+    texto = (cadena or "").strip()
+    if len(texto) < 50:
+        return False
+    return bool(_BASE64_RE.match(texto))
+
 def _resolver_imagen_src(valor):
     if not valor:
         return None
     dato = str(valor).strip()
     if not dato:
         return None
-    if dato.startswith(("http://", "https://", "data:", "/")):
+    if dato.startswith(("http://", "https://", "data:")):
         return dato
+    if dato.startswith("/") and _IMAGE_PATH_RE.search(dato):
+        return dato
+    if _parece_base64(dato):
+        return f"data:image/jpeg;base64,{dato}"
     return f"data:image/jpeg;base64,{dato}"
 
 
