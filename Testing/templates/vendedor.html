@@ -206,9 +206,18 @@
   }
 
   cancelEditBtn.addEventListener('click', () => resetForm());
+
   toggleFormBtn.addEventListener('click', () => {
-    resetForm();
-    abrirPanel();
+      const coordenadasPrevias = coordsInput.value;
+    
+      resetForm();
+  
+      if (coordenadasPrevias) {
+          coordsInput.value = coordenadasPrevias;
+        
+          mostrarMensaje('Coordenadas capturadas del mapa.', 'success'); 
+      }
+      abrirPanel();
   });
 
   const widget = document.getElementById('userWidget');
@@ -533,13 +542,29 @@
 
   function convertirArchivoABase64(file) {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64 = reader.result.split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = (error) => reject(error);
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                // Crear un canvas para redimensionar y comprimir la imagen
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Redimensionar la imagen si es muy grande
+                const maxWidth = 800;
+                const scaleSize = maxWidth / img.width;
+                canvas.width = maxWidth;
+                canvas.height = img.height * scaleSize;
+
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Calidad al 70%
+                resolve(dataUrl.split(',')[1]);
+            };
+        };
+        reader.onerror = (error) => reject(error);
     });
   }
 

@@ -83,16 +83,15 @@
                             <div class="imagen" aria-hidden="true">
                                 {% set portada = propiedad.get('imagen_portada') %}
                                 {% if portada %}
-                                    <img src="{{ portada }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
+                                    <img src="{{ portada }}" alt="Imagen de {{ propiedad.get('nombre') }}" loading="lazy">
                                 {% elif propiedad.get('img') %}
-                                    <img src="data:image/jpeg;base64,{{ propiedad.get('img') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}">
+                                    <img src="data:image/jpeg;base64,{{ propiedad.get('img') }}" alt="Imagen de {{ propiedad.get('nombre', 'Propiedad sin nombre') }}" loading="lazy">
                                 {% else %}
                                     <div class="imagen-placeholder">Sin imagen</div>
                                 {% endif %}
                             </div>
                             <div class="contenido">
                                 <h2>{{ propiedad.get('nombre', 'Propiedad sin nombre') }}</h2>
-                                
                                 <p class="precio">
                                     ${{ '{:,}'.format(precio|int).replace(',', '.') }}
                                     {% if propiedad.get('estado') == 'arriendo' %} /mes{% endif %}
@@ -122,7 +121,33 @@
                         </article>
                     {% endfor %}
                 </div>
-            {% else %}
+
+                {% if paginacion and paginacion.paginas > 1 %}
+                <div class="paginacion-container">
+                    <div class="paginacion">
+                        {% if paginacion.actual > 1 %}
+                            <a href="{{ url_for(request.endpoint, page=paginacion.actual-1, **filtros) }}" class="btn-paginacion">
+                                &laquo; Anterior
+                            </a>
+                        {% else %}
+                            <span class="btn-paginacion disabled">&laquo; Anterior</span>
+                        {% endif %}
+
+                        <span class="info-paginacion">
+                            Página {{ paginacion.actual }} de {{ paginacion.paginas }}
+                        </span>
+
+                        {% if paginacion.actual < paginacion.paginas %}
+                            <a href="{{ url_for(request.endpoint, page=paginacion.actual+1, **filtros) }}" class="btn-paginacion">
+                                Siguiente &raquo;
+                            </a>
+                        {% else %}
+                            <span class="btn-paginacion disabled">Siguiente &raquo;</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% else %}
                 <div class="sin-resultados">
                     <h2>No hay propiedades publicadas en venta por ahora.</h2>
                     <p>Cuando se agreguen nuevas viviendas aparecerán tanto en el mosaico como en el mapa.</p>

@@ -185,37 +185,60 @@ def comprador_register_view():
 def comprador_dashboard_view():  
     try:
         valor_uf_actual = obtener_valor_uf_actual()
-    
-        propiedades = leer_propiedades(filtros=request.args)
+        
+        # Paginación: Página 1 por defecto
+        try: page = int(request.args.get('page', 1))
+        except ValueError: page = 1
+
+        # Llamamos al servicio PIDIENDO paginación explícitamente
+        resultado = leer_propiedades(filtros=request.args, pagina=page, por_pagina=9)
+        
+        # Desempaquetamos el diccionario
+        propiedades_data = resultado['propiedades']
+        paginacion = {
+            'total': resultado['total'],
+            'paginas': resultado['paginas'],
+            'actual': resultado['actual']
+        }
 
         usuarios = leer_usuarios()
         nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
+        
         propiedades_filtradas = []
-        for p in propiedades:
-            if not p.get('activo', True):
-                continue
+        for p in propiedades_data:
+            if not p.get('activo', True): continue
+            
             copia = p.copy()
             prop_id = copia.get('propietario')
             copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
             copia['imagen_portada'] = _imagen_portada(copia)
-            propiedad_id = copia.get('id')
-            if propiedad_id is not None:
-                copia['detalle_url'] = url_for('comprador_propiedad_detalle', propiedad_id=propiedad_id)
+            
+            # URL de detalle para el mapa y botones
+            if copia.get('id'):
+                copia['detalle_url'] = url_for('comprador_propiedad_detalle', propiedad_id=copia.get('id'))
+                
             propiedades_filtradas.append(copia)
-        return render_template("comprador_dashboard.html", propiedades=propiedades_filtradas, valor_uf=valor_uf_actual)
-    
+        
+        # Preparamos los filtros para mantener en la paginación
+        filtros_limpios = request.args.copy()
+        filtros_limpios.pop('page', None) 
+        
+
+        return render_template(
+            "comprador_dashboard.html", 
+            propiedades=propiedades_filtradas, 
+            valor_uf=valor_uf_actual,
+            paginacion=paginacion,
+            filtros=filtros_limpios
+        )
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
-        return render_template("error.html", message="La base de datos tardó demasiado en responder (Timeout)."), 504
+        return render_template("error.html", message="La base de datos tardó demasiado."), 504
     except Exception as e:
-        print(f"ERROR: Error general en {request.path}: {e}")
-        return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
+        print(f"ERROR: {e}")
+        return render_template("error.html", message=f"Error inesperado: {e}"), 500
 
-# Funcionamiento: Ruta pública para ver el detalle de una propiedad.
-# Busca la propiedad en la BD usando el 'propiedad_id' de la URL.
-# Si la propiedad no existe o no está 'activa', muestra la página de error 404.
-# Busca el objeto completo del 'propietario' (vendedor) para mostrar sus detalles.
-# Prepara la galería de imágenes y obtiene el valor de la UF.
+
 @app.get("/comprador/propiedades/<int:propiedad_id>")
 def comprador_propiedad_detalle(propiedad_id):
     try:
@@ -335,48 +358,66 @@ def api_me():
         return jsonify({"error": f"Ocurrió un error inesperado: {e}"}), 500
 
 
-# Funcionamiento: Ruta pública (sin login) para el catálogo de ventas.
-# Obtiene el valor UF y las propiedades (aplicando filtros de búsqueda desde la URL).
-# Filtra la lista para asegurar que solo se muestren propiedades 'activas' y en estado 'venta'.
-# Renderiza el template 'comprador_dashboard.html' (reutilizando la vista del comprador).
-# Maneja errores de Timeout (504) y excepciones generales (500).
+# Funcionamiento: Ruta pública para el catálogo de ventas.
+# Obtiene el valor UF y prepara filtros (forzando estado='venta').
+# Gestiona la paginación (página actual) y llama al servicio para obtener datos recortados.
+# Enriquece las propiedades (nombres, imágenes de portada, URLs de detalle).
+# Limpia los filtros (quita 'page') para generar correctamente los enlaces de paginación.
 @app.get("/ventas")
 def ventas_view():
     try:
         valor_uf_actual = obtener_valor_uf_actual()
-        propiedades = leer_propiedades(filtros=request.args) # ¡Mantiene la búsqueda!
-        usuarios = leer_usuarios() 
         
+        filtros_publicos = request.args.copy()
+        filtros_publicos['estado'] = 'venta' 
+        
+        try: page = int(request.args.get('page', 1))
+        except ValueError: page = 1
+            
+        # Llamada con paginación
+        resultado = leer_propiedades(filtros=filtros_publicos, pagina=page, por_pagina=9)
+        
+        propiedades_data = resultado['propiedades']
+        paginacion = {
+            'total': resultado['total'],
+            'paginas': resultado['paginas'],
+            'actual': resultado['actual']
+        }
+        
+        usuarios = leer_usuarios() 
         nombres = {u.get('id'): f"{u.get('nombre','').strip()} {u.get('apellido','').strip()}".strip() for u in usuarios}
         
         propiedades_venta = []
-        for p in propiedades:
-            # Filtramos solo activas y en venta
-            if not p.get('activo', True) or p.get("estado", "").lower() != "venta":
-                continue
+        for p in propiedades_data:
+            if not p.get('activo', True): continue
             
             copia = p.copy()
             prop_id = copia.get('propietario')
             copia['propietario_nombre'] = nombres.get(prop_id) if nombres.get(prop_id) else None
             copia['imagen_portada'] = _imagen_portada(copia)
-            copia['detalle_url'] = url_for('comprador_propiedad_detalle', propiedad_id=copia.get('id'))
+            if copia.get('id'):
+                copia['detalle_url'] = url_for('comprador_propiedad_detalle', propiedad_id=copia.get('id'))
             
             propiedades_venta.append(copia)
 
+        # Preparar filtros limpios para paginación
+        filtros_limpios = request.args.copy()
+        filtros_limpios.pop('page', None)
         
+
         return render_template(
-            "comprador_dashboard.html",
+            "comprador_dashboard.html", 
             propiedades=propiedades_venta,
-            valor_uf=valor_uf_actual
+            valor_uf=valor_uf_actual,
+            paginacion=paginacion,
+            filtros=filtros_limpios 
         )
-    
     except TimeoutException:
         print(f"ERROR: Timeout en la ruta {request.path}")
-        return render_template("error.html", message="El catálogo no está disponible (Timeout)."), 504
+        return render_template("error.html", message="La base de datos tardó demasiado."), 504
     except Exception as e:
-        print(f"ERROR: Error general en {request.path}: {e}")
-        return render_template("error.html", message=f"Ocurrió un error inesperado: {e}"), 500
-    
+        print(f"ERROR: {e}")
+        return render_template("error.html", message=f"Error inesperado: {e}"), 500
     
 # Funcionamiento: Manejador de errores global.
 # Se activa automáticamente cuando Flask no

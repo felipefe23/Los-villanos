@@ -1,63 +1,67 @@
 from persistencia.base_datos import obtener_propiedades
+import math
 
-# Funcionamiento: Lee las propiedades de la BD y aplica filtros si se envían.
-# Argumentos opcionales:
-# - filtros (dict): Diccionario con claves 'q', 'tipo', 'estado', 'min_precio', 'max_precio'.
-# Lógica:
-# 1. Obtiene todas las propiedades.
-# 2. Si hay 'q' (texto), busca coincidencias en nombre, descripción o localización (insensible a mayúsculas).
-# 3. Si hay 'tipo' o 'estado', filtra por coincidencia exacta.
-# 4. Si hay rango de precios, filtra los valores numéricos.
-def leer_propiedades(filtros=None):
+# Funcionamiento: Lee propiedades con filtrado y paginación opcional.
+# Si se pasa 'pagina' y 'por_pagina': Retorna un DICT con datos de paginación.
+# Si NO se pasan: Retorna una LISTA simple (para compatibilidad con el resto del sistema).
+def leer_propiedades(filtros=None, pagina=None, por_pagina=None):
     propiedades = obtener_propiedades()
     
-    if not filtros:
+    # Filtrado 
+    filtradas = []
+    
+    # Si no hay filtros y no hay paginación, retorno rápido
+    if not filtros and not pagina:
         return propiedades
 
-    resultado = []
+    q = (filtros.get('q') or '').strip().lower() if filtros else ''
+    tipo = (filtros.get('tipo') or '').strip().lower() if filtros else ''
+    estado = (filtros.get('estado') or '').strip().lower() if filtros else ''
     
-    q = (filtros.get('q') or '').strip().lower()
-    tipo = (filtros.get('tipo') or '').strip().lower()
-    estado = (filtros.get('estado') or '').strip().lower()
-    
-    try:
-        min_precio = int(filtros.get('min_precio') or 0)
-    except ValueError:
-        min_precio = 0
-        
-    try:
-        max_precio = int(filtros.get('max_precio') or 0)
-    except ValueError:
-        max_precio = 0
+    min_precio = 0
+    max_precio = 0
+    if filtros:
+        try: min_precio = int(filtros.get('min_precio') or 0)
+        except ValueError: min_precio = 0
+        try: max_precio = int(filtros.get('max_precio') or 0)
+        except ValueError: max_precio = 0
 
     for p in propiedades:
-        # Filtro de Texto
+        # Filtro Texto
         if q:
-            # Buscamos en nombre, ubicación y descripción
-            texto_propiedad = f"{p.get('nombre','')} {p.get('localizacion','')} {p.get('descripcion','')}".lower()
-            if q not in texto_propiedad:
-                continue # Si no encuentra el texto, salta a la siguiente propiedad
-
-        # Filtro Tipo 
-        if tipo and str(p.get('tipo', '')).lower() != tipo:
-            continue
-
-        # Filtro Estado 
-        if estado and str(p.get('estado', '')).lower() != estado:
-            continue
-
+            texto = f"{p.get('nombre','')} {p.get('localizacion','')} {p.get('descripcion','')}".lower()
+            if q not in texto: continue
+        # Filtro Tipo
+        if tipo and str(p.get('tipo', '')).lower() != tipo: continue
+        # Filtro Estado
+        if estado and str(p.get('estado', '')).lower() != estado: continue
         # Filtro Precio
         precio = int(p.get('precio') or 0)
-        if min_precio > 0 and precio < min_precio:
-            continue
-        if max_precio > 0 and precio > max_precio:
-            continue
+        if min_precio > 0 and precio < min_precio: continue
+        if max_precio > 0 and precio > max_precio: continue
+        
+        filtradas.append(p)
 
-        # Si pasa todos los filtros, se agrega
-        resultado.append(p)
-
-    return resultado
-
+    # Paginación (Solo si se solicita explícitamente)
+    if pagina is not None and por_pagina is not None:
+        total_propiedades = len(filtradas)
+        total_paginas = math.ceil(total_propiedades / por_pagina)
+        
+        if pagina < 1: pagina = 1
+        if pagina > total_paginas and total_paginas > 0: pagina = total_paginas
+        
+        inicio = (pagina - 1) * por_pagina
+        fin = inicio + por_pagina
+        
+        return {
+            "propiedades": filtradas[inicio:fin],
+            "total": total_propiedades,
+            "paginas": total_paginas,
+            "actual": pagina
+        }
+    
+    # Retorno Clásico (Para Admin y Validaciones)
+    return filtradas
 
 # Funcionamiento: Función interna de ayuda (helper).
 # Verifica si un rol de usuario (ej. 'admin') es considerado administrador, manejando mayúsculas o valores nulos (None).
