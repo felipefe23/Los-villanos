@@ -255,6 +255,7 @@ def comprador_dashboard_view():
 
 
 @app.get("/comprador/propiedades/<int:propiedad_id>")
+@login_required('comprador', 'administrador', 'admin', 'vendedor')
 def comprador_propiedad_detalle(propiedad_id):
     try:
         propiedad = obtener_propiedad_por_id(propiedad_id)
@@ -384,12 +385,11 @@ def ventas_view():
         valor_uf_actual = obtener_valor_uf_actual()
         
         filtros_publicos = request.args.copy()
-        filtros_publicos['estado'] = 'venta' 
         
         try: page = int(request.args.get('page', 1))
         except ValueError: page = 1
             
-        # Llamada con paginación
+        # Llamada con paginacion
         resultado = leer_propiedades(filtros=filtros_publicos, pagina=page, por_pagina=9)
         
         propiedades_data = resultado['propiedades']
