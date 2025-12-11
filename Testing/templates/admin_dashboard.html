@@ -36,6 +36,10 @@
         </button>
       </div>
     </div>
+      <div class="search-box">
+        <label for="searchPropInput">🔍 Buscar:</label>
+        <input type="text" id="searchPropInput" placeholder="Nombre, ID, ubicación...">
+      </div>
       <div class="table-wrapper">
         <table class="crud-table">
           <thead>
@@ -69,7 +73,12 @@
     <section class="card">
       <div class="card-header">
         <h2>Gestión de usuarios</h2>
-        </div>
+      </div>
+      
+      <div class="search-box">
+        <label for="searchUserInput">🔍 Buscar:</label>
+        <input type="text" id="searchUserInput" placeholder="Nombre, Email, ID..">
+      </div>
       <div class="table-wrapper">
         <table class="crud-table">
           <thead>
@@ -118,8 +127,6 @@
           <select id="tipo" required>
             <option value="Casa">Casa</option>
             <option value="Departamento">Departamento</option>
-            <option value="Terreno">Terreno</option>
-            <option value="Comercial">Comercial</option>
           </select>
         </label>
         <label>Estado
@@ -261,7 +268,7 @@ const formTitle = document.getElementById("formTitle");
 const imagenInput = document.getElementById("imagenFile");
 const imagenActualInfo = document.getElementById("imagenActualInfo");
 let imagenBase64Temporal = null;
-const searchPropInput = document.getElementById("searchId");
+const searchPropInput = document.getElementById("searchPropInput"); // Actualizado ID
 const propRows = Array.from(document.querySelectorAll("#propTableBody tr"));
 const confirmModal = document.getElementById("confirmModal");
 const confirmTitle = document.getElementById("confirmModalTitle");
@@ -280,6 +287,44 @@ const hasCustomConfirm = Boolean(
 let confirmResolver = null;
 let lastFocusedElement = null;
 const FEEDBACK_CLASSES = ["is-error", "is-success"];
+
+// ======== LÓGICA DE FILTROS (BÚSQUEDA) ======== //
+  
+/**
+ * Función genérica para filtrar tablas
+ * @param {string} inputId - ID del input de búsqueda
+ * @param {string} tableBodyId - ID del tbody de la tabla a filtrar
+ */
+function setupTableFilter(inputId, tableBodyId) {
+  const input = document.getElementById(inputId);
+  const tableBody = document.getElementById(tableBodyId);
+
+  if (!input || !tableBody) return;
+
+  input.addEventListener("input", function() {
+    const query = this.value.toLowerCase().trim();
+    const rows = tableBody.getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      // Obtenemos todo el texto de la fila y lo pasamos a minúsculas
+      const rowText = row.textContent.toLowerCase();
+      
+      // Si el texto de la fila incluye la búsqueda, se muestra, si no, se oculta
+      if (rowText.includes(query)) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    }
+  });
+}
+
+// Inicializar los filtros para Propiedades y Usuarios
+setupTableFilter("searchPropInput", "propTableBody");
+setupTableFilter("searchUserInput", "userTableBody");
+// ============================================= //
+
 
 btnCrearPropiedad.addEventListener("click", () => {
     propForm.reset();
@@ -371,15 +416,6 @@ if (hasCustomConfirm) {
 }
 
 closeModalBtn.addEventListener("click", () => formPanel.classList.add("hidden"));
-
-function convertirArchivoABase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = (error) => reject(error);
-  });
-}
 
 function convertirArchivoABase64(file) {
     return new Promise((resolve, reject) => {
@@ -589,21 +625,6 @@ document.querySelectorAll(".btn-delete-prop").forEach(btn => {
     }
   });
 });
-
-function filtrarPropiedades() {
-  if (!searchPropInput) return;
-  const query = (searchPropInput.value || "").trim();
-  propRows.forEach(row => {
-    const idCell = row.querySelector("td");
-    const coincide = !query || (idCell && idCell.textContent.trim().includes(query));
-    row.style.display = coincide ? "" : "none";
-  });
-}
-
-if (searchPropInput) {
-  searchPropInput.addEventListener("input", filtrarPropiedades);
-}
-
 
   // ======== USUARIOS ======== //
   const userFormPanel = document.getElementById("userFormPanel");

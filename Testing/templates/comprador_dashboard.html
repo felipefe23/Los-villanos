@@ -56,7 +56,6 @@
                     <option value="">Tipo</option>
                     <option value="Casa" {% if request.args.get('tipo') == 'Casa' %}selected{% endif %}>Casa</option>
                     <option value="Departamento" {% if request.args.get('tipo') == 'Departamento' %}selected{% endif %}>Depto</option>
-                    <option value="Terreno" {% if request.args.get('tipo') == 'Terreno' %}selected{% endif %}>Terreno</option>
                 </select>
 
                 <select name="estado">
