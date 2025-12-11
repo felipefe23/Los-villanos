@@ -14,31 +14,23 @@ body {
 }
 
 .topbar {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+  color: #fff;
+  padding: clamp(24px, 4vw, 40px) clamp(16px, 5vw, 60px);
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 24px clamp(16px, 4vw, 48px);
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  color: #f8fafc;
-  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.2);
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  /* Aseguramos que el header y su contenido floten por encima del mapa */
+  position: relative;
+  z-index: 1500;
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.logo {
-  width: 52px;
-  height: 52px;
-  display: grid;
-  place-items: center;
-  font-size: 28px;
-  background: rgba(148, 163, 184, 0.2);
-  border-radius: 16px;
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.35);
+  margin-left: 280px;   /* prueba 220–260px según el ancho del logo */
+  margin-top: 20px;
 }
 
 .brand h1 {
@@ -324,7 +316,7 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 2000;
 }
 
 .modal.hidden {
@@ -608,4 +600,15 @@ code {
 
 .confirm-modal[data-tone="danger"] .btn.danger:hover {
   box-shadow: 0 20px 34px rgba(220, 38, 38, 0.36);
+}
+.topbar {
+    position: relative;
+}
+
+.topbar > .main-logo {
+    position: absolute;
+    left: 80px;      
+    top: -40px;      
+    height: 260px;   
+    object-fit: contain;
 }

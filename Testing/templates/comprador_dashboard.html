@@ -11,6 +11,9 @@
 <body>
     {% include '_loader.html' %}
     <header class="encabezado">
+        <img src="{{ url_for('static', filename='img/logo.png') }}"
+                     alt="Los Villanos"
+                     class="main-logo">
         <div class="contenedor">
             <div class="barra-superior">
                 <a class="btn-volver" id="main-nav-link" href="{{ url_for('landing') }}">← Cerrar sesión</a>

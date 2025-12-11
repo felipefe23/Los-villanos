@@ -12,8 +12,10 @@
 <body>
   {% include '_loader.html' %}
   <header class="topbar">
+      <img src="{{ url_for('static', filename='img/logo.png') }}"
+        alt="Los Villanos"
+        class="main-logo">
     <div class="brand">
-      <span class="logo">🛠️</span>
       <div>
         <h1>Panel de Administración</h1>
         <p>Gestiona usuarios, propiedades y estadísticas de ViviendaDigital.</p>
